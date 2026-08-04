@@ -115,7 +115,6 @@ img { max-width: 100%; display: block; }
   transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out), background 200ms ease, color 200ms ease, opacity 200ms ease;
   white-space: nowrap;
 }
-.btn:hover { transform: translateY(-2px); }
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .btn-primary {
@@ -123,13 +122,11 @@ img { max-width: 100%; display: block; }
   color: var(--color-white);
   box-shadow: 0 8px 20px rgba(28, 25, 22, 0.3);
 }
-.btn-primary:hover { background: var(--color-primary-dark); }
 .btn-outline {
   background: transparent;
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
-.btn-outline:hover { background: var(--color-primary); color: var(--color-white); }
 .btn-sm { padding: 9px 18px; font-size: 0.85rem; }
 
 /* =========================================================
@@ -184,7 +181,6 @@ img { max-width: 100%; display: block; }
   color: var(--color-dark);
   transition: color var(--transition);
 }
-.main-nav a:hover { color: var(--color-accent-dark); }
 .nav-cta { padding: 10px 22px; font-size: 0.9rem; }
 .hamburger {
   display: none;
@@ -249,9 +245,7 @@ img { max-width: 100%; display: block; }
 .hero-subtitle { font-size: 1.1rem; opacity: 0.85; margin-bottom: 32px; }
 .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
 .hero .btn-primary { background: var(--color-accent); color: var(--color-primary); box-shadow: 0 8px 20px rgba(195, 179, 159, 0.35); }
-.hero .btn-primary:hover { background: var(--color-white); }
 .hero .btn-outline { border-color: var(--color-white); color: var(--color-white); }
-.hero .btn-outline:hover { background: var(--color-white); color: var(--color-primary); }
 
 /* =========================================================
    SECTIONS
@@ -286,7 +280,6 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
 }
-.service-card:hover { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(33, 29, 25, 0.12); }
 .service-card h3 { font-size: 1.15rem; margin-bottom: 10px; color: var(--color-primary); }
 .service-card p { color: var(--color-muted); font-size: 0.92rem; margin-bottom: 18px; flex-grow: 1; }
 .service-meta {
@@ -409,11 +402,12 @@ img { max-width: 100%; display: block; }
 .booking-steps li.is-active::before { background: var(--color-accent); color: var(--color-primary); }
 .booking-steps li.is-done::before { content: "✓"; background: var(--color-accent-dark); color: var(--color-white); }
 
-.booking-step {
-  transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+.booking-step:not([hidden]) {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: reveal-fade-up 280ms var(--ease-out) forwards;
 }
 .booking-step[hidden] { display: none; }
-.booking-step.is-entering { opacity: 0; transform: translateY(10px); }
 
 .booking-back {
   display: inline-flex;
@@ -428,7 +422,6 @@ img { max-width: 100%; display: block; }
   padding: 0;
   transition: color 200ms ease, transform 160ms var(--ease-out);
 }
-.booking-back:hover { color: var(--color-dark); }
 .booking-back:active { transform: translateX(-2px); }
 
 /* Paso 1: elegir servicio */
@@ -446,7 +439,6 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
   transition: border-color 200ms ease, transform 160ms var(--ease-out), background 200ms ease;
 }
-.service-pick:hover { border-color: var(--color-accent); }
 .service-pick:active { transform: scale(0.98); }
 .service-pick strong { display: block; font-size: 0.98rem; margin-bottom: 4px; }
 .service-pick span { font-size: 0.82rem; color: var(--color-muted); }
@@ -485,7 +477,6 @@ img { max-width: 100%; display: block; }
   animation: reveal-fade-up 320ms var(--ease-out) forwards;
   transition: border-color 180ms ease, background 180ms ease, transform 160ms var(--ease-out), color 180ms ease;
 }
-.slot-pill:hover:not(:disabled) { border-color: var(--color-accent-dark); }
 .slot-pill:active:not(:disabled) { transform: scale(0.96); }
 .slot-pill.is-selected { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
 .slot-pill:disabled {
@@ -590,7 +581,6 @@ img { max-width: 100%; display: block; }
   border-radius: 6px;
   transition: background 160ms ease, transform 160ms var(--ease-out);
 }
-.copy-btn:hover { background: rgba(163, 143, 114, 0.15); }
 .copy-btn:active { transform: scale(0.94); }
 
 .confirmation-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px; }
@@ -639,7 +629,6 @@ img { max-width: 100%; display: block; }
   color: var(--color-primary);
   transition: background var(--transition), color var(--transition), transform var(--transition);
 }
-.social-links a:hover { background: var(--color-primary); color: var(--color-white); transform: translateY(-3px); }
 
 /* Footer */
 .site-footer { background: var(--color-primary); color: rgba(255,255,255,0.8); padding: 32px 0; }
@@ -652,7 +641,6 @@ img { max-width: 100%; display: block; }
   font-size: 0.88rem;
 }
 .footer-inner .social-links a { background: rgba(255,255,255,0.08); color: var(--color-white); }
-.footer-inner .social-links a:hover { background: var(--color-accent); color: var(--color-primary); }
 
 /* ---------------------------------------------------------
    Políticas
@@ -764,7 +752,28 @@ img { max-width: 100%; display: block; }
   transition: transform var(--transition);
 }
 .floating-whatsapp .icon { width: 30px; height: 30px; fill: var(--color-white); }
-.floating-whatsapp:hover { transform: scale(1.08); }
+
+/* =========================================================
+   ESTADOS HOVER — solo para mouse/trackpad real. En touch,
+   :hover se activa con el toque y se queda "pegado", así que
+   estos efectos quedan fuera para celulares y tablets.
+========================================================= */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary:hover { background: var(--color-primary-dark); }
+  .btn-outline:hover { background: var(--color-primary); color: var(--color-white); }
+  .main-nav a:hover { color: var(--color-accent-dark); }
+  .hero .btn-primary:hover { background: var(--color-white); }
+  .hero .btn-outline:hover { background: var(--color-white); color: var(--color-primary); }
+  .service-card:hover { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(33, 29, 25, 0.12); }
+  .booking-back:hover { color: var(--color-dark); }
+  .service-pick:hover { border-color: var(--color-accent); }
+  .slot-pill:hover:not(:disabled) { border-color: var(--color-accent-dark); }
+  .copy-btn:hover { background: rgba(163, 143, 114, 0.15); }
+  .social-links a:hover { background: var(--color-primary); color: var(--color-white); transform: translateY(-3px); }
+  .footer-inner .social-links a:hover { background: var(--color-accent); color: var(--color-primary); }
+  .floating-whatsapp:hover { transform: scale(1.08); }
+}
 
 /* =========================================================
    RESPONSIVE
@@ -801,6 +810,9 @@ img { max-width: 100%; display: block; }
     padding: 20px 24px;
     gap: 18px;
     box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: reveal-fade-up 220ms var(--ease-out) forwards;
   }
   .section { padding: 70px 0; }
 }
