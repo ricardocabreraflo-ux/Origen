@@ -1,6 +1,6 @@
 backend:
   name: git-gateway
-  branch: claude/beauty-business-website-0x7laa
+  branch: main
 
 media_folder: "assets"
 public_folder: "assets"
