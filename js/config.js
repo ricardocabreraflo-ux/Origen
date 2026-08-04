@@ -33,9 +33,9 @@ const BUSINESS_CONFIG = {
 
   // Redes sociales (deja vacío "" el que no uses y el ícono se ocultará)
   social: {
-    instagram: "https://instagram.com/origen", // TODO: pon aquí tu usuario real de Instagram
-    facebook: "https://facebook.com/origen", // TODO: pon aquí tu página real de Facebook
-    tiktok: "https://tiktok.com/@origen", // TODO: pon aquí tu usuario real de TikTok
+    instagram: "https://www.instagram.com/origen.brows",
+    facebook: "", // TODO: pon aquí tu página real de Facebook (vacío = el ícono no se muestra)
+    tiktok: "", // TODO: pon aquí tu usuario real de TikTok (vacío = el ícono no se muestra)
     whatsapp: "", // se genera automáticamente desde whatsappNumber si se deja vacío
   },
 
