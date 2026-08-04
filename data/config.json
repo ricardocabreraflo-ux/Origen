@@ -1,0 +1,172 @@
+{
+  "name": "Origen Brows & Hair Studio",
+  "shortName": "Origen Brows",
+  "tagline": "Diseño y arquitectura de cejas, pestañas y tratamientos capilares de alta gama",
+  "logoImage": "assets/logo-mark.jpg",
+  "logoText": "Origen",
+  "logoSub": "Brows & Hair Studio",
+
+  "founder": {
+    "name": "Montserrat Lemus",
+    "bio": "Especialista con más de 6 años de experiencia consolidada en el sector de la belleza."
+  },
+  "brandQuote": "Origen Brows no nace solo como un estudio de cejas, sino como un santuario donde cada clienta vive una transformación que realza su esencia natural a través del detalle y la excelencia.",
+
+  "opening": {
+    "show": true,
+    "message": "Gran apertura",
+    "date": "8 de agosto de 2026"
+  },
+
+  "testimonials": [],
+
+  "whatsappNumber": "525566095405",
+  "phoneDisplay": "+52 55 6609 5405",
+  "email": "origenbrowsmx@gmail.com",
+
+  "address": "Ote. 253 299-Loc B, Agrícola Oriental, Iztacalco, 08500 Ciudad de México, CDMX",
+  "mapEmbedUrl": "https://www.google.com/maps?q=Ote.+253+299-Loc+B%2C+Agr%C3%ADcola+Oriental%2C+Iztacalco%2C+08500+Ciudad+de+M%C3%A9xico%2C+CDMX&output=embed",
+
+  "hours": [
+    { "day": "Lunes", "time": "Cerrado" },
+    { "day": "Martes - Viernes", "time": "10:00 am - 7:00 pm" },
+    { "day": "Sábado", "time": "9:00 am - 5:00 pm" },
+    { "day": "Domingo", "time": "Cerrado" }
+  ],
+
+  "businessHours": {
+    "mon": { "open": "", "close": "" },
+    "tue": { "open": "10:00", "close": "19:00" },
+    "wed": { "open": "10:00", "close": "19:00" },
+    "thu": { "open": "10:00", "close": "19:00" },
+    "fri": { "open": "10:00", "close": "19:00" },
+    "sat": { "open": "09:00", "close": "17:00" },
+    "sun": { "open": "", "close": "" }
+  },
+
+  "social": {
+    "instagram": "https://www.instagram.com/origen.brows",
+    "facebook": "",
+    "tiktok": "https://www.tiktok.com/@origen.brows",
+    "whatsapp": ""
+  },
+
+  "aboutImage": "assets/gallery-1.jpg",
+
+  "galleryImages": [
+    { "src": "assets/gallery-2.jpg", "alt": "Origen Brows & Hair Studio" },
+    { "src": "assets/gallery-3.jpg", "alt": "Origen Brows & Hair Studio" }
+  ],
+
+  "services": [
+    {
+      "id": "disenando-tu-origen",
+      "name": "Diseñando tu ORIGEN",
+      "description": "Solo diseño con visagismo + epilación con hilo.",
+      "price": "$220 MXN",
+      "duration": 30,
+      "depositAmount": 200
+    },
+    {
+      "id": "brow-tint-shape",
+      "name": "Brow Tint & Shape",
+      "description": "Diseño + hilo + tinte híbrido (Élan/Bronsun).",
+      "price": "$350 MXN",
+      "duration": 45,
+      "depositAmount": 200
+    },
+    {
+      "id": "korean-lash-lifting",
+      "name": "Korean Lash Lifting",
+      "description": "Levantamiento coreano + tinte negro + botox/keratina.",
+      "price": "$550 MXN",
+      "duration": 60,
+      "depositAmount": 200
+    },
+    {
+      "id": "luxury-brow-lamination",
+      "name": "Luxury Brow Lamination",
+      "description": "Diseño + hilo + laminado italiano + nutrición/botox.",
+      "price": "$480 MXN",
+      "duration": 60,
+      "depositAmount": 200
+    },
+    {
+      "id": "luxury-lamination-tint",
+      "name": "Luxury Lamination + Tint",
+      "description": "Laminado completo + tinte híbrido + botox.",
+      "price": "$580 MXN",
+      "duration": 75,
+      "depositAmount": 200
+    },
+    {
+      "id": "combo-full-look",
+      "name": "Combo Full Look Origen",
+      "description": "Luxury Brow Lamination + Korean Lash Lifting.",
+      "price": "$980 MXN",
+      "duration": 120,
+      "depositAmount": 300
+    },
+    {
+      "id": "tratamientos-capilares",
+      "name": "Tratamientos Capilares",
+      "description": "Keratina premium o botox capilar. Precio sujeto a valoración previa.",
+      "price": "Valoración previa",
+      "duration": 120,
+      "depositAmount": 300
+    }
+  ],
+
+  "booking": {
+    "blockMinutes": 120,
+    "holdMinutes": 30
+  },
+
+  "bankTransfer": {
+    "bankName": "Pendiente por definir",
+    "accountHolder": "Pendiente por definir",
+    "clabe": "Pendiente por definir",
+    "note": "Envía tu comprobante por WhatsApp para agilizar la confirmación."
+  },
+
+  "policies": {
+    "title": "Nuestras políticas",
+    "sections": [
+      {
+        "heading": "Reserva de turnos",
+        "body": "Para confirmar tu cita es necesario un anticipo. Para Servicios Individuales (Diseño, Lash Lifting, Laminado): Anticipo $200 MXN. Para Combos y Tratamientos Capilares (Combo Full, Botox, Keratina): Anticipo $300 MXN."
+      },
+      {
+        "heading": "Tolerancia de llegada",
+        "body": "Contamos con una tolerancia máxima de 15 minutos. Si no llegas, se cancela y no es reembolsable el anticipo."
+      },
+      {
+        "heading": "Reagendado y cancelaciones",
+        "body": "Puedes reagendar tu cita sin costo avisando con al menos 24 horas de anticipación (tu anticipo se transfiere a tu nueva fecha, válido 1 sola vez dentro del mismo mes)."
+      },
+      {
+        "heading": "Acompañantes y cuidado",
+        "body": "Por comodidad, higiene y espacio en cabina, te pedimos asistir sin acompañantes o niños."
+      }
+    ]
+  },
+
+  "faq": [
+    {
+      "question": "¿Cómo aparto mi cita?",
+      "answer": "Eliges servicio, fecha y horario disponible, dejas tus datos y realizas el anticipo por transferencia. Tu horario queda reservado por 30 minutos mientras confirmamos tu depósito."
+    },
+    {
+      "question": "¿Qué pasa si no confirman mi pago a tiempo?",
+      "answer": "Si no confirmamos tu depósito dentro de los 30 minutos, el horario se libera automáticamente y puede ser tomado por otra persona."
+    },
+    {
+      "question": "¿El anticipo se puede reembolsar?",
+      "answer": "El anticipo no es reembolsable en caso de no presentarte o superar los 15 minutos de tolerancia. Si necesitas reagendar, avisa con 24 horas de anticipación y tu anticipo se transfiere a la nueva fecha (una sola vez, dentro del mismo mes)."
+    },
+    {
+      "question": "¿Puedo ir acompañada?",
+      "answer": "Por comodidad, higiene y espacio en cabina, te pedimos asistir sin acompañantes ni niños."
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+backend:
+  name: git-gateway
+  branch: claude/beauty-business-website-0x7laa
+
+media_folder: "assets"
+public_folder: "assets"
+
+locale: "es"
+
+collections:
+  - name: "config"
+    label: "Contenido del sitio"
+    files:
+      - file: "data/config.json"
+        label: "Información del negocio"
+        name: "config"
+        fields:
+          - { label: "Nombre completo", name: "name", widget: "string", hint: "Se usa en el título de la página y el pie de página." }
+          - { label: "Nombre corto", name: "shortName", widget: "string", hint: "Se usa en los mensajes de WhatsApp, para que no queden muy largos." }
+          - { label: "Frase principal (hero)", name: "tagline", widget: "text" }
+          - { label: "Ícono del logo", name: "logoImage", widget: "image" }
+          - { label: "Texto grande del logo", name: "logoText", widget: "string" }
+          - { label: "Subtítulo del logo", name: "logoSub", widget: "string" }
+
+          - label: "Fundadora"
+            name: "founder"
+            widget: "object"
+            fields:
+              - { label: "Nombre", name: "name", widget: "string" }
+              - { label: "Biografía", name: "bio", widget: "text" }
+
+          - { label: "Cita de marca (sección Sobre nosotros)", name: "brandQuote", widget: "text" }
+          - { label: "Foto de la sección Sobre nosotros", name: "aboutImage", widget: "image" }
+
+          - label: "Aviso de apertura / promoción"
+            name: "opening"
+            widget: "object"
+            fields:
+              - { label: "Mostrar la barra de aviso", name: "show", widget: "boolean" }
+              - { label: "Mensaje", name: "message", widget: "string" }
+              - { label: "Fecha", name: "date", widget: "string" }
+
+          - label: "Testimonios (déjalo vacío hasta tener reseñas reales)"
+            name: "testimonials"
+            widget: "list"
+            summary: "{{fields.author}}"
+            allow_add: true
+            fields:
+              - { label: "Reseña", name: "quote", widget: "text" }
+              - { label: "Autora", name: "author", widget: "string" }
+
+          - { label: "WhatsApp (solo números, con código de país, ej. 52...)", name: "whatsappNumber", widget: "string", pattern: ["^[0-9]+$", "Solo números, sin espacios ni símbolos"] }
+          - { label: "Teléfono que se muestra en la página", name: "phoneDisplay", widget: "string" }
+          - { label: "Correo de contacto", name: "email", widget: "string" }
+          - { label: "Dirección", name: "address", widget: "string" }
+          - { label: "Enlace del mapa embebido (Google Maps > Compartir > Insertar mapa)", name: "mapEmbedUrl", widget: "string" }
+
+          - label: "Horario (texto que se muestra en Contacto)"
+            name: "hours"
+            widget: "list"
+            fields:
+              - { label: "Día(s)", name: "day", widget: "string" }
+              - { label: "Horario", name: "time", widget: "string" }
+
+          - label: "Horario real (usado para calcular la disponibilidad de citas)"
+            name: "businessHours"
+            widget: "object"
+            hint: "Deja 'Abre'/'Cierra' vacíos en los días que esté cerrado. Formato 24h, ej. 10:00 y 19:00. Debe coincidir con el horario de arriba."
+            fields:
+              - label: "Lunes"
+                name: "mon"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Martes"
+                name: "tue"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Miércoles"
+                name: "wed"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Jueves"
+                name: "thu"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Viernes"
+                name: "fri"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Sábado"
+                name: "sat"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Domingo"
+                name: "sun"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+
+          - label: "Redes sociales (deja vacío el que no uses)"
+            name: "social"
+            widget: "object"
+            fields:
+              - { label: "Instagram", name: "instagram", widget: "string", required: false }
+              - { label: "Facebook", name: "facebook", widget: "string", required: false }
+              - { label: "TikTok", name: "tiktok", widget: "string", required: false }
+              - { label: "WhatsApp (opcional; si se deja vacío se genera solo)", name: "whatsapp", widget: "string", required: false }
+
+          - label: "Galería de fotos"
+            name: "galleryImages"
+            widget: "list"
+            summary: "{{fields.alt}}"
+            fields:
+              - { label: "Foto", name: "src", widget: "image" }
+              - { label: "Descripción", name: "alt", widget: "string", required: false }
+
+          - label: "Servicios"
+            name: "services"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.price}}"
+            fields:
+              - { label: "Identificador único (sin espacios ni acentos)", name: "id", widget: "string" }
+              - { label: "Nombre del servicio", name: "name", widget: "string" }
+              - { label: "Qué incluye", name: "description", widget: "text" }
+              - { label: "Precio", name: "price", widget: "string" }
+              - { label: "Duración estimada (minutos, solo informativa)", name: "duration", widget: "number", value_type: "int" }
+              - { label: "Anticipo para reservar (MXN)", name: "depositAmount", widget: "number", value_type: "int" }
+
+          - label: "Reservas"
+            name: "booking"
+            widget: "object"
+            fields:
+              - { label: "Duración del bloque que se reserva (minutos)", name: "blockMinutes", widget: "number", value_type: "int" }
+              - { label: "Minutos para confirmar el depósito antes de liberar el horario", name: "holdMinutes", widget: "number", value_type: "int" }
+
+          - label: "Datos para transferencia (anticipo)"
+            name: "bankTransfer"
+            widget: "object"
+            fields:
+              - { label: "Banco", name: "bankName", widget: "string" }
+              - { label: "Titular de la cuenta", name: "accountHolder", widget: "string" }
+              - { label: "CLABE", name: "clabe", widget: "string" }
+              - { label: "Nota adicional", name: "note", widget: "text", required: false }
+
+          - label: "Políticas"
+            name: "policies"
+            widget: "object"
+            fields:
+              - { label: "Título de la sección", name: "title", widget: "string" }
+              - label: "Secciones"
+                name: "sections"
+                widget: "list"
+                summary: "{{fields.heading}}"
+                fields:
+                  - { label: "Título", name: "heading", widget: "string" }
+                  - { label: "Texto", name: "body", widget: "text" }
+
+          - label: "Preguntas frecuentes"
+            name: "faq"
+            widget: "list"
+            summary: "{{fields.question}}"
+            fields:
+              - { label: "Pregunta", name: "question", widget: "string" }
+              - { label: "Respuesta", name: "answer", widget: "text" }

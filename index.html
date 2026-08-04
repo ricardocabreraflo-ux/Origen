@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Origen Brows & Hair Studio</title>
+<meta name="description" content="Origen Brows & Hair Studio: diseño de cejas, laminado, lifting de pestañas y tratamientos capilares en CDMX. Agenda tu cita en línea por WhatsApp." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- BARRA DE APERTURA -->
+<div class="announcement-bar" id="announcement-bar"></div>
+
+<!-- HEADER -->
+<header class="site-header" id="header">
+  <div class="container header-inner">
+    <a href="#inicio" class="logo">
+      <img src="assets/logo-mark.jpg" alt="" class="logo-mark" id="logo-mark" />
+      <span class="logo-wordmark">
+        <span class="logo-name" id="logo-text">Origen</span>
+        <span class="logo-sub" id="logo-sub">Brows &amp; Hair Studio</span>
+      </span>
+    </a>
+
+    <nav class="main-nav" id="main-nav">
+      <a href="#inicio">Inicio</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#galeria">Galería</a>
+      <a href="#agenda">Agenda tu cita</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+
+    <a href="#agenda" class="btn btn-primary nav-cta">Agenda tu cita</a>
+
+    <button class="hamburger" id="hamburger" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-text">
+    <div class="container hero-content">
+      <p class="eyebrow">Bienvenida / Bienvenido</p>
+      <h1 id="hero-title">Belleza, cuidado y bienestar en un solo lugar</h1>
+      <p class="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
+      <div class="hero-actions">
+        <a href="#agenda" class="btn btn-primary">Agenda tu cita</a>
+        <a href="#" id="hero-whatsapp" class="btn btn-outline" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+          Escríbenos por WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="hero-media">
+    <img src="assets/founder-portrait.jpg" alt="Origen Brows & Hair Studio" />
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="section" id="servicios">
+  <div class="container">
+    <p class="section-eyebrow">Nuestros servicios</p>
+    <h2 class="section-title">Elige tu tratamiento favorito</h2>
+    <div class="services-grid reveal-stagger" id="services-grid">
+      <!-- generado por script.js -->
+    </div>
+  </div>
+</section>
+
+<!-- NOSOTROS -->
+<section class="section section-alt" id="nosotros">
+  <div class="container about-grid reveal">
+    <div class="about-image">
+      <img id="about-image-photo" src="" alt="Montserrat Lemus, fundadora de Origen Brows & Hair Studio" loading="lazy" />
+    </div>
+    <div class="about-text">
+      <p class="section-eyebrow">Sobre nosotros</p>
+      <h2 class="section-title">Un espacio pensado para ti</h2>
+      <p>
+        <strong id="about-name">Origen Brows &amp; Hair Studio</strong> es un studio especializado en el diseño,
+        arquitectura y cuidado de tus cejas, pestañas y cabello. Trabajamos con atención
+        exclusiva, personalizada y con cita previa en un ambiente privado.
+      </p>
+      <ul class="checklist">
+        <li>Alta gama: marcas líderes internacionales (Élan, InLei, Maxymova)</li>
+        <li>Técnica profesional: diseño con depilación en hilo y laminado de precisión</li>
+        <li>Tratamientos capilares: Botox y Keratinas para restaurar tu cabello</li>
+        <li>Atención exclusiva con cita previa en ambiente privado</li>
+      </ul>
+      <blockquote class="brand-quote" id="brand-quote"></blockquote>
+      <p class="founder-credit">
+        — <strong id="founder-name">Montserrat Lemus</strong>, fundadora ·
+        <span id="founder-bio">Especialista con más de 6 años de experiencia consolidada en el sector de la belleza.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- GALERÍA -->
+<section class="section" id="galeria">
+  <div class="container">
+    <p class="section-eyebrow">Galería</p>
+    <h2 class="section-title">Nuestro trabajo</h2>
+    <div class="gallery-grid reveal-stagger" id="gallery-grid">
+      <!-- generado por script.js -->
+    </div>
+  </div>
+</section>
+
+<!-- AGENDA TU CITA -->
+<section class="section section-alt" id="agenda">
+  <div class="container">
+    <p class="section-eyebrow">Reserva en línea</p>
+    <h2 class="section-title">Agenda tu cita</h2>
+    <p class="section-note">Elige tu servicio y horario, aparta con un anticipo por transferencia y tu cita queda confirmada en cuanto verificamos tu depósito.</p>
+
+    <div class="booking-card reveal">
+      <ol class="booking-steps" id="booking-steps">
+        <li data-step="1" class="is-active"><span>Servicio</span></li>
+        <li data-step="2"><span>Fecha y hora</span></li>
+        <li data-step="3"><span>Tus datos</span></li>
+        <li data-step="4"><span>Confirmación</span></li>
+      </ol>
+
+      <!-- Paso 1: servicio -->
+      <div class="booking-step" data-step-panel="1">
+        <div class="service-pick-grid" id="service-pick-grid"><!-- generado por script.js --></div>
+      </div>
+
+      <!-- Paso 2: fecha y horario -->
+      <div class="booking-step" data-step-panel="2" hidden>
+        <button type="button" class="booking-back" data-back="1">← Cambiar servicio</button>
+        <div class="booking-field">
+          <label for="b-date">Elige una fecha</label>
+          <input type="date" id="b-date" />
+        </div>
+        <div class="slot-grid" id="slot-grid"></div>
+        <p class="slot-status" id="slot-status">Elige una fecha para ver los horarios disponibles.</p>
+      </div>
+
+      <!-- Paso 3: datos del cliente -->
+      <div class="booking-step" data-step-panel="3" hidden>
+        <button type="button" class="booking-back" data-back="2">← Cambiar horario</button>
+        <div class="booking-summary" id="booking-summary"></div>
+
+        <form class="booking-form" id="booking-form">
+          <div class="form-row">
+            <label for="b-name">Nombre completo *</label>
+            <input type="text" id="b-name" name="name" required placeholder="Tu nombre" />
+          </div>
+          <div class="form-row">
+            <label for="b-phone">Teléfono *</label>
+            <input type="tel" id="b-phone" name="phone" required placeholder="Ej. 55 1234 5678" />
+          </div>
+          <div class="form-row form-row-full">
+            <label for="b-notes">Notas adicionales</label>
+            <textarea id="b-notes" name="notes" rows="3" placeholder="Cuéntanos algo más (opcional)"></textarea>
+          </div>
+          <div class="form-row form-row-full form-actions">
+            <button type="submit" class="btn btn-primary" id="booking-submit">Apartar horario</button>
+          </div>
+          <p class="form-hint" id="form-hint"></p>
+        </form>
+      </div>
+
+      <!-- Paso 4: confirmación -->
+      <div class="booking-step confirmation-card" data-step-panel="4" hidden>
+        <p class="section-eyebrow">Horario apartado</p>
+        <p class="confirmation-code" id="confirmation-code"></p>
+        <p id="confirmation-summary"></p>
+
+        <div class="confirmation-timer" id="confirmation-timer"></div>
+
+        <div class="transfer-details">
+          <div class="transfer-row">
+            <span>Anticipo a transferir</span>
+            <span id="transfer-amount"></span>
+          </div>
+          <div class="transfer-row">
+            <span>Banco</span>
+            <span id="transfer-bank"></span>
+          </div>
+          <div class="transfer-row">
+            <span>Titular</span>
+            <span id="transfer-holder"></span>
+          </div>
+          <div class="transfer-row">
+            <span>CLABE</span>
+            <span>
+              <span id="transfer-clabe"></span>
+              <button type="button" class="copy-btn" id="copy-clabe">Copiar</button>
+            </span>
+          </div>
+        </div>
+        <p class="section-note" id="transfer-note" style="margin-bottom:0"></p>
+
+        <div class="confirmation-actions">
+          <a href="#" id="confirmation-whatsapp" class="btn btn-primary" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+            Enviar comprobante por WhatsApp
+          </a>
+          <a href="#" id="confirmation-calendar" class="btn btn-outline" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
+            Añadir a mi calendario
+          </a>
+          <button type="button" class="btn btn-outline" id="booking-restart">Agendar otra cita</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- POLÍTICAS -->
+<section class="section" id="politicas">
+  <div class="container">
+    <p class="section-eyebrow">Antes de reservar</p>
+    <h2 class="section-title" id="policies-title">Nuestras políticas</h2>
+    <div class="policy-grid reveal-stagger" id="policy-grid"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="section section-alt" id="testimonios">
+  <div class="container">
+    <p class="section-eyebrow">Testimonios</p>
+    <h2 class="section-title">Lo que dicen nuestras clientas</h2>
+    <div class="testimonial-grid reveal-stagger" id="testimonial-grid"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<!-- PREGUNTAS FRECUENTES -->
+<section class="section" id="faq">
+  <div class="container">
+    <p class="section-eyebrow">¿Tienes dudas?</p>
+    <h2 class="section-title">Preguntas frecuentes</h2>
+    <div class="faq-list reveal" id="faq-list"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="section" id="contacto">
+  <div class="container contact-grid">
+    <div class="contact-info">
+      <p class="section-eyebrow">Contacto</p>
+      <h2 class="section-title">Visítanos o escríbenos</h2>
+
+      <ul class="contact-list">
+        <li>
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-pin"/></svg>
+          <span id="contact-address">Av. Siempre Viva 123, Col. Centro, Ciudad</span>
+        </li>
+        <li>
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-phone"/></svg>
+          <span id="contact-phone">+52 123 456 7890</span>
+        </li>
+        <li>
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-mail"/></svg>
+          <span id="contact-email">contacto@origen.com</span>
+        </li>
+      </ul>
+
+      <h3 class="hours-title">Horario</h3>
+      <ul class="hours-list" id="hours-list"></ul>
+
+      <div class="social-links" id="social-links"></div>
+    </div>
+
+    <div class="contact-map">
+      <iframe
+        id="map-iframe"
+        src=""
+        width="100%" height="100%"
+        style="border:0;"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>&copy; <span id="footer-year"></span> <span id="footer-name">Origen</span>. Todos los derechos reservados.</p>
+    <div class="social-links" id="footer-social-links"></div>
+  </div>
+</footer>
+
+<!-- BOTÓN FLOTANTE DE WHATSAPP -->
+<a href="#" id="floating-whatsapp" class="floating-whatsapp" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+</a>
+
+<!-- SPRITE DE ÍCONOS SVG -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.85.505 3.583 1.383 5.07L2 22l5.06-1.362A9.94 9.94 0 0 0 12.001 22C17.523 22 22 17.522 22 12S17.523 2 12.001 2zm0 18.2a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.003.808.802-2.928-.194-.301A8.15 8.15 0 0 1 3.8 12c0-4.529 3.673-8.2 8.201-8.2S20.2 7.471 20.2 12c0 4.528-3.671 8.2-8.199 8.2z"/></symbol>
+    <symbol id="icon-instagram" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.055 1.97.24 2.43.4a4.9 4.9 0 0 1 1.78 1.16 4.9 4.9 0 0 1 1.16 1.78c.17.46.36 1.26.4 2.43.06 1.25.07 1.65.07 4.85s0 3.6-.07 4.85a7.3 7.3 0 0 1-.4 2.43 4.9 4.9 0 0 1-1.16 1.78 4.9 4.9 0 0 1-1.78 1.16c-.46.17-1.26.36-2.43.4-1.25.06-1.65.07-4.85.07s-3.6 0-4.85-.07a7.3 7.3 0 0 1-2.43-.4 4.9 4.9 0 0 1-1.78-1.16 4.9 4.9 0 0 1-1.16-1.78 7.3 7.3 0 0 1-.4-2.43C2.21 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.055-1.17.24-1.97.4-2.43a4.9 4.9 0 0 1 1.16-1.78A4.9 4.9 0 0 1 5.61 1.78c.46-.17 1.26-.36 2.43-.4C9.29 1.32 9.69 1.31 12 1.31zm0 1.98c-3.16 0-3.53 0-4.78.07-.96.045-1.48.2-1.82.34a3.05 3.05 0 0 0-1.13.73 3.05 3.05 0 0 0-.73 1.13c-.14.34-.3.86-.34 1.82-.06 1.25-.07 1.62-.07 4.78s0 3.53.07 4.78c.045.96.2 1.48.34 1.82.15.4.35.73.73 1.13.35.35.68.55 1.13.73.34.14.86.3 1.82.34 1.25.06 1.62.07 4.78.07s3.53 0 4.78-.07c.96-.045 1.48-.2 1.82-.34a3.05 3.05 0 0 0 1.13-.73c.35-.35.55-.68.73-1.13.14-.34.3-.86.34-1.82.06-1.25.07-1.62.07-4.78s0-3.53-.07-4.78c-.045-.96-.2-1.48-.34-1.82a3.05 3.05 0 0 0-.73-1.13 3.05 3.05 0 0 0-1.13-.73c-.34-.14-.86-.3-1.82-.34-1.25-.06-1.62-.07-4.78-.07z"/><path d="M12 6.87A5.13 5.13 0 1 0 12 17.13 5.13 5.13 0 0 0 12 6.87zm0 8.46a3.33 3.33 0 1 1 0-6.66 3.33 3.33 0 0 1 0 6.66z"/><circle cx="17.34" cy="6.66" r="1.2"/></symbol>
+    <symbol id="icon-facebook" viewBox="0 0 24 24"><path d="M13.5 21v-8.1h2.72l.41-3.16h-3.13V7.75c0-.91.25-1.53 1.56-1.53h1.67V3.4A22.4 22.4 0 0 0 14.3 3.2c-2.4 0-4.05 1.47-4.05 4.16v2.38H7.5v3.16h2.75V21h3.25z"/></symbol>
+    <symbol id="icon-tiktok" viewBox="0 0 24 24"><path d="M16.6 2h-3.2v13.1c0 1.5-1.2 2.7-2.7 2.7a2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.28 0 .55.04.8.12V9.3a6 6 0 0 0-.8-.05A5.9 5.9 0 0 0 4.8 15.15 5.9 5.9 0 0 0 10.7 21a5.9 5.9 0 0 0 5.9-5.85V8.4a8.1 8.1 0 0 0 4.6 1.43V6.6a4.9 4.9 0 0 1-4.6-4.6z"/></symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zM5 9h14v11H5V9z"/></symbol>
+    <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></symbol>
+    <symbol id="icon-phone" viewBox="0 0 24 24"><path d="M6.6 10.8c1.35 2.65 3.55 4.85 6.2 6.2l2.07-2.07a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.56.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.3 21 3 13.7 3 4.5a1 1 0 0 1 1-1h3.75a1 1 0 0 1 1 1c0 1.24.2 2.44.57 3.56a1 1 0 0 1-.25 1.02L6.6 10.8z"/></symbol>
+    <symbol id="icon-mail" viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v.01L12 13l8-6.99V6H4zm16 12V8.24l-7.4 6.47a1 1 0 0 1-1.2 0L4 8.24V18h16z"/></symbol>
+  </defs>
+</svg>
+
+<script src="js/script.js"></script>
+</body>
+</html>
