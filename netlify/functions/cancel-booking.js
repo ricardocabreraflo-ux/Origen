@@ -1,5 +1,6 @@
 const { getServiceClient } = require("./_lib/supabase");
 const { requireAdmin } = require("./_lib/requireAdmin");
+const { deleteCalendarEvent } = require("./_lib/googleCalendar");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -34,6 +35,16 @@ exports.handler = async (event, context) => {
 
     if (error || !updated) {
       return { statusCode: 404, body: JSON.stringify({ error: "not_found_or_already_final" }) };
+    }
+
+    // Mejor esfuerzo: la cancelación en la base de datos ya quedó hecha,
+    // así que un fallo aquí no debe impedir la respuesta.
+    if (updated.calendar_event_id) {
+      try {
+        await deleteCalendarEvent(updated.calendar_event_id);
+      } catch (calendarErr) {
+        console.error("No se pudo borrar el evento de Google Calendar", calendarErr);
+      }
     }
 
     return { statusCode: 200, body: JSON.stringify({ booking: updated }) };

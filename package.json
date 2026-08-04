@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Sitio web y sistema de citas de Origen Brows & Hair Studio",
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.4"
+    "@supabase/supabase-js": "^2.45.4",
+    "google-auth-library": "^9.14.1"
   }
 }

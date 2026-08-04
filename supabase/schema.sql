@@ -30,7 +30,10 @@ create table if not exists bookings (
   created_at timestamptz not null default now(),
   expires_at timestamptz not null default (now() + interval '30 minutes'),
   confirmed_at timestamptz,
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+
+  -- id del evento en Google Calendar, para poder borrarlo si se cancela la cita
+  calendar_event_id text
 );
 
 -- Evita que dos citas activas (pendientes o confirmadas) ocupen el mismo

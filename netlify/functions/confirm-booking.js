@@ -1,5 +1,6 @@
 const { getServiceClient } = require("./_lib/supabase");
 const { requireAdmin } = require("./_lib/requireAdmin");
+const { createCalendarEvent } = require("./_lib/googleCalendar");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -67,6 +68,17 @@ exports.handler = async (event, context) => {
         statusCode: 409,
         body: JSON.stringify({ error: "conflict", message: "La cita cambió de estado, actualiza la página." }),
       };
+    }
+
+    // Mejor esfuerzo: si falla Google Calendar, la cita ya quedó confirmada
+    // en la base de datos de todas formas — no bloqueamos la confirmación
+    // real por un problema del calendario.
+    try {
+      const calendarEvent = await createCalendarEvent(updated);
+      await supabase.from("bookings").update({ calendar_event_id: calendarEvent.id }).eq("id", updated.id);
+      updated.calendar_event_id = calendarEvent.id;
+    } catch (calendarErr) {
+      console.error("No se pudo crear el evento de Google Calendar", calendarErr);
     }
 
     return { statusCode: 200, body: JSON.stringify({ booking: updated }) };
