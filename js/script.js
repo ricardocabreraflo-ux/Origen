@@ -51,6 +51,9 @@
     if (cfg.brandQuote) {
       document.getElementById("brand-quote").textContent = `“${cfg.brandQuote}”`;
     }
+    if (cfg.aboutImage) {
+      document.getElementById("about-image-photo").src = cfg.aboutImage;
+    }
   }
 
   function renderGallery() {

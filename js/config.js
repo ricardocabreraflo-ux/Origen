@@ -57,9 +57,11 @@ const BUSINESS_CONFIG = {
     whatsapp: "", // se genera automáticamente desde whatsappNumber si se deja vacío
   },
 
+  // Foto usada en la sección "Sobre nosotros"
+  aboutImage: "assets/gallery-1.jpg",
+
   // Fotos reales para la sección Galería
   galleryImages: [
-    { src: "assets/gallery-1.jpg", alt: "Origen Brows & Hair Studio" },
     { src: "assets/gallery-2.jpg", alt: "Origen Brows & Hair Studio" },
     { src: "assets/gallery-3.jpg", alt: "Origen Brows & Hair Studio" },
   ],
