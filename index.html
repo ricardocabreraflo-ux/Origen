@@ -69,7 +69,7 @@
   <div class="container">
     <p class="section-eyebrow">Nuestros servicios</p>
     <h2 class="section-title">Elige tu tratamiento favorito</h2>
-    <div class="services-grid" id="services-grid">
+    <div class="services-grid reveal-stagger" id="services-grid">
       <!-- generado por script.js -->
     </div>
   </div>
@@ -77,7 +77,7 @@
 
 <!-- NOSOTROS -->
 <section class="section section-alt" id="nosotros">
-  <div class="container about-grid">
+  <div class="container about-grid reveal">
     <div class="about-image">
       <img id="about-image-photo" src="" alt="Montserrat Lemus, fundadora de Origen Brows & Hair Studio" loading="lazy" />
     </div>
@@ -109,7 +109,7 @@
   <div class="container">
     <p class="section-eyebrow">Galería</p>
     <h2 class="section-title">Nuestro trabajo</h2>
-    <div class="gallery-grid" id="gallery-grid">
+    <div class="gallery-grid reveal-stagger" id="gallery-grid">
       <!-- generado por script.js -->
     </div>
   </div>
@@ -120,53 +120,128 @@
   <div class="container">
     <p class="section-eyebrow">Reserva en línea</p>
     <h2 class="section-title">Agenda tu cita</h2>
-    <p class="section-note">Completa el formulario y confirma tu cita directamente por WhatsApp. También puedes añadirla a tu Google Calendar.</p>
+    <p class="section-note">Elige tu servicio y horario, aparta con un anticipo por transferencia y tu cita queda confirmada en cuanto verificamos tu depósito.</p>
 
-    <form class="booking-form" id="booking-form">
-      <div class="form-row">
-        <label for="b-name">Nombre completo *</label>
-        <input type="text" id="b-name" name="name" required placeholder="Tu nombre" />
+    <div class="booking-card reveal">
+      <ol class="booking-steps" id="booking-steps">
+        <li data-step="1" class="is-active"><span>Servicio</span></li>
+        <li data-step="2"><span>Fecha y hora</span></li>
+        <li data-step="3"><span>Tus datos</span></li>
+        <li data-step="4"><span>Confirmación</span></li>
+      </ol>
+
+      <!-- Paso 1: servicio -->
+      <div class="booking-step" data-step-panel="1">
+        <div class="service-pick-grid" id="service-pick-grid"><!-- generado por script.js --></div>
       </div>
 
-      <div class="form-row">
-        <label for="b-phone">Teléfono *</label>
-        <input type="tel" id="b-phone" name="phone" required placeholder="Ej. 55 1234 5678" />
+      <!-- Paso 2: fecha y horario -->
+      <div class="booking-step" data-step-panel="2" hidden>
+        <button type="button" class="booking-back" data-back="1">← Cambiar servicio</button>
+        <div class="booking-field">
+          <label for="b-date">Elige una fecha</label>
+          <input type="date" id="b-date" />
+        </div>
+        <div class="slot-grid" id="slot-grid"></div>
+        <p class="slot-status" id="slot-status">Elige una fecha para ver los horarios disponibles.</p>
       </div>
 
-      <div class="form-row">
-        <label for="b-service">Servicio *</label>
-        <select id="b-service" name="service" required>
-          <option value="" disabled selected>Selecciona un servicio</option>
-        </select>
+      <!-- Paso 3: datos del cliente -->
+      <div class="booking-step" data-step-panel="3" hidden>
+        <button type="button" class="booking-back" data-back="2">← Cambiar horario</button>
+        <div class="booking-summary" id="booking-summary"></div>
+
+        <form class="booking-form" id="booking-form">
+          <div class="form-row">
+            <label for="b-name">Nombre completo *</label>
+            <input type="text" id="b-name" name="name" required placeholder="Tu nombre" />
+          </div>
+          <div class="form-row">
+            <label for="b-phone">Teléfono *</label>
+            <input type="tel" id="b-phone" name="phone" required placeholder="Ej. 55 1234 5678" />
+          </div>
+          <div class="form-row form-row-full">
+            <label for="b-notes">Notas adicionales</label>
+            <textarea id="b-notes" name="notes" rows="3" placeholder="Cuéntanos algo más (opcional)"></textarea>
+          </div>
+          <div class="form-row form-row-full form-actions">
+            <button type="submit" class="btn btn-primary" id="booking-submit">Apartar horario</button>
+          </div>
+          <p class="form-hint" id="form-hint"></p>
+        </form>
       </div>
 
-      <div class="form-row">
-        <label for="b-date">Fecha *</label>
-        <input type="date" id="b-date" name="date" required />
-      </div>
+      <!-- Paso 4: confirmación -->
+      <div class="booking-step confirmation-card" data-step-panel="4" hidden>
+        <p class="section-eyebrow">Horario apartado</p>
+        <p class="confirmation-code" id="confirmation-code"></p>
+        <p id="confirmation-summary"></p>
 
-      <div class="form-row">
-        <label for="b-time">Hora *</label>
-        <input type="time" id="b-time" name="time" required />
-      </div>
+        <div class="confirmation-timer" id="confirmation-timer"></div>
 
-      <div class="form-row form-row-full">
-        <label for="b-notes">Notas adicionales</label>
-        <textarea id="b-notes" name="notes" rows="3" placeholder="Cuéntanos algo más (opcional)"></textarea>
-      </div>
+        <div class="transfer-details">
+          <div class="transfer-row">
+            <span>Anticipo a transferir</span>
+            <span id="transfer-amount"></span>
+          </div>
+          <div class="transfer-row">
+            <span>Banco</span>
+            <span id="transfer-bank"></span>
+          </div>
+          <div class="transfer-row">
+            <span>Titular</span>
+            <span id="transfer-holder"></span>
+          </div>
+          <div class="transfer-row">
+            <span>CLABE</span>
+            <span>
+              <span id="transfer-clabe"></span>
+              <button type="button" class="copy-btn" id="copy-clabe">Copiar</button>
+            </span>
+          </div>
+        </div>
+        <p class="section-note" id="transfer-note" style="margin-bottom:0"></p>
 
-      <div class="form-row form-row-full form-actions">
-        <button type="submit" class="btn btn-primary">
-          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
-          Reservar por WhatsApp
-        </button>
-        <button type="button" class="btn btn-outline" id="add-to-calendar">
-          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
-          Añadir a Google Calendar
-        </button>
+        <div class="confirmation-actions">
+          <a href="#" id="confirmation-whatsapp" class="btn btn-primary" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+            Enviar comprobante por WhatsApp
+          </a>
+          <a href="#" id="confirmation-calendar" class="btn btn-outline" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
+            Añadir a mi calendario
+          </a>
+          <button type="button" class="btn btn-outline" id="booking-restart">Agendar otra cita</button>
+        </div>
       </div>
-      <p class="form-hint" id="form-hint"></p>
-    </form>
+    </div>
+  </div>
+</section>
+
+<!-- POLÍTICAS -->
+<section class="section" id="politicas">
+  <div class="container">
+    <p class="section-eyebrow">Antes de reservar</p>
+    <h2 class="section-title" id="policies-title">Nuestras políticas</h2>
+    <div class="policy-grid reveal-stagger" id="policy-grid"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="section section-alt" id="testimonios">
+  <div class="container">
+    <p class="section-eyebrow">Testimonios</p>
+    <h2 class="section-title">Lo que dicen nuestras clientas</h2>
+    <div class="testimonial-grid reveal-stagger" id="testimonial-grid"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<!-- PREGUNTAS FRECUENTES -->
+<section class="section" id="faq">
+  <div class="container">
+    <p class="section-eyebrow">¿Tienes dudas?</p>
+    <h2 class="section-title">Preguntas frecuentes</h2>
+    <div class="faq-list reveal" id="faq-list"><!-- generado por script.js --></div>
   </div>
 </section>
 

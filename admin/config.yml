@@ -40,18 +40,75 @@ collections:
               - { label: "Mensaje", name: "message", widget: "string" }
               - { label: "Fecha", name: "date", widget: "string" }
 
+          - label: "Testimonios (déjalo vacío hasta tener reseñas reales)"
+            name: "testimonials"
+            widget: "list"
+            summary: "{{fields.author}}"
+            allow_add: true
+            fields:
+              - { label: "Reseña", name: "quote", widget: "text" }
+              - { label: "Autora", name: "author", widget: "string" }
+
           - { label: "WhatsApp (solo números, con código de país, ej. 52...)", name: "whatsappNumber", widget: "string", pattern: ["^[0-9]+$", "Solo números, sin espacios ni símbolos"] }
           - { label: "Teléfono que se muestra en la página", name: "phoneDisplay", widget: "string" }
           - { label: "Correo de contacto", name: "email", widget: "string" }
           - { label: "Dirección", name: "address", widget: "string" }
           - { label: "Enlace del mapa embebido (Google Maps > Compartir > Insertar mapa)", name: "mapEmbedUrl", widget: "string" }
 
-          - label: "Horario"
+          - label: "Horario (texto que se muestra en Contacto)"
             name: "hours"
             widget: "list"
             fields:
               - { label: "Día(s)", name: "day", widget: "string" }
               - { label: "Horario", name: "time", widget: "string" }
+
+          - label: "Horario real (usado para calcular la disponibilidad de citas)"
+            name: "businessHours"
+            widget: "object"
+            hint: "Deja 'Abre'/'Cierra' vacíos en los días que esté cerrado. Formato 24h, ej. 10:00 y 19:00. Debe coincidir con el horario de arriba."
+            fields:
+              - label: "Lunes"
+                name: "mon"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Martes"
+                name: "tue"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Miércoles"
+                name: "wed"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Jueves"
+                name: "thu"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Viernes"
+                name: "fri"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Sábado"
+                name: "sat"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
+              - label: "Domingo"
+                name: "sun"
+                widget: "object"
+                fields:
+                  - { label: "Abre", name: "open", widget: "string", required: false }
+                  - { label: "Cierra", name: "close", widget: "string", required: false }
 
           - label: "Redes sociales (deja vacío el que no uses)"
             name: "social"
@@ -79,4 +136,42 @@ collections:
               - { label: "Nombre del servicio", name: "name", widget: "string" }
               - { label: "Qué incluye", name: "description", widget: "text" }
               - { label: "Precio", name: "price", widget: "string" }
-              - { label: "Duración estimada (minutos)", name: "duration", widget: "number", value_type: "int" }
+              - { label: "Duración estimada (minutos, solo informativa)", name: "duration", widget: "number", value_type: "int" }
+              - { label: "Anticipo para reservar (MXN)", name: "depositAmount", widget: "number", value_type: "int" }
+
+          - label: "Reservas"
+            name: "booking"
+            widget: "object"
+            fields:
+              - { label: "Duración del bloque que se reserva (minutos)", name: "blockMinutes", widget: "number", value_type: "int" }
+              - { label: "Minutos para confirmar el depósito antes de liberar el horario", name: "holdMinutes", widget: "number", value_type: "int" }
+
+          - label: "Datos para transferencia (anticipo)"
+            name: "bankTransfer"
+            widget: "object"
+            fields:
+              - { label: "Banco", name: "bankName", widget: "string" }
+              - { label: "Titular de la cuenta", name: "accountHolder", widget: "string" }
+              - { label: "CLABE", name: "clabe", widget: "string" }
+              - { label: "Nota adicional", name: "note", widget: "text", required: false }
+
+          - label: "Políticas"
+            name: "policies"
+            widget: "object"
+            fields:
+              - { label: "Título de la sección", name: "title", widget: "string" }
+              - label: "Secciones"
+                name: "sections"
+                widget: "list"
+                summary: "{{fields.heading}}"
+                fields:
+                  - { label: "Título", name: "heading", widget: "string" }
+                  - { label: "Texto", name: "body", widget: "text" }
+
+          - label: "Preguntas frecuentes"
+            name: "faq"
+            widget: "list"
+            summary: "{{fields.question}}"
+            fields:
+              - { label: "Pregunta", name: "question", widget: "string" }
+              - { label: "Respuesta", name: "answer", widget: "text" }
