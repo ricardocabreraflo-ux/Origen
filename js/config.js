@@ -7,16 +7,16 @@
 
 const BUSINESS_CONFIG = {
   // Identidad
-  name: "Bella Studio",
+  name: "Origen",
   tagline: "Belleza, cuidado y bienestar en un solo lugar",
-  logoText: "Bella Studio",
+  logoText: "Origen",
 
   // Contacto
   // Número de WhatsApp en formato internacional, SOLO dígitos (sin +, espacios ni guiones)
-  // Ejemplo México: 521XXXXXXXXXX | Ejemplo España: 34XXXXXXXXX | Ejemplo Colombia: 57XXXXXXXXXX
-  whatsappNumber: "521234567890",
-  phoneDisplay: "+52 123 456 7890",
-  email: "contacto@bellastudio.com",
+  // Ejemplo México: 52XXXXXXXXXX | Ejemplo España: 34XXXXXXXXX | Ejemplo Colombia: 57XXXXXXXXXX
+  whatsappNumber: "525566095405",
+  phoneDisplay: "+52 55 6609 5405",
+  email: "contacto@origen.com", // TODO: pon aquí el correo real del negocio
 
   // Ubicación
   address: "Av. Siempre Viva 123, Col. Centro, Ciudad",
@@ -32,9 +32,9 @@ const BUSINESS_CONFIG = {
 
   // Redes sociales (deja vacío "" el que no uses y el ícono se ocultará)
   social: {
-    instagram: "https://instagram.com/bellastudio",
-    facebook: "https://facebook.com/bellastudio",
-    tiktok: "https://tiktok.com/@bellastudio",
+    instagram: "https://instagram.com/origen", // TODO: pon aquí tu usuario real de Instagram
+    facebook: "https://facebook.com/origen", // TODO: pon aquí tu página real de Facebook
+    tiktok: "https://tiktok.com/@origen", // TODO: pon aquí tu usuario real de TikTok
     whatsapp: "", // se genera automáticamente desde whatsappNumber si se deja vacío
   },
 
