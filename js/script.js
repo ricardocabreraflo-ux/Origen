@@ -1,7 +1,8 @@
 (function () {
   "use strict";
 
-  const cfg = BUSINESS_CONFIG;
+  // Se carga desde data/config.json al iniciar (ver init() al final del archivo)
+  let cfg;
 
   /* ---------------------------------------------------------
      Helpers
@@ -20,7 +21,9 @@
     return cfg.services.find((s) => s.id === id);
   }
 
-  const shortName = cfg.shortName || cfg.name;
+  function getShortName() {
+    return cfg.shortName || cfg.name;
+  }
 
   /* ---------------------------------------------------------
      Render business info into the page
@@ -98,7 +101,7 @@
   }
 
   function renderWhatsappButtons() {
-    const greeting = `Hola ${shortName}, me gustaría más información. 😊`;
+    const greeting = `Hola ${getShortName()}, me gustaría más información. 😊`;
     const link = whatsappLink(greeting);
     document.getElementById("hero-whatsapp").href = link;
     document.getElementById("floating-whatsapp").href = link;
@@ -156,7 +159,7 @@
 
   function buildBookingMessage(data, service) {
     return [
-      `Hola ${shortName}, quiero agendar una cita:`,
+      `Hola ${getShortName()}, quiero agendar una cita:`,
       ``,
       `Nombre: ${data.name}`,
       `Teléfono: ${data.phone}`,
@@ -217,8 +220,8 @@
       const toGCalDate = (d) =>
         d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
-      const title = `Cita: ${service ? service.name : "Servicio"} en ${shortName}`;
-      const details = `Cita agendada en ${shortName}.${data.notes ? " Notas: " + data.notes : ""}`;
+      const title = `Cita: ${service ? service.name : "Servicio"} en ${getShortName()}`;
+      const details = `Cita agendada en ${getShortName()}.${data.notes ? " Notas: " + data.notes : ""}`;
       const params = new URLSearchParams({
         action: "TEMPLATE",
         text: title,
@@ -233,9 +236,12 @@
   }
 
   /* ---------------------------------------------------------
-     Init
+     Init — carga data/config.json y luego dibuja la página.
+     Así, el panel de administración (/admin) puede editar ese
+     archivo sin que nadie tenga que tocar código.
   --------------------------------------------------------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  function init(data) {
+    cfg = data;
     renderBrand();
     renderAnnouncement();
     renderFounder();
@@ -246,5 +252,14 @@
     renderServices();
     initMobileNav();
     initBookingForm();
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    fetch("data/config.json")
+      .then((res) => res.json())
+      .then(init)
+      .catch((err) => {
+        console.error("No se pudo cargar data/config.json", err);
+      });
   });
 })();
