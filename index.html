@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bella Studio · Salón de Belleza</title>
+<meta name="description" content="Agenda tu cita en línea por WhatsApp. Manicure, pedicure, corte, color, maquillaje y más." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header" id="header">
+  <div class="container header-inner">
+    <a href="#inicio" class="logo" id="logo-text">Bella Studio</a>
+
+    <nav class="main-nav" id="main-nav">
+      <a href="#inicio">Inicio</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#galeria">Galería</a>
+      <a href="#agenda">Agenda tu cita</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+
+    <a href="#agenda" class="btn btn-primary nav-cta">Agenda tu cita</a>
+
+    <button class="hamburger" id="hamburger" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-overlay"></div>
+  <div class="container hero-content">
+    <p class="eyebrow">Bienvenida / Bienvenido</p>
+    <h1 id="hero-title">Belleza, cuidado y bienestar en un solo lugar</h1>
+    <p class="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
+    <div class="hero-actions">
+      <a href="#agenda" class="btn btn-primary">Agenda tu cita</a>
+      <a href="#" id="hero-whatsapp" class="btn btn-outline" target="_blank" rel="noopener">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+        Escríbenos por WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="section" id="servicios">
+  <div class="container">
+    <p class="section-eyebrow">Nuestros servicios</p>
+    <h2 class="section-title">Elige tu tratamiento favorito</h2>
+    <div class="services-grid" id="services-grid">
+      <!-- generado por script.js -->
+    </div>
+  </div>
+</section>
+
+<!-- NOSOTROS -->
+<section class="section section-alt" id="nosotros">
+  <div class="container about-grid">
+    <div class="about-image" aria-hidden="true"></div>
+    <div class="about-text">
+      <p class="section-eyebrow">Sobre nosotros</p>
+      <h2 class="section-title">Un espacio pensado para ti</h2>
+      <p>
+        En <strong id="about-name">Bella Studio</strong> combinamos técnica, productos de calidad
+        y un trato cercano para que cada visita sea una experiencia relajante.
+        Nuestro equipo de especialistas está listo para ayudarte a lucir y sentirte
+        como te mereces.
+      </p>
+      <ul class="checklist">
+        <li>Profesionales certificados</li>
+        <li>Productos de alta calidad</li>
+        <li>Ambiente limpio y acogedor</li>
+        <li>Reserva fácil por WhatsApp</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- GALERÍA -->
+<section class="section" id="galeria">
+  <div class="container">
+    <p class="section-eyebrow">Galería</p>
+    <h2 class="section-title">Nuestro trabajo</h2>
+    <p class="section-note">Reemplaza estos espacios por fotos reales de tu trabajo en la carpeta <code>/assets</code>.</p>
+    <div class="gallery-grid">
+      <div class="gallery-item ph-1"></div>
+      <div class="gallery-item ph-2"></div>
+      <div class="gallery-item ph-3"></div>
+      <div class="gallery-item ph-4"></div>
+      <div class="gallery-item ph-5"></div>
+      <div class="gallery-item ph-6"></div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENDA TU CITA -->
+<section class="section section-alt" id="agenda">
+  <div class="container">
+    <p class="section-eyebrow">Reserva en línea</p>
+    <h2 class="section-title">Agenda tu cita</h2>
+    <p class="section-note">Completa el formulario y confirma tu cita directamente por WhatsApp. También puedes añadirla a tu Google Calendar.</p>
+
+    <form class="booking-form" id="booking-form">
+      <div class="form-row">
+        <label for="b-name">Nombre completo *</label>
+        <input type="text" id="b-name" name="name" required placeholder="Tu nombre" />
+      </div>
+
+      <div class="form-row">
+        <label for="b-phone">Teléfono *</label>
+        <input type="tel" id="b-phone" name="phone" required placeholder="Ej. 55 1234 5678" />
+      </div>
+
+      <div class="form-row">
+        <label for="b-service">Servicio *</label>
+        <select id="b-service" name="service" required>
+          <option value="" disabled selected>Selecciona un servicio</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="b-date">Fecha *</label>
+        <input type="date" id="b-date" name="date" required />
+      </div>
+
+      <div class="form-row">
+        <label for="b-time">Hora *</label>
+        <input type="time" id="b-time" name="time" required />
+      </div>
+
+      <div class="form-row form-row-full">
+        <label for="b-notes">Notas adicionales</label>
+        <textarea id="b-notes" name="notes" rows="3" placeholder="Cuéntanos algo más (opcional)"></textarea>
+      </div>
+
+      <div class="form-row form-row-full form-actions">
+        <button type="submit" class="btn btn-primary">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+          Reservar por WhatsApp
+        </button>
+        <button type="button" class="btn btn-outline" id="add-to-calendar">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
+          Añadir a Google Calendar
+        </button>
+      </div>
+      <p class="form-hint" id="form-hint"></p>
+    </form>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="section" id="contacto">
+  <div class="container contact-grid">
+    <div class="contact-info">
+      <p class="section-eyebrow">Contacto</p>
+      <h2 class="section-title">Visítanos o escríbenos</h2>
+
+      <ul class="contact-list">
+        <li>
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-pin"/></svg>
+          <span id="contact-address">Av. Siempre Viva 123, Col. Centro, Ciudad</span>
+        </li>
+        <li>
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-phone"/></svg>
+          <span id="contact-phone">+52 123 456 7890</span>
+        </li>
+        <li>
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-mail"/></svg>
+          <span id="contact-email">contacto@bellastudio.com</span>
+        </li>
+      </ul>
+
+      <h3 class="hours-title">Horario</h3>
+      <ul class="hours-list" id="hours-list"></ul>
+
+      <div class="social-links" id="social-links"></div>
+    </div>
+
+    <div class="contact-map">
+      <iframe
+        id="map-iframe"
+        src=""
+        width="100%" height="100%"
+        style="border:0;"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>&copy; <span id="footer-year"></span> <span id="footer-name">Bella Studio</span>. Todos los derechos reservados.</p>
+    <div class="social-links" id="footer-social-links"></div>
+  </div>
+</footer>
+
+<!-- BOTÓN FLOTANTE DE WHATSAPP -->
+<a href="#" id="floating-whatsapp" class="floating-whatsapp" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+</a>
+
+<!-- SPRITE DE ÍCONOS SVG -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.85.505 3.583 1.383 5.07L2 22l5.06-1.362A9.94 9.94 0 0 0 12.001 22C17.523 22 22 17.522 22 12S17.523 2 12.001 2zm0 18.2a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.003.808.802-2.928-.194-.301A8.15 8.15 0 0 1 3.8 12c0-4.529 3.673-8.2 8.201-8.2S20.2 7.471 20.2 12c0 4.528-3.671 8.2-8.199 8.2z"/></symbol>
+    <symbol id="icon-instagram" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.055 1.97.24 2.43.4a4.9 4.9 0 0 1 1.78 1.16 4.9 4.9 0 0 1 1.16 1.78c.17.46.36 1.26.4 2.43.06 1.25.07 1.65.07 4.85s0 3.6-.07 4.85a7.3 7.3 0 0 1-.4 2.43 4.9 4.9 0 0 1-1.16 1.78 4.9 4.9 0 0 1-1.78 1.16c-.46.17-1.26.36-2.43.4-1.25.06-1.65.07-4.85.07s-3.6 0-4.85-.07a7.3 7.3 0 0 1-2.43-.4 4.9 4.9 0 0 1-1.78-1.16 4.9 4.9 0 0 1-1.16-1.78 7.3 7.3 0 0 1-.4-2.43C2.21 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.055-1.17.24-1.97.4-2.43a4.9 4.9 0 0 1 1.16-1.78A4.9 4.9 0 0 1 5.61 1.78c.46-.17 1.26-.36 2.43-.4C9.29 1.32 9.69 1.31 12 1.31zm0 1.98c-3.16 0-3.53 0-4.78.07-.96.045-1.48.2-1.82.34a3.05 3.05 0 0 0-1.13.73 3.05 3.05 0 0 0-.73 1.13c-.14.34-.3.86-.34 1.82-.06 1.25-.07 1.62-.07 4.78s0 3.53.07 4.78c.045.96.2 1.48.34 1.82.15.4.35.73.73 1.13.35.35.68.55 1.13.73.34.14.86.3 1.82.34 1.25.06 1.62.07 4.78.07s3.53 0 4.78-.07c.96-.045 1.48-.2 1.82-.34a3.05 3.05 0 0 0 1.13-.73c.35-.35.55-.68.73-1.13.14-.34.3-.86.34-1.82.06-1.25.07-1.62.07-4.78s0-3.53-.07-4.78c-.045-.96-.2-1.48-.34-1.82a3.05 3.05 0 0 0-.73-1.13 3.05 3.05 0 0 0-1.13-.73c-.34-.14-.86-.3-1.82-.34-1.25-.06-1.62-.07-4.78-.07z"/><path d="M12 6.87A5.13 5.13 0 1 0 12 17.13 5.13 5.13 0 0 0 12 6.87zm0 8.46a3.33 3.33 0 1 1 0-6.66 3.33 3.33 0 0 1 0 6.66z"/><circle cx="17.34" cy="6.66" r="1.2"/></symbol>
+    <symbol id="icon-facebook" viewBox="0 0 24 24"><path d="M13.5 21v-8.1h2.72l.41-3.16h-3.13V7.75c0-.91.25-1.53 1.56-1.53h1.67V3.4A22.4 22.4 0 0 0 14.3 3.2c-2.4 0-4.05 1.47-4.05 4.16v2.38H7.5v3.16h2.75V21h3.25z"/></symbol>
+    <symbol id="icon-tiktok" viewBox="0 0 24 24"><path d="M16.6 2h-3.2v13.1c0 1.5-1.2 2.7-2.7 2.7a2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.28 0 .55.04.8.12V9.3a6 6 0 0 0-.8-.05A5.9 5.9 0 0 0 4.8 15.15 5.9 5.9 0 0 0 10.7 21a5.9 5.9 0 0 0 5.9-5.85V8.4a8.1 8.1 0 0 0 4.6 1.43V6.6a4.9 4.9 0 0 1-4.6-4.6z"/></symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zM5 9h14v11H5V9z"/></symbol>
+    <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></symbol>
+    <symbol id="icon-phone" viewBox="0 0 24 24"><path d="M6.6 10.8c1.35 2.65 3.55 4.85 6.2 6.2l2.07-2.07a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.56.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.3 21 3 13.7 3 4.5a1 1 0 0 1 1-1h3.75a1 1 0 0 1 1 1c0 1.24.2 2.44.57 3.56a1 1 0 0 1-.25 1.02L6.6 10.8z"/></symbol>
+    <symbol id="icon-mail" viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v.01L12 13l8-6.99V6H4zm16 12V8.24l-7.4 6.47a1 1 0 0 1-1.2 0L4 8.24V18h16z"/></symbol>
+  </defs>
+</svg>
+
+<script src="js/config.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
