@@ -557,6 +557,17 @@
     initMobileNav();
     BookingFlow.init();
     initScrollReveal();
+
+    // El contenido (barra de apertura, servicios, etc.) se dibuja después
+    // de cargar config.json, así que si se entró con un #hash en la URL
+    // (p. ej. desde la tarjeta digital) hay que reubicar el scroll una vez
+    // que el layout final ya tiene su altura real.
+    if (window.location.hash) {
+      const target = document.querySelector(window.location.hash);
+      if (target) {
+        requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
+      }
+    }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
