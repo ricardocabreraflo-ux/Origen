@@ -11,3 +11,6 @@
   for = "/admin/*"
   [headers.values]
     X-Robots-Tag = "noindex"
+
+[functions."send-reminders"]
+  schedule = "*/15 * * * *"

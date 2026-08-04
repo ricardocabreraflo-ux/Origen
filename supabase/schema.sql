@@ -33,7 +33,10 @@ create table if not exists bookings (
   updated_at timestamptz not null default now(),
 
   -- id del evento en Google Calendar, para poder borrarlo si se cancela la cita
-  calendar_event_id text
+  calendar_event_id text,
+
+  -- cuándo se envió el recordatorio de WhatsApp (null = todavía no se manda)
+  reminder_sent_at timestamptz
 );
 
 -- Evita que dos citas activas (pendientes o confirmadas) ocupen el mismo
