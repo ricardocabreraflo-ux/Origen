@@ -20,16 +20,47 @@
     return cfg.services.find((s) => s.id === id);
   }
 
+  const shortName = cfg.shortName || cfg.name;
+
   /* ---------------------------------------------------------
      Render business info into the page
   --------------------------------------------------------- */
   function renderBrand() {
-    document.title = `${cfg.name} · Salón de Belleza`;
+    document.title = cfg.name;
+    if (cfg.logoImage) document.getElementById("logo-mark").src = cfg.logoImage;
     document.getElementById("logo-text").textContent = cfg.logoText || cfg.name;
+    if (cfg.logoSub) document.getElementById("logo-sub").textContent = cfg.logoSub;
     document.getElementById("hero-title").textContent = cfg.tagline;
     document.getElementById("about-name").textContent = cfg.name;
     document.getElementById("footer-name").textContent = cfg.name;
     document.getElementById("footer-year").textContent = new Date().getFullYear();
+  }
+
+  function renderAnnouncement() {
+    const bar = document.getElementById("announcement-bar");
+    if (!cfg.opening || !cfg.opening.show) return;
+    bar.innerHTML = `<strong>${cfg.opening.message}</strong> · ${cfg.opening.date} — <a href="#agenda">Agenda tu primera cita</a>`;
+    bar.classList.add("visible");
+  }
+
+  function renderFounder() {
+    if (cfg.founder) {
+      document.getElementById("founder-name").textContent = cfg.founder.name;
+      document.getElementById("founder-bio").textContent = cfg.founder.bio;
+    }
+    if (cfg.brandQuote) {
+      document.getElementById("brand-quote").textContent = `“${cfg.brandQuote}”`;
+    }
+  }
+
+  function renderGallery() {
+    const grid = document.getElementById("gallery-grid");
+    if (!grid || !cfg.galleryImages) return;
+    grid.innerHTML = cfg.galleryImages
+      .map(
+        (g) => `<div class="gallery-item"><img src="${g.src}" alt="${g.alt || ""}" loading="lazy" /></div>`
+      )
+      .join("");
   }
 
   function renderContact() {
@@ -64,7 +95,7 @@
   }
 
   function renderWhatsappButtons() {
-    const greeting = `Hola ${cfg.name}, me gustaría más información. 😊`;
+    const greeting = `Hola ${shortName}, me gustaría más información. 😊`;
     const link = whatsappLink(greeting);
     document.getElementById("hero-whatsapp").href = link;
     document.getElementById("floating-whatsapp").href = link;
@@ -122,7 +153,7 @@
 
   function buildBookingMessage(data, service) {
     return [
-      `Hola ${cfg.name}, quiero agendar una cita:`,
+      `Hola ${shortName}, quiero agendar una cita:`,
       ``,
       `Nombre: ${data.name}`,
       `Teléfono: ${data.phone}`,
@@ -183,8 +214,8 @@
       const toGCalDate = (d) =>
         d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
-      const title = `Cita: ${service ? service.name : "Servicio"} en ${cfg.name}`;
-      const details = `Cita agendada en ${cfg.name}.${data.notes ? " Notas: " + data.notes : ""}`;
+      const title = `Cita: ${service ? service.name : "Servicio"} en ${shortName}`;
+      const details = `Cita agendada en ${shortName}.${data.notes ? " Notas: " + data.notes : ""}`;
       const params = new URLSearchParams({
         action: "TEMPLATE",
         text: title,
@@ -203,6 +234,9 @@
   --------------------------------------------------------- */
   document.addEventListener("DOMContentLoaded", () => {
     renderBrand();
+    renderAnnouncement();
+    renderFounder();
+    renderGallery();
     renderContact();
     renderSocialLinks();
     renderWhatsappButtons();

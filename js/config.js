@@ -7,16 +7,34 @@
 
 const BUSINESS_CONFIG = {
   // Identidad
-  name: "Origen Brows",
+  name: "Origen Brows & Hair Studio",
+  shortName: "Origen Brows", // se usa en mensajes cortos (WhatsApp, etc.)
   tagline: "Diseño y arquitectura de cejas, pestañas y tratamientos capilares de alta gama",
-  logoText: "Origen Brows",
+  logoImage: "assets/logo-mark.jpg", // ícono "O" del logo
+  logoText: "Origen",
+  logoSub: "Brows & Hair Studio",
+
+  // Fundadora
+  founder: {
+    name: "Montserrat Lemus",
+    bio: "Especialista con más de 6 años de experiencia consolidada en el sector de la belleza.",
+  },
+  brandQuote:
+    "Origen Brows no nace solo como un estudio de cejas, sino como un santuario donde cada clienta vive una transformación que realza su esencia natural a través del detalle y la excelencia.",
+
+  // Aviso de apertura (déjalo en show: false para ocultar la barra una vez pasada la fecha)
+  opening: {
+    show: true,
+    message: "Gran apertura",
+    date: "8 de agosto de 2026",
+  },
 
   // Contacto
   // Número de WhatsApp en formato internacional, SOLO dígitos (sin +, espacios ni guiones)
   // Ejemplo México: 52XXXXXXXXXX | Ejemplo España: 34XXXXXXXXX | Ejemplo Colombia: 57XXXXXXXXXX
   whatsappNumber: "525566095405",
   phoneDisplay: "+52 55 6609 5405",
-  email: "contacto@origenbrows.com", // TODO: pon aquí el correo real del negocio
+  email: "origenbrowsmx@gmail.com",
 
   // Ubicación
   address: "Ote. 253 299-Loc B, Agrícola Oriental, Iztacalco, 08500 Ciudad de México, CDMX",
@@ -39,50 +57,63 @@ const BUSINESS_CONFIG = {
     whatsapp: "", // se genera automáticamente desde whatsappNumber si se deja vacío
   },
 
+  // Fotos reales para la sección Galería
+  galleryImages: [
+    { src: "assets/gallery-1.jpg", alt: "Origen Brows & Hair Studio" },
+    { src: "assets/gallery-2.jpg", alt: "Origen Brows & Hair Studio" },
+    { src: "assets/gallery-3.jpg", alt: "Origen Brows & Hair Studio" },
+  ],
+
   // Servicios que se muestran en la sección "Servicios" y en el selector de la cita
-  // duration está en minutos y se usa para calcular el evento de Google Calendar
-  // TODO: reemplaza "Consultar" por tus precios reales de cada servicio
+  // duration está en minutos (estimado) y se usa para calcular el evento de Google Calendar
   services: [
     {
-      id: "diseno-cejas",
-      name: "Diseño y Arquitectura de Cejas",
-      description: "Diseño personalizado con depilación en hilo de alta precisión.",
-      price: "Consultar",
+      id: "disenando-tu-origen",
+      name: "Diseñando tu ORIGEN",
+      description: "Solo diseño con visagismo + epilación con hilo.",
+      price: "$220 MXN",
       duration: 30,
     },
     {
-      id: "laminado-cejas",
-      name: "Laminado de Cejas",
-      description: "Fija y peina cada vello para lucir cejas más pobladas y definidas.",
-      price: "Consultar",
+      id: "brow-tint-shape",
+      name: "Brow Tint & Shape",
+      description: "Diseño + hilo + tinte híbrido (Élan/Bronsun).",
+      price: "$350 MXN",
       duration: 45,
     },
     {
-      id: "lifting-pestanas",
-      name: "Lifting de Pestañas (InLei)",
-      description: "Curvatura y levantamiento de pestañas naturales con productos InLei.",
-      price: "Consultar",
+      id: "korean-lash-lifting",
+      name: "Korean Lash Lifting",
+      description: "Levantamiento coreano + tinte negro + botox/keratina.",
+      price: "$550 MXN",
       duration: 60,
     },
     {
-      id: "extensiones-pestanas",
-      name: "Extensiones de Pestañas (Maxymova)",
-      description: "Aplicación pelo a pelo o volumen ruso con fibras de alta gama.",
-      price: "Consultar",
+      id: "luxury-brow-lamination",
+      name: "Luxury Brow Lamination",
+      description: "Diseño + hilo + laminado italiano + nutrición/botox.",
+      price: "$480 MXN",
+      duration: 60,
+    },
+    {
+      id: "luxury-lamination-tint",
+      name: "Luxury Lamination + Tint",
+      description: "Laminado completo + tinte híbrido + botox.",
+      price: "$580 MXN",
+      duration: 75,
+    },
+    {
+      id: "combo-full-look",
+      name: "Combo Full Look Origen",
+      description: "Luxury Brow Lamination + Korean Lash Lifting.",
+      price: "$980 MXN",
       duration: 120,
     },
     {
-      id: "botox-capilar",
-      name: "Botox Capilar",
-      description: "Tratamiento intensivo que restaura brillo, suavidad y salud al cabello.",
-      price: "Consultar",
-      duration: 90,
-    },
-    {
-      id: "keratina-capilar",
-      name: "Keratina Capilar",
-      description: "Alisado y nutrición profunda para un cabello sano y manejable.",
-      price: "Consultar",
+      id: "tratamientos-capilares",
+      name: "Tratamientos Capilares",
+      description: "Keratina premium o botox capilar. Precio sujeto a valoración previa.",
+      price: "Valoración previa",
       duration: 120,
     },
   ],

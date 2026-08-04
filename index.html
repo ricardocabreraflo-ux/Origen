@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Origen · Salón de Belleza</title>
-<meta name="description" content="Origen Brows: diseño de cejas, lifting y extensiones de pestañas, y tratamientos capilares. Agenda tu cita en línea por WhatsApp." />
+<title>Origen Brows & Hair Studio</title>
+<meta name="description" content="Origen Brows & Hair Studio: diseño de cejas, laminado, lifting de pestañas y tratamientos capilares en CDMX. Agenda tu cita en línea por WhatsApp." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -12,10 +12,19 @@
 </head>
 <body>
 
+<!-- BARRA DE APERTURA -->
+<div class="announcement-bar" id="announcement-bar"></div>
+
 <!-- HEADER -->
 <header class="site-header" id="header">
   <div class="container header-inner">
-    <a href="#inicio" class="logo" id="logo-text">Origen</a>
+    <a href="#inicio" class="logo">
+      <img src="assets/logo-mark.jpg" alt="" class="logo-mark" id="logo-mark" />
+      <span class="logo-wordmark">
+        <span class="logo-name" id="logo-text">Origen</span>
+        <span class="logo-sub" id="logo-sub">Brows &amp; Hair Studio</span>
+      </span>
+    </a>
 
     <nav class="main-nav" id="main-nav">
       <a href="#inicio">Inicio</a>
@@ -36,18 +45,22 @@
 
 <!-- HERO -->
 <section class="hero" id="inicio">
-  <div class="hero-overlay"></div>
-  <div class="container hero-content">
-    <p class="eyebrow">Bienvenida / Bienvenido</p>
-    <h1 id="hero-title">Belleza, cuidado y bienestar en un solo lugar</h1>
-    <p class="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
-    <div class="hero-actions">
-      <a href="#agenda" class="btn btn-primary">Agenda tu cita</a>
-      <a href="#" id="hero-whatsapp" class="btn btn-outline" target="_blank" rel="noopener">
-        <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
-        Escríbenos por WhatsApp
-      </a>
+  <div class="hero-text">
+    <div class="container hero-content">
+      <p class="eyebrow">Bienvenida / Bienvenido</p>
+      <h1 id="hero-title">Belleza, cuidado y bienestar en un solo lugar</h1>
+      <p class="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
+      <div class="hero-actions">
+        <a href="#agenda" class="btn btn-primary">Agenda tu cita</a>
+        <a href="#" id="hero-whatsapp" class="btn btn-outline" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+          Escríbenos por WhatsApp
+        </a>
+      </div>
     </div>
+  </div>
+  <div class="hero-media">
+    <img src="assets/founder-portrait.jpg" alt="Origen Brows & Hair Studio" />
   </div>
 </section>
 
@@ -65,12 +78,14 @@
 <!-- NOSOTROS -->
 <section class="section section-alt" id="nosotros">
   <div class="container about-grid">
-    <div class="about-image" aria-hidden="true"></div>
+    <div class="about-image">
+      <img src="assets/founder-portrait.jpg" alt="Montserrat Lemus, fundadora de Origen Brows & Hair Studio" loading="lazy" />
+    </div>
     <div class="about-text">
       <p class="section-eyebrow">Sobre nosotros</p>
       <h2 class="section-title">Un espacio pensado para ti</h2>
       <p>
-        <strong id="about-name">Origen Brows</strong> es un studio especializado en el diseño,
+        <strong id="about-name">Origen Brows &amp; Hair Studio</strong> es un studio especializado en el diseño,
         arquitectura y cuidado de tus cejas, pestañas y cabello. Trabajamos con atención
         exclusiva, personalizada y con cita previa en un ambiente privado.
       </p>
@@ -80,6 +95,11 @@
         <li>Tratamientos capilares: Botox y Keratinas para restaurar tu cabello</li>
         <li>Atención exclusiva con cita previa en ambiente privado</li>
       </ul>
+      <blockquote class="brand-quote" id="brand-quote"></blockquote>
+      <p class="founder-credit">
+        — <strong id="founder-name">Montserrat Lemus</strong>, fundadora ·
+        <span id="founder-bio">Especialista con más de 6 años de experiencia consolidada en el sector de la belleza.</span>
+      </p>
     </div>
   </div>
 </section>
@@ -89,14 +109,8 @@
   <div class="container">
     <p class="section-eyebrow">Galería</p>
     <h2 class="section-title">Nuestro trabajo</h2>
-    <p class="section-note">Reemplaza estos espacios por fotos reales de tu trabajo en la carpeta <code>/assets</code>.</p>
-    <div class="gallery-grid">
-      <div class="gallery-item ph-1"></div>
-      <div class="gallery-item ph-2"></div>
-      <div class="gallery-item ph-3"></div>
-      <div class="gallery-item ph-4"></div>
-      <div class="gallery-item ph-5"></div>
-      <div class="gallery-item ph-6"></div>
+    <div class="gallery-grid" id="gallery-grid">
+      <!-- generado por script.js -->
     </div>
   </div>
 </section>
