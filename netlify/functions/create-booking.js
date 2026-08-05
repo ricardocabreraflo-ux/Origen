@@ -2,6 +2,7 @@ const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
 const { slotsForDate, isTodayOrFuture, isWithinBookingWindow } = require("./_lib/slots");
 const { generateReservationCode } = require("./_lib/reservationCode");
+const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UNIQUE_VIOLATION = "23505";
@@ -98,6 +99,31 @@ exports.handler = async (event) => {
         };
       }
       throw error;
+    }
+
+    // Mejor esfuerzo: la reserva ya quedó hecha en la base de datos, así
+    // que un fallo al avisarte por WhatsApp no debe tumbar la reserva de
+    // la clienta. Requiere tener configurado WHATSAPP_ACCESS_TOKEN /
+    // WHATSAPP_PHONE_NUMBER_ID (ver netlify/functions/_lib/whatsapp.js).
+    const ownerPhone = config.booking && config.booking.ownerNotificationPhone;
+    if (ownerPhone) {
+      try {
+        await sendWhatsAppTemplate(ownerPhone, "nueva_cita_origen", "es_MX", [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: data.service_name },
+              { type: "text", text: data.customer_name },
+              { type: "text", text: data.customer_phone },
+              { type: "text", text: data.booking_date },
+              { type: "text", text: data.start_time.slice(0, 5) },
+              { type: "text", text: `$${data.deposit_amount} MXN` },
+            ],
+          },
+        ]);
+      } catch (notifyErr) {
+        console.error("No se pudo avisar por WhatsApp de la nueva cita", notifyErr);
+      }
     }
 
     return {

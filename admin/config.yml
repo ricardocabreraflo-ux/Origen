@@ -146,6 +146,7 @@ collections:
               - { label: "Colchón entre citas (minutos)", name: "bufferMinutes", widget: "number", value_type: "int" }
               - { label: "Minutos para confirmar el depósito antes de liberar el horario", name: "holdMinutes", widget: "number", value_type: "int" }
               - { label: "Con cuántos meses de anticipación se puede reservar", name: "maxAdvanceMonths", widget: "number", value_type: "int" }
+              - { label: "WhatsApp donde te llegan las notificaciones de citas nuevas", name: "ownerNotificationPhone", widget: "string", hint: "Número con código de país, ej. 525566095405. Puede ser distinto al WhatsApp del negocio." }
 
           - label: "Días festivos / cerrados"
             name: "closedDates"
