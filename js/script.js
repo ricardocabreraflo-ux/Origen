@@ -326,7 +326,7 @@
       els.slotStatus.textContent = "Buscando horarios disponibles…";
       els.slotStatus.classList.remove("is-error");
 
-      fetch(`/api/availability?date=${encodeURIComponent(date)}`)
+      fetch(`/api/availability?date=${encodeURIComponent(date)}&serviceId=${encodeURIComponent(state.service.id)}`)
         .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
         .then(({ ok, body }) => {
           if (!ok) throw new Error(body.message || "No se pudo cargar la disponibilidad.");
@@ -344,7 +344,7 @@
         els.slotStatus.textContent = "Cerrado ese día — elige otra fecha.";
         return;
       }
-      els.slotStatus.textContent = "Elige un horario (bloques de 2 horas):";
+      els.slotStatus.textContent = "Elige un horario disponible:";
       els.slotGrid.innerHTML = slots
         .map(
           (s, i) => `

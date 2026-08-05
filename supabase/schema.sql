@@ -39,13 +39,38 @@ create table if not exists bookings (
   reminder_sent_at timestamptz
 );
 
--- Evita que dos citas activas (pendientes o confirmadas) ocupen el mismo
--- horario. Esta es la garantía real contra doble-reserva: aunque dos
--- personas intenten reservar el mismo bloque al mismo tiempo, la segunda
--- inserción falla por violar este índice único.
-create unique index if not exists bookings_active_slot_unique
-  on bookings (booking_date, start_time)
-  where status in ('pending', 'confirmed');
+-- Rango de tiempo que ocupa realmente la cita: desde que empieza hasta que
+-- termina, más 15 minutos de colchón de limpieza. Como los servicios ya no
+-- duran todos lo mismo (antes eran bloques fijos de 2 horas para
+-- cualquier servicio), la protección contra traslapes ya no puede basarse
+-- en que el horario de inicio sea idéntico — ahora se compara el rango
+-- completo de cada cita.
+alter table bookings
+  add column if not exists occupied_range tsrange
+  generated always as (
+    tsrange(
+      (booking_date + start_time)::timestamp,
+      (booking_date + end_time)::timestamp + interval '15 minutes'
+    )
+  ) stored;
+
+-- Ya no aplica: el índice único por horario exacto no tiene sentido con
+-- duraciones variables (dos citas con distinta hora de inicio igual
+-- podrían traslaparse).
+drop index if exists bookings_active_slot_unique;
+
+create index if not exists bookings_occupied_range_idx on bookings using gist (occupied_range);
+
+-- Esta es la garantía real contra doble-reserva: Postgres rechaza
+-- cualquier inserción o actualización cuyo rango de tiempo se traslape
+-- con el de otra cita activa (pendiente o confirmada), sin importar que
+-- dos personas intenten reservar horarios distintos que se encimen al
+-- mismo tiempo.
+alter table bookings drop constraint if exists bookings_no_overlap;
+alter table bookings
+  add constraint bookings_no_overlap
+  exclude using gist (occupied_range with &&)
+  where (status in ('pending', 'confirmed'));
 
 create index if not exists bookings_date_idx on bookings (booking_date);
 create index if not exists bookings_status_idx on bookings (status);

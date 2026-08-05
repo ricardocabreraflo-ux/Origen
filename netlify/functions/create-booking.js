@@ -5,6 +5,7 @@ const { generateReservationCode } = require("./_lib/reservationCode");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UNIQUE_VIOLATION = "23505";
+const EXCLUSION_VIOLATION = "23P01"; // traslape detectado por la restricción de rango en Postgres
 
 function badRequest(message) {
   return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message }) };
@@ -39,10 +40,9 @@ exports.handler = async (event) => {
     const service = (config.services || []).find((s) => s.id === serviceId);
     if (!service) return badRequest("El servicio seleccionado no existe.");
 
-    const blockMinutes = (config.booking && config.booking.blockMinutes) || 120;
     const holdMinutes = (config.booking && config.booking.holdMinutes) || 30;
 
-    const grid = slotsForDate(date, config.businessHours, blockMinutes);
+    const grid = slotsForDate(date, config.businessHours, service.duration);
     const slot = grid.find((s) => s.startTime === startTime);
     if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
 
@@ -78,10 +78,12 @@ exports.handler = async (event) => {
     const { data, error } = await supabase.from("bookings").insert(row).select().single();
 
     if (error) {
-      // El índice único (booking_date, start_time) para citas activas es lo
-      // que de verdad evita que dos personas aparten el mismo horario a la
-      // vez, incluso si ambas solicitudes llegan al mismo tiempo.
-      if (error.code === UNIQUE_VIOLATION) {
+      // La restricción de exclusión sobre rangos de tiempo (ver
+      // supabase/schema.sql) es lo que de verdad evita que dos personas
+      // aparten horarios que se traslapen, incluso si ambas solicitudes
+      // llegan al mismo tiempo — sin importar que ahora los servicios
+      // duren distinto.
+      if (error.code === UNIQUE_VIOLATION || error.code === EXCLUSION_VIOLATION) {
         return {
           statusCode: 409,
           body: JSON.stringify({

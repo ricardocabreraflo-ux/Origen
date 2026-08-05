@@ -136,14 +136,14 @@ collections:
               - { label: "Nombre del servicio", name: "name", widget: "string" }
               - { label: "Qué incluye", name: "description", widget: "text" }
               - { label: "Precio", name: "price", widget: "string" }
-              - { label: "Duración estimada (minutos, solo informativa)", name: "duration", widget: "number", value_type: "int" }
+              - { label: "Duración real del servicio (minutos) — define cuánto tiempo se bloquea en la agenda", name: "duration", widget: "number", value_type: "int" }
               - { label: "Anticipo para reservar (MXN)", name: "depositAmount", widget: "number", value_type: "int" }
 
           - label: "Reservas"
             name: "booking"
             widget: "object"
             fields:
-              - { label: "Duración del bloque que se reserva (minutos)", name: "blockMinutes", widget: "number", value_type: "int" }
+              - { label: "Colchón entre citas (minutos)", name: "bufferMinutes", widget: "number", value_type: "int" }
               - { label: "Minutos para confirmar el depósito antes de liberar el horario", name: "holdMinutes", widget: "number", value_type: "int" }
 
           - label: "Datos para transferencia (anticipo)"

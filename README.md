@@ -10,8 +10,8 @@ horario queda bloqueado en definitiva en cuanto tú confirmas el depósito.
   testimonios, preguntas frecuentes, contacto)
 - **Agenda tu cita** en 4 pasos: servicio → fecha y horario → datos →
   confirmación
-- **Bloques de 2 horas** por cita; la disponibilidad se calcula sola y
-  nunca se traslapan dos citas
+- **Duración real por servicio** + 15 minutos de colchón de limpieza entre
+  citas; la disponibilidad se calcula sola y nunca se traslapan dos citas
 - **Anticipo por transferencia**: al reservar, el horario queda apartado
   por 30 minutos mientras se confirma el depósito
 - **Cero doble-reservas**: incluso si dos personas reservan el mismo

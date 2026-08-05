@@ -64,7 +64,7 @@
       "name": "Diseñando tu ORIGEN",
       "description": "Solo diseño con visagismo + epilación con hilo.",
       "price": "$220 MXN",
-      "duration": 30,
+      "duration": 40,
       "depositAmount": 200
     },
     {
@@ -72,7 +72,7 @@
       "name": "Brow Tint & Shape",
       "description": "Diseño + hilo + tinte híbrido (Élan/Bronsun).",
       "price": "$350 MXN",
-      "duration": 45,
+      "duration": 50,
       "depositAmount": 200
     },
     {
@@ -80,7 +80,7 @@
       "name": "Korean Lash Lifting",
       "description": "Levantamiento coreano + tinte negro + botox/keratina.",
       "price": "$550 MXN",
-      "duration": 60,
+      "duration": 75,
       "depositAmount": 200
     },
     {
@@ -88,7 +88,7 @@
       "name": "Luxury Brow Lamination",
       "description": "Diseño + hilo + laminado italiano + nutrición/botox.",
       "price": "$480 MXN",
-      "duration": 60,
+      "duration": 75,
       "depositAmount": 200
     },
     {
@@ -96,7 +96,7 @@
       "name": "Luxury Lamination + Tint",
       "description": "Laminado completo + tinte híbrido + botox.",
       "price": "$580 MXN",
-      "duration": 75,
+      "duration": 90,
       "depositAmount": 200
     },
     {
@@ -108,17 +108,25 @@
       "depositAmount": 300
     },
     {
-      "id": "tratamientos-capilares",
-      "name": "Tratamientos Capilares",
-      "description": "Keratina premium o botox capilar. Precio sujeto a valoración previa.",
+      "id": "botox-capilar",
+      "name": "Botox Capilar",
+      "description": "Tratamiento capilar restaurador. Precio sujeto a valoración previa.",
       "price": "Valoración previa",
       "duration": 120,
+      "depositAmount": 300
+    },
+    {
+      "id": "keratina-alisante",
+      "name": "Keratina Alisante",
+      "description": "Keratina premium alisante. Precio sujeto a valoración previa.",
+      "price": "Valoración previa",
+      "duration": 150,
       "depositAmount": 300
     }
   ],
 
   "booking": {
-    "blockMinutes": 120,
+    "bufferMinutes": 15,
     "holdMinutes": 30
   },
 
