@@ -330,7 +330,7 @@
         .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
         .then(({ ok, body }) => {
           if (!ok) throw new Error(body.message || "No se pudo cargar la disponibilidad.");
-          renderSlotGrid(body.slots || []);
+          renderSlotGrid(body.slots || [], body.closedReason);
         })
         .catch((err) => {
           els.slotStatus.textContent = err.message || "No se pudo cargar la disponibilidad. Intenta de nuevo.";
@@ -338,10 +338,12 @@
         });
     }
 
-    function renderSlotGrid(slots) {
+    function renderSlotGrid(slots, closedReason) {
       if (slots.length === 0) {
         els.slotGrid.innerHTML = "";
-        els.slotStatus.textContent = "Cerrado ese día — elige otra fecha.";
+        els.slotStatus.textContent = closedReason
+          ? `${closedReason} Elige otra fecha.`
+          : "Cerrado ese día — elige otra fecha.";
         return;
       }
       els.slotStatus.textContent = "Elige un horario disponible:";
@@ -507,6 +509,12 @@
 
       const today = new Date().toISOString().split("T")[0];
       els.dateInput.setAttribute("min", today);
+
+      const maxAdvanceMonths = (cfg.booking && cfg.booking.maxAdvanceMonths) || 2;
+      const maxDate = new Date();
+      maxDate.setMonth(maxDate.getMonth() + maxAdvanceMonths);
+      els.dateInput.setAttribute("max", maxDate.toISOString().split("T")[0]);
+
       els.dateInput.addEventListener("change", () => {
         state.date = els.dateInput.value;
         if (state.date) fetchAvailability(state.date);

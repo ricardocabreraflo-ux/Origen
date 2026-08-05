@@ -145,6 +145,15 @@ collections:
             fields:
               - { label: "Colchón entre citas (minutos)", name: "bufferMinutes", widget: "number", value_type: "int" }
               - { label: "Minutos para confirmar el depósito antes de liberar el horario", name: "holdMinutes", widget: "number", value_type: "int" }
+              - { label: "Con cuántos meses de anticipación se puede reservar", name: "maxAdvanceMonths", widget: "number", value_type: "int" }
+
+          - label: "Días festivos / cerrados"
+            name: "closedDates"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.label}}"
+            fields:
+              - { label: "Fecha (AAAA-MM-DD)", name: "date", widget: "string", hint: "Ejemplo: 2026-12-25" }
+              - { label: "Motivo (se muestra a las clientas)", name: "label", widget: "string", required: false, hint: "Ejemplo: Navidad" }
 
           - label: "Datos para transferencia (anticipo)"
             name: "bankTransfer"

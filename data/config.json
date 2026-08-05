@@ -127,8 +127,11 @@
 
   "booking": {
     "bufferMinutes": 15,
-    "holdMinutes": 30
+    "holdMinutes": 30,
+    "maxAdvanceMonths": 2
   },
+
+  "closedDates": [],
 
   "bankTransfer": {
     "bankName": "Pendiente por definir",

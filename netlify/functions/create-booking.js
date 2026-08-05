@@ -1,6 +1,6 @@
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
-const { slotsForDate, isTodayOrFuture } = require("./_lib/slots");
+const { slotsForDate, isTodayOrFuture, isWithinBookingWindow } = require("./_lib/slots");
 const { generateReservationCode } = require("./_lib/reservationCode");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -41,8 +41,13 @@ exports.handler = async (event) => {
     if (!service) return badRequest("El servicio seleccionado no existe.");
 
     const holdMinutes = (config.booking && config.booking.holdMinutes) || 30;
+    const maxAdvanceMonths = (config.booking && config.booking.maxAdvanceMonths) || 2;
 
-    const grid = slotsForDate(date, config.businessHours, service.duration);
+    if (!isWithinBookingWindow(date, maxAdvanceMonths)) {
+      return badRequest(`Solo se puede reservar con hasta ${maxAdvanceMonths} meses de anticipación.`);
+    }
+
+    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates);
     const slot = grid.find((s) => s.startTime === startTime);
     if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
 

@@ -24,13 +24,34 @@ function parseLocalDate(dateStr) {
   return new Date(y, m - 1, d);
 }
 
+/** Devuelve la entrada de closedDates que corresponde a dateStr, o null. */
+function findClosedDate(dateStr, closedDates) {
+  return (closedDates || []).find((c) => c.date === dateStr) || null;
+}
+
+/**
+ * true si dateStr cae dentro de la ventana de reservas permitida: desde hoy
+ * hasta `maxAdvanceMonths` meses adelante.
+ */
+function isWithinBookingWindow(dateStr, maxAdvanceMonths) {
+  const date = parseLocalDate(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const maxDate = new Date(today.getFullYear(), today.getMonth() + (maxAdvanceMonths || 2), today.getDate());
+  return date.getTime() <= maxDate.getTime();
+}
+
 /**
  * Devuelve los horarios candidatos (cada SLOT_STEP_MINUTES) donde un
  * servicio de `durationMinutes` cabría antes de la hora de cierre, según
  * el horario de negocio configurado. No considera todavía citas
- * existentes — eso se filtra aparte con `markAvailability`.
+ * existentes — eso se filtra aparte con `markAvailability`. Devuelve []
+ * si el negocio está cerrado ese día (fin de semana sin horario, o un
+ * día festivo marcado en `closedDates`).
  */
-function slotsForDate(dateStr, businessHours, durationMinutes) {
+function slotsForDate(dateStr, businessHours, durationMinutes, closedDates) {
+  if (findClosedDate(dateStr, closedDates)) return [];
+
   const date = parseLocalDate(dateStr);
   const dayKey = WEEKDAY_KEYS[date.getDay()];
   const dayHours = businessHours[dayKey];
@@ -81,6 +102,8 @@ module.exports = {
   slotsForDate,
   markAvailability,
   rangesOverlap,
+  findClosedDate,
+  isWithinBookingWindow,
   parseLocalDate,
   isTodayOrFuture,
   toMinutes,

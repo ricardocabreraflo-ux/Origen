@@ -1,6 +1,6 @@
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
-const { slotsForDate, markAvailability } = require("./_lib/slots");
+const { slotsForDate, markAvailability, isWithinBookingWindow, findClosedDate } = require("./_lib/slots");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -31,12 +31,32 @@ exports.handler = async (event) => {
     }
 
     const bufferMinutes = (config.booking && config.booking.bufferMinutes) || 15;
-    const grid = slotsForDate(date, config.businessHours, service.duration);
+    const maxAdvanceMonths = (config.booking && config.booking.maxAdvanceMonths) || 2;
+
+    if (!isWithinBookingWindow(date, maxAdvanceMonths)) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          date,
+          serviceId,
+          slots: [],
+          closedReason: `Solo se puede reservar con hasta ${maxAdvanceMonths} meses de anticipación.`,
+        }),
+      };
+    }
+
+    const closed = findClosedDate(date, config.closedDates);
+    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates);
 
     if (grid.length === 0) {
       return {
         statusCode: 200,
-        body: JSON.stringify({ date, serviceId, slots: [] }),
+        body: JSON.stringify({
+          date,
+          serviceId,
+          slots: [],
+          closedReason: closed ? closed.label || "Cerrado por día festivo." : undefined,
+        }),
       };
     }
 
