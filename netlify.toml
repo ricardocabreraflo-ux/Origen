@@ -7,6 +7,11 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+[[redirects]]
+  from = "/t"
+  to = "/tarjeta.html"
+  status = 200
+
 [[headers]]
   for = "/admin/*"
   [headers.values]
