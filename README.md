@@ -37,6 +37,70 @@ horario queda bloqueado en definitiva en cuanto tú confirmas el depósito.
   sistema — solo agregaría un paso de verificación automática donde hoy
   hay confirmación manual.
 
+## Rastreo de competencia en Instagram (opcional)
+
+Además del sitio y las citas, el repo incluye un módulo que vigila cuentas
+competidoras en Instagram, detecta cuándo un post se vuelve viral
+(comparado contra el histórico de esa misma cuenta, no contra números
+absolutos) y genera con IA un borrador de recreación adaptado a la voz de
+Origen — nunca una copia literal. Corre sobre el mismo stack del sitio
+(Netlify Functions programadas + Supabase), sin necesidad de un servidor
+aparte.
+
+**Por qué no hay scraping propio:** Instagram no ofrece una API pública
+para leer cuentas de terceros, así que la extracción de datos se delega a
+[Apify](https://apify.com) (actor "Instagram Scraper"), que asume el
+riesgo operativo de mantenerlo funcionando.
+
+### Cómo está construido
+
+```
+data/tracking-config.json              Hashtags semilla, umbrales de viralidad, brief de marca
+supabase/tracking_schema.sql            Tablas: competitors, competitor_posts, viral_alerts
+netlify/functions/
+  track-discover-competitors.js         [cron semanal] descubre cuentas candidatas por hashtag
+  track-pipeline.js                     [cron cada 6h] trae posts, detecta viralidad, genera
+                                         recreación con Claude y avisa por Telegram
+  track-competitors.js                  [admin] listar/agregar/activar/quitar competidores
+  track-alerts.js                       [admin] listar alertas y cambiar su estado
+  _lib/apify.js, telegram.js, anthropic.js, trackingConfig.js
+admin/competencia.html                  Panel: competidores + alertas con el borrador de recreación
+```
+
+### Configuración
+
+1. Corre también [`supabase/tracking_schema.sql`](supabase/tracking_schema.sql)
+   en el SQL Editor de Supabase (además de `schema.sql`).
+2. Crea una cuenta en [Apify](https://apify.com) y copia tu API token
+   (Settings → Integrations).
+3. Crea un bot de Telegram con [@BotFather](https://t.me/BotFather)
+   (`/newbot`) y copia el token. Escríbele algo al bot y usa
+   `https://api.telegram.org/bot<TOKEN>/getUpdates` para obtener tu
+   `chat_id`.
+4. Consigue una API key de [Anthropic](https://console.anthropic.com)
+   (Claude) para generar el análisis y el borrador de recreación.
+5. En **Site configuration → Environment variables** de Netlify agrega:
+   - `APIFY_TOKEN`
+   - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+   - `ANTHROPIC_API_KEY` (opcional `ANTHROPIC_MODEL`)
+6. Edita [`data/tracking-config.json`](data/tracking-config.json): ajusta
+   los `seedHashtags` a tu nicho real, agrega competidores conocidos en
+   `seedCompetitors` (recomendado para calibrar los umbrales más rápido
+   que esperar al descubrimiento automático puro) y el `brand` (tono,
+   público, prohibiciones) que usará el prompt de IA.
+7. Vuelve a desplegar el sitio para que tome las variables nuevas. Los
+   cron jobs (`track-discover-competitors` cada lunes, `track-pipeline`
+   cada 6 horas) quedan activos solos vía `netlify.toml`.
+8. Entra a `/admin/competencia.html` (mismo login que los otros paneles)
+   para aprobar competidores descubiertos y revisar las alertas.
+
+**Nota:** los multiplicadores de viralidad (`viralThresholds` en
+`tracking-config.json`) están calibrados como punto de partida (3.5x el
+promedio histórico de interacciones de la cuenta) — ajústalos con datos
+reales de las primeras semanas. La revisión humana del borrador de
+recreación antes de publicar no es opcional: protege tanto la calidad
+como la originalidad del contenido.
+
 ## Configuración inicial (una sola vez)
 
 ### 1. Crear el proyecto en Supabase

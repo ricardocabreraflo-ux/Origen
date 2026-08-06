@@ -19,3 +19,9 @@
 
 [functions."send-reminders"]
   schedule = "*/15 * * * *"
+
+[functions."track-pipeline"]
+  schedule = "0 */6 * * *"
+
+[functions."track-discover-competitors"]
+  schedule = "0 9 * * 1"

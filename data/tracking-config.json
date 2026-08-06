@@ -1,0 +1,34 @@
+{
+  "seedHashtags": [
+    "cejasperfectas",
+    "cejascdmx",
+    "laminadodecejas",
+    "browlamination",
+    "lashlifting",
+    "microblading",
+    "browsstudio",
+    "salondebellezacdmx"
+  ],
+
+  "seedCompetitors": [],
+
+  "viralThresholds": {
+    "engagementMultiplier": 3.5,
+    "minPostsForBaseline": 8,
+    "baselineWindow": 25
+  },
+
+  "fetch": {
+    "postsPerCompetitorPerRun": 12
+  },
+
+  "brand": {
+    "tone": "Cálido, cercano y profesional; cero groserías; sin promesas médicas exageradas (no somos clínica, somos estudio de belleza).",
+    "audience": "Mujeres 20-45 años en CDMX interesadas en cejas, pestañas y tratamientos capilares de alta gama.",
+    "prohibitions": [
+      "No copiar texto, guion ni elementos visuales del post original palabra por palabra",
+      "No prometer resultados médicos ni usar lenguaje clínico",
+      "No mencionar ni etiquetar a la cuenta competidora en el contenido final"
+    ]
+  }
+}
