@@ -1,0 +1,85 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Historia Instagram 2 — Inspiración de outfit</title>
+<style>
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-SemiBold.ttf'); font-weight: 600; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Bold.ttf'); font-weight: 700; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Italic.ttf'); font-weight: 400; font-style: italic; }
+@font-face { font-family: 'Archivo'; src: url('fonts/Archivo-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Archivo'; src: url('fonts/Archivo-SemiBold.ttf'); font-weight: 600; }
+
+:root {
+  --ink: #211b15; --bone: #f9f5ee; --camel: #b9a37f; --camel-deep: #8a7350; --camel-pale: #efe6d6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { width:1080px; height:1920px; font-family:'Archivo'; background:var(--bone); }
+.frame { position:relative; width:1080px; height:1920px; overflow:hidden; background:var(--bone); }
+
+.brand-mark { position:absolute; top:150px; left:60px; display:flex; align-items:center; gap:18px; padding:8px 26px 8px 8px; border-radius:999px; background:rgba(33,27,21,0.08); }
+.badge { width:60px; height:60px; border-radius:50%; background:var(--bone); border:1px solid var(--camel); display:flex; align-items:center; justify-content:center; font-family:'Fraunces'; font-weight:700; font-size:34px; color:var(--camel-deep); box-shadow:0 6px 16px rgba(33,27,21,0.08); }
+.word { display:flex; flex-direction:column; gap:4px; }
+.word .l1 { font-family:'Fraunces'; font-weight:600; font-size:25px; letter-spacing:3px; color:var(--ink); }
+.word .l2 { font-family:'Archivo'; font-weight:400; font-size:15px; letter-spacing:4px; color:var(--camel-deep); }
+
+.photo { position:absolute; overflow:hidden; border-radius:4px; box-shadow:0 20px 44px rgba(33,27,21,0.12); }
+.photo img { width:100%; height:100%; object-fit:cover; display:block; }
+.tag { position:absolute; left:16px; bottom:14px; padding:6px 16px; border-radius:999px; background:rgba(249,245,238,0.92); font-family:'Archivo'; font-weight:700; font-size:13px; letter-spacing:2px; color:var(--ink); }
+.tag.dark { background:rgba(33,27,21,0.8); color:var(--bone); }
+
+.eyebrow { font-family:'Archivo'; font-weight:600; font-size:20px; letter-spacing:5px; color:var(--camel); }
+.headline { font-family:'Fraunces'; font-weight:600; font-size:60px; line-height:1.12; color:var(--ink); }
+.subtext { font-family:'Fraunces'; font-style:italic; font-weight:400; font-size:34px; line-height:1.35; color:var(--ink); }
+.label-tag { font-family:'Archivo'; font-weight:600; font-size:18px; letter-spacing:5px; color:var(--camel); }
+.value { font-family:'Fraunces'; font-weight:600; font-size:46px; color:var(--ink); }
+.hairline { height:1px; background:var(--camel); }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <div class="brand-mark">
+    <div class="badge">O</div>
+    <div class="word"><span class="l1">ORIGEN BROWS</span><span class="l2">&amp; HAIR STUDIO</span></div>
+  </div>
+
+  <!-- Collage: 1 foto real grande + 3 fotos de stock en fila -->
+  <div class="photo" style="left:60px; top:270px; width:960px; height:520px;">
+    <img src="assets/real-outfit.jpg" style="object-position:50% 15%;">
+    <div class="tag">FOTO REAL · ORIGEN</div>
+  </div>
+
+  <div class="photo" style="left:60px; top:810px; width:306px; height:360px;">
+    <img src="assets/stock-beige.jpg">
+    <div class="tag dark">BEIGE TOTAL</div>
+  </div>
+  <div class="photo" style="left:387px; top:810px; width:306px; height:360px;">
+    <img src="assets/stock-white.jpg">
+    <div class="tag dark">BLANCO SASTRE</div>
+  </div>
+  <div class="photo" style="left:714px; top:810px; width:306px; height:360px;">
+    <img src="assets/stock-cream.jpg">
+    <div class="tag dark">VESTIDO CREMA</div>
+  </div>
+
+  <!-- Texto principal -->
+  <div style="position:absolute; left:60px; top:1230px; right:60px;">
+    <div class="headline">Inspiración para<br>tu outfit 🤍</div>
+  </div>
+
+  <div style="position:absolute; left:60px; top:1400px; right:60px;">
+    <div class="subtext">Queremos que seas parte del<br>nuevo comienzo de Origen Brows.</div>
+  </div>
+
+  <!-- Separador dorado -->
+  <div class="hairline" style="position:absolute; left:60px; right:60px; top:1500px;"></div>
+
+  <!-- Bloque de evento -->
+  <div style="position:absolute; left:60px; top:1534px;">
+    <div class="label-tag" style="margin-bottom:8px;">CITA</div>
+    <div class="value" style="margin-bottom:22px;">Sábado 8 de Agosto · 5:00 PM</div>
+    <div class="label-tag" style="margin-bottom:8px;">DRESS CODE</div>
+    <div class="value">Tonos neutros / claros</div>
+  </div>
+
+</div>
+</body></html>
