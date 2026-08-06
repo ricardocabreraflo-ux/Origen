@@ -4,6 +4,7 @@ import { CountdownReminder, COUNTDOWN_DURATION } from "./scenes/CountdownReminde
 import { CountdownCollage, COLLAGE_DURATION } from "./scenes/CountdownCollage";
 import { CountdownSequence, COUNTDOWN_SEQ_DURATION } from "./scenes/CountdownSequence";
 import { CountdownHero, COUNTDOWN_HERO_DURATION } from "./scenes/CountdownHero";
+import { WebInspirationCollage, WEB_COLLAGE_DURATION } from "./scenes/WebInspirationCollage";
 
 export const OutfitReelComposition = () => {
   return (
@@ -63,6 +64,19 @@ export const CountdownHeroComposition = () => {
       id="CountdownHero"
       component={CountdownHero}
       durationInFrames={COUNTDOWN_HERO_DURATION}
+      fps={30}
+      width={1080}
+      height={1920}
+    />
+  );
+};
+
+export const WebInspirationCollageComposition = () => {
+  return (
+    <Composition
+      id="WebInspirationCollage"
+      component={WebInspirationCollage}
+      durationInFrames={WEB_COLLAGE_DURATION}
       fps={30}
       width={1080}
       height={1920}
