@@ -1,0 +1,144 @@
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Light.ttf'); font-weight: 300; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-SemiBold.ttf'); font-weight: 600; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Bold.ttf'); font-weight: 700; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Italic.ttf'); font-weight: 400; font-style: italic; }
+@font-face { font-family: 'Archivo'; src: url('fonts/Archivo-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Archivo'; src: url('fonts/Archivo-SemiBold.ttf'); font-weight: 600; }
+@font-face { font-family: 'Archivo'; src: url('fonts/Archivo-Bold.ttf'); font-weight: 700; }
+
+:root {
+  --ink: #211b15;
+  --bone: #f9f5ee;
+  --camel: #b9a37f;
+  --camel-deep: #8a7350;
+  --camel-pale: #efe6d6;
+  --white: #ffffff;
+  --safe-top: 150px;
+  --safe-bottom: 170px;
+  --safe-side: 60px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 1080px;
+  height: 1920px;
+}
+
+body {
+  font-family: 'Archivo', sans-serif;
+  color: var(--ink);
+  background: var(--bone);
+  overflow: hidden;
+}
+
+.frame {
+  position: relative;
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+}
+
+.bg-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scrim-bottom {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 980px;
+  background: linear-gradient(to bottom, rgba(33,27,21,0) 0%, rgba(33,27,21,0.92) 58%, rgba(33,27,21,0.92) 100%);
+}
+
+.scrim-top {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 420px;
+  background: linear-gradient(to bottom, rgba(33,27,21,0.55) 0%, rgba(33,27,21,0) 100%);
+}
+
+.brand-mark {
+  position: absolute;
+  top: var(--safe-top);
+  left: var(--safe-side);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 26px 8px 8px;
+  border-radius: 999px;
+  background: rgba(33,27,21,0.36);
+}
+.brand-mark.on-light { background: rgba(33,27,21,0.08); }
+.brand-mark .badge {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--bone);
+  border: 1px solid var(--camel);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces'; font-weight: 700; font-size: 34px; color: var(--camel-deep);
+}
+.brand-mark .word { display: flex; flex-direction: column; gap: 4px; }
+.brand-mark .word .line1 { font-family: 'Fraunces'; font-weight: 600; font-size: 25px; letter-spacing: 3px; color: var(--bone); }
+.brand-mark .word .line2 { font-family: 'Archivo'; font-weight: 400; font-size: 15px; letter-spacing: 4px; color: var(--camel-pale); }
+.brand-mark.on-light .word .line1 { color: var(--ink); }
+.brand-mark.on-light .word .line2 { color: var(--camel-deep); }
+
+.eyebrow {
+  font-family: 'Archivo'; font-weight: 600; font-size: 20px; letter-spacing: 5px; color: var(--camel);
+}
+
+.headline {
+  font-family: 'Fraunces'; font-weight: 600; font-size: 64px; line-height: 1.12; color: var(--ink);
+}
+.headline.on-dark { color: var(--bone); }
+
+.subtext {
+  font-family: 'Archivo'; font-weight: 400; font-size: 30px; line-height: 1.45; color: var(--ink);
+}
+.subtext.on-dark { color: var(--camel-pale); }
+
+.quote-text {
+  font-family: 'Fraunces'; font-style: italic; font-weight: 400; font-size: 36px; line-height: 1.35; color: var(--ink);
+}
+.quote-text.on-dark { color: var(--bone); }
+
+.cta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 26px 44px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bone);
+  font-family: 'Archivo'; font-weight: 600; font-size: 26px; letter-spacing: 1px;
+}
+.cta-pill.light {
+  background: var(--bone);
+  color: var(--ink);
+  border: 1px solid var(--camel);
+}
+
+.hairline { height: 1px; background: var(--camel); }
+
+.label-tag {
+  font-family: 'Archivo'; font-weight: 600; font-size: 18px; letter-spacing: 5px; color: var(--camel);
+}
+
+.example-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px dashed var(--camel-deep);
+  font-family: 'Archivo'; font-weight: 700; font-size: 15px; letter-spacing: 2px; color: var(--camel-deep);
+  background: rgba(185,163,127,0.12);
+}
+
+.arch {
+  position: absolute;
+}
