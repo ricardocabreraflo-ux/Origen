@@ -3,7 +3,7 @@
 ========================================================= */
 :root {
   --color-primary: #1c1916;
-  --color-primary-dark: #000000;
+  --color-primary-dark: #14110e;
   --color-accent: #c3b39f;
   --color-accent-dark: #a68f72;
   --color-cream: #f6f2ec;
@@ -518,9 +518,9 @@ img { max-width: 100%; display: block; }
 
 /* Paso 3: datos del cliente */
 .booking-summary {
-  background: var(--color-cream-soft);
-  border-radius: 12px;
-  padding: 18px 20px;
+  border-top: 1px solid rgba(33,29,25,0.14);
+  border-bottom: 1px solid rgba(33,29,25,0.14);
+  padding: 18px 0;
   margin-bottom: 24px;
   font-size: 0.9rem;
   color: var(--color-dark);
@@ -581,9 +581,9 @@ img { max-width: 100%; display: block; }
 .confirmation-timer strong { color: var(--color-accent-dark); }
 
 .transfer-details {
-  background: var(--color-cream-soft);
-  border-radius: 12px;
-  padding: 22px 24px;
+  border-top: 1px solid rgba(33,29,25,0.14);
+  border-bottom: 1px solid rgba(33,29,25,0.14);
+  padding: 20px 0;
   margin: 20px 0;
 }
 .transfer-row {
@@ -777,12 +777,19 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 10px 26px rgba(37, 211, 102, 0.45);
   z-index: 200;
   transition: transform var(--transition);
-  animation: whatsapp-pulse 1.8s ease-out 3;
 }
-@keyframes whatsapp-pulse {
-  0% { box-shadow: 0 10px 26px rgba(37, 211, 102, 0.45), 0 0 0 0 rgba(37, 211, 102, 0.55); }
-  70% { box-shadow: 0 10px 26px rgba(37, 211, 102, 0.45), 0 0 0 16px rgba(37, 211, 102, 0); }
-  100% { box-shadow: 0 10px 26px rgba(37, 211, 102, 0.45), 0 0 0 0 rgba(37, 211, 102, 0); }
+.floating-whatsapp::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--color-whatsapp);
+  opacity: 0;
+  animation: whatsapp-ring 1.8s var(--ease-out) 3;
+}
+@keyframes whatsapp-ring {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
 .floating-whatsapp .icon { width: 30px; height: 30px; fill: var(--color-white); }
 
