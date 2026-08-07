@@ -123,6 +123,81 @@ img { max-width: 100%; display: block; }
 .announcement-bar a { text-decoration: underline; text-underline-offset: 3px; }
 
 /* =========================================================
+   VENTANA EMERGENTE DE PROMOCIÓN
+========================================================= */
+.promo-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(20, 17, 14, 0.55);
+  opacity: 0;
+  animation: promo-overlay-in 320ms ease forwards;
+}
+.promo-popup-overlay[hidden] { display: none; }
+@keyframes promo-overlay-in {
+  to { opacity: 1; }
+}
+.promo-popup {
+  position: relative;
+  max-width: 420px;
+  width: 100%;
+  background: var(--color-cream-soft);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(20, 17, 14, 0.35);
+  padding: 40px 36px;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.95);
+  animation: promo-card-in 380ms var(--ease-out) 80ms forwards;
+}
+@keyframes promo-card-in {
+  to { opacity: 1; transform: scale(1); }
+}
+.promo-popup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+.promo-popup-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-accent-dark);
+  margin-bottom: 10px;
+}
+.promo-popup-title {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  line-height: 1.25;
+  margin-bottom: 14px;
+  color: var(--color-primary);
+}
+.promo-popup-message {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+.promo-popup .btn { width: 100%; justify-content: center; }
+@media (hover: hover) and (pointer: fine) {
+  .promo-popup-close:hover { background: rgba(33, 29, 25, 0.08); color: var(--color-dark); }
+}
+
+/* =========================================================
    BUTTONS
 ========================================================= */
 .btn {
@@ -830,6 +905,7 @@ img { max-width: 100%; display: block; }
   .footer-inner .social-links a:hover { background: var(--color-accent); color: var(--color-primary); }
   .floating-whatsapp:hover { transform: scale(1.08); }
   .gallery-item:hover img { transform: scale(1.06); }
+  .contact-list a:hover { color: var(--color-dark); text-decoration: underline; text-underline-offset: 3px; }
 }
 
 /* =========================================================

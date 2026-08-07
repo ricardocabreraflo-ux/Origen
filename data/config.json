@@ -18,6 +18,14 @@
     "date": "8 de agosto de 2026"
   },
 
+  "promoPopup": {
+    "show": true,
+    "eyebrow": "Gran apertura",
+    "title": "15% de descuento en tu primera cita",
+    "message": "Por nuestra gran apertura, agenda tu primera cita y recibe 15% de descuento en cualquier servicio.",
+    "ctaLabel": "Agenda tu cita"
+  },
+
   "testimonials": [],
 
   "whatsappNumber": "525566095405",
@@ -26,6 +34,7 @@
 
   "address": "Ote. 253 299-Loc B, Agrícola Oriental, Iztacalco, 08500 Ciudad de México, CDMX",
   "mapEmbedUrl": "https://www.google.com/maps?q=Ote.+253+299-Loc+B%2C+Agr%C3%ADcola+Oriental%2C+Iztacalco%2C+08500+Ciudad+de+M%C3%A9xico%2C+CDMX&output=embed",
+  "mapsUrl": "https://maps.app.goo.gl/ZtdFQhjycvTQiRYC8?g_st=ic",
 
   "hours": [
     { "day": "Lunes", "time": "Cerrado" },
@@ -46,7 +55,7 @@
 
   "social": {
     "instagram": "https://www.instagram.com/origen.brows",
-    "facebook": "",
+    "facebook": "https://www.facebook.com/share/1J6xjM1VwE/?mibextid=wwXIfr",
     "tiktok": "https://www.tiktok.com/@origen.brows",
     "whatsapp": ""
   },

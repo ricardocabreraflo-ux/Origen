@@ -12,6 +12,17 @@
 <!-- BARRA DE APERTURA -->
 <div class="announcement-bar" id="announcement-bar"></div>
 
+<!-- VENTANA EMERGENTE DE PROMOCIÓN -->
+<div class="promo-popup-overlay" id="promo-popup-overlay" hidden>
+  <div class="promo-popup" role="dialog" aria-modal="true" aria-labelledby="promo-popup-title">
+    <button type="button" class="promo-popup-close" id="promo-popup-close" aria-label="Cerrar">&times;</button>
+    <p class="promo-popup-eyebrow" id="promo-popup-eyebrow"></p>
+    <h2 class="promo-popup-title" id="promo-popup-title"></h2>
+    <p class="promo-popup-message" id="promo-popup-message"></p>
+    <a href="#agenda" class="btn btn-primary" id="promo-popup-cta"></a>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header class="site-header" id="header">
   <div class="container header-inner">
@@ -252,7 +263,7 @@
       <ul class="contact-list">
         <li>
           <svg class="icon" viewBox="0 0 24 24"><use href="#icon-pin"/></svg>
-          <span id="contact-address">Av. Siempre Viva 123, Col. Centro, Ciudad</span>
+          <a id="contact-address" href="#" target="_blank" rel="noopener">Av. Siempre Viva 123, Col. Centro, Ciudad</a>
         </li>
         <li>
           <svg class="icon" viewBox="0 0 24 24"><use href="#icon-phone"/></svg>

@@ -32,13 +32,23 @@ collections:
           - { label: "Cita de marca (sección Sobre nosotros)", name: "brandQuote", widget: "text" }
           - { label: "Foto de la sección Sobre nosotros", name: "aboutImage", widget: "image" }
 
-          - label: "Aviso de apertura / promoción"
+          - label: "Aviso de apertura / promoción (barra superior)"
             name: "opening"
             widget: "object"
             fields:
               - { label: "Mostrar la barra de aviso", name: "show", widget: "boolean" }
               - { label: "Mensaje", name: "message", widget: "string" }
               - { label: "Fecha", name: "date", widget: "string" }
+
+          - label: "Ventana emergente de promoción"
+            name: "promoPopup"
+            widget: "object"
+            fields:
+              - { label: "Mostrar la ventana emergente", name: "show", widget: "boolean" }
+              - { label: "Etiqueta pequeña (arriba del título)", name: "eyebrow", widget: "string" }
+              - { label: "Título grande", name: "title", widget: "string" }
+              - { label: "Mensaje", name: "message", widget: "text" }
+              - { label: "Texto del botón", name: "ctaLabel", widget: "string" }
 
           - label: "Testimonios (déjalo vacío hasta tener reseñas reales)"
             name: "testimonials"
@@ -54,6 +64,7 @@ collections:
           - { label: "Correo de contacto", name: "email", widget: "string" }
           - { label: "Dirección", name: "address", widget: "string" }
           - { label: "Enlace del mapa embebido (Google Maps > Compartir > Insertar mapa)", name: "mapEmbedUrl", widget: "string" }
+          - { label: "Enlace a tu página de Google Maps (para el botón \"Ver en Maps\")", name: "mapsUrl", widget: "string", required: false }
 
           - label: "Horario (texto que se muestra en Contacto)"
             name: "hours"

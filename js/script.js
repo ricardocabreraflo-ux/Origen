@@ -56,6 +56,37 @@
     bar.classList.add("visible");
   }
 
+  function initPromoPopup() {
+    const promo = cfg.promoPopup;
+    if (!promo || !promo.show) return;
+    if (localStorage.getItem("promoPopupSeen")) return;
+
+    const overlay = document.getElementById("promo-popup-overlay");
+    document.getElementById("promo-popup-eyebrow").textContent = promo.eyebrow || "";
+    document.getElementById("promo-popup-title").textContent = promo.title || "";
+    document.getElementById("promo-popup-message").textContent = promo.message || "";
+    const cta = document.getElementById("promo-popup-cta");
+    cta.textContent = promo.ctaLabel || "Agenda tu cita";
+
+    function dismiss() {
+      overlay.hidden = true;
+      localStorage.setItem("promoPopupSeen", "1");
+    }
+
+    document.getElementById("promo-popup-close").addEventListener("click", dismiss);
+    cta.addEventListener("click", dismiss);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) dismiss();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !overlay.hidden) dismiss();
+    });
+
+    setTimeout(() => {
+      overlay.hidden = false;
+    }, 1000);
+  }
+
   function renderFounder() {
     if (cfg.founder) {
       document.getElementById("founder-name").textContent = cfg.founder.name;
@@ -78,7 +109,9 @@
   }
 
   function renderContact() {
-    document.getElementById("contact-address").textContent = cfg.address;
+    const addressLink = document.getElementById("contact-address");
+    addressLink.textContent = cfg.address;
+    if (cfg.mapsUrl) addressLink.href = cfg.mapsUrl;
     document.getElementById("contact-phone").textContent = cfg.phoneDisplay;
     document.getElementById("contact-email").textContent = cfg.email;
     document.getElementById("map-iframe").src = cfg.mapEmbedUrl;
@@ -553,6 +586,7 @@
     cfg = data;
     renderBrand();
     renderAnnouncement();
+    initPromoPopup();
     renderFounder();
     renderGallery();
     renderContact();
