@@ -145,6 +145,12 @@
       "skillPath": "skills/review-animations/SKILL.md",
       "computedHash": "b9f669af5ae280c19a592a94611520335a81de25c88f225bf60ae4b2d66c8c7c"
     },
+    "screen-reader-testing": {
+      "source": "rmyndharis/antigravity-skills",
+      "sourceType": "github",
+      "skillPath": "skills/screen-reader-testing/SKILL.md",
+      "computedHash": "c081fccfbbeaef61001f96056be919954554c3d9a474f4ae0738be22c81a7da5"
+    },
     "skill-creator": {
       "source": "anthropics/skills",
       "sourceType": "github",
