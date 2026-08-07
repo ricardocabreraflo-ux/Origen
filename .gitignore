@@ -2,3 +2,4 @@ node_modules/
 .netlify/
 .env
 .env.local
+tests/output/
