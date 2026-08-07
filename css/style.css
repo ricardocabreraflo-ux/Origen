@@ -19,7 +19,7 @@
 ========================================================= */
 :root {
   --color-primary: #211b15;
-  --color-primary-dark: #000000;
+  --color-primary-dark: #14110e;
   --color-accent: #b9a37f;
   --color-accent-dark: #8a7350;
   --color-cream: #f9f5ee;
@@ -110,7 +110,15 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.5px;
   padding: 10px 20px;
 }
-.announcement-bar.visible { display: block; }
+.announcement-bar.visible {
+  display: block;
+  opacity: 0;
+  transform: translateY(-100%);
+  animation: bar-drop-in 420ms var(--ease-out) forwards;
+}
+@keyframes bar-drop-in {
+  to { opacity: 1; transform: translateY(0); }
+}
 .announcement-bar strong { color: var(--color-accent); }
 .announcement-bar a { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -240,6 +248,12 @@ img { max-width: 100%; display: block; }
   height: 100%;
   object-fit: cover;
   object-position: top center;
+  opacity: 0;
+  animation: hero-media-in 900ms var(--ease-out) 120ms forwards;
+}
+@keyframes hero-media-in {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: scale(1); }
 }
 .hero-media::before {
   content: "";
@@ -247,6 +261,19 @@ img { max-width: 100%; display: block; }
   inset: 0;
   background: linear-gradient(90deg, var(--color-primary) 0%, transparent 18%);
 }
+/* Entrada del hero en cascada al cargar la página */
+.hero .eyebrow,
+.hero h1,
+.hero-subtitle,
+.hero-actions {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: reveal-fade-up 640ms var(--ease-out) forwards;
+}
+.hero .eyebrow { animation-delay: 80ms; }
+.hero h1 { animation-delay: 160ms; }
+.hero-subtitle { animation-delay: 260ms; }
+.hero-actions { animation-delay: 360ms; }
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -370,7 +397,7 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
   background: var(--color-cream);
 }
-.gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
 
 /* ---------------------------------------------------------
    Reserva por pasos
@@ -507,9 +534,9 @@ img { max-width: 100%; display: block; }
 
 /* Paso 3: datos del cliente */
 .booking-summary {
-  background: var(--color-cream-soft);
-  border-radius: 12px;
-  padding: 18px 20px;
+  border-top: 1px solid rgba(33,29,25,0.14);
+  border-bottom: 1px solid rgba(33,29,25,0.14);
+  padding: 18px 0;
   margin-bottom: 24px;
   font-size: 0.9rem;
   color: var(--color-dark);
@@ -570,9 +597,9 @@ img { max-width: 100%; display: block; }
 .confirmation-timer strong { color: var(--color-accent-dark); }
 
 .transfer-details {
-  background: var(--color-cream-soft);
-  border-radius: 12px;
-  padding: 22px 24px;
+  border-top: 1px solid rgba(33,29,25,0.14);
+  border-bottom: 1px solid rgba(33,29,25,0.14);
+  padding: 20px 0;
   margin: 20px 0;
 }
 .transfer-row {
@@ -767,6 +794,19 @@ img { max-width: 100%; display: block; }
   z-index: 200;
   transition: transform var(--transition);
 }
+.floating-whatsapp::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--color-whatsapp);
+  opacity: 0;
+  animation: whatsapp-ring 1.8s var(--ease-out) 3;
+}
+@keyframes whatsapp-ring {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
 .floating-whatsapp .icon { width: 30px; height: 30px; fill: var(--color-white); }
 
 /* =========================================================
@@ -789,6 +829,7 @@ img { max-width: 100%; display: block; }
   .social-links a:hover { background: var(--color-primary); color: var(--color-white); transform: translateY(-3px); }
   .footer-inner .social-links a:hover { background: var(--color-accent); color: var(--color-primary); }
   .floating-whatsapp:hover { transform: scale(1.08); }
+  .gallery-item:hover img { transform: scale(1.06); }
 }
 
 /* =========================================================
