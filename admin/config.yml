@@ -49,6 +49,7 @@ collections:
               - { label: "Título grande", name: "title", widget: "string" }
               - { label: "Mensaje", name: "message", widget: "text" }
               - { label: "Texto del botón", name: "ctaLabel", widget: "string" }
+              - { label: "Fecha de vencimiento (deja de mostrarse después de esta fecha)", name: "expiresOn", widget: "string", required: false, hint: "Formato AAAA-MM-DD, ejemplo 2026-08-31. Déjalo vacío para que no venza nunca." }
 
           - label: "Testimonios (déjalo vacío hasta tener reseñas reales)"
             name: "testimonials"

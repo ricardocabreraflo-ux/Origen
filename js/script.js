@@ -60,6 +60,8 @@
     const promo = cfg.promoPopup;
     if (!promo || !promo.show) return;
     if (localStorage.getItem("promoPopupSeen")) return;
+    const today = new Date().toISOString().split("T")[0];
+    if (promo.expiresOn && today > promo.expiresOn) return;
 
     const overlay = document.getElementById("promo-popup-overlay");
     document.getElementById("promo-popup-eyebrow").textContent = promo.eyebrow || "";
