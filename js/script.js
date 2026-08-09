@@ -630,4 +630,10 @@
         console.error("No se pudo cargar data/config.json", err);
       });
   });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
 })();
