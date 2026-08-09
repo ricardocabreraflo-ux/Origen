@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tarjeta de lealtad · Origen Brows &amp; Hair Studio</title>
+<meta name="description" content="Consulta cuántas visitas llevas en Origen Brows & Hair Studio y cuánto te falta para tu descuento de lealtad." />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .loyalty-wrap { max-width: 480px; margin: 0 auto; padding: 60px 24px 100px; text-align: center; }
+  .loyalty-card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px 32px; margin-top: 32px; }
+  .loyalty-form { display: flex; flex-direction: column; gap: 16px; }
+  .loyalty-form label { text-align: left; font-size: 0.88rem; font-weight: 600; color: var(--color-dark); }
+  .loyalty-form input {
+    font-family: var(--font-body);
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(33, 29, 25, 0.15);
+    font-size: 0.95rem;
+    background: var(--color-cream-soft);
+    color: var(--color-dark);
+  }
+  .loyalty-form input:focus { outline: none; border-color: var(--color-accent-dark); background: var(--color-white); }
+  .loyalty-result { margin-top: 28px; }
+  .loyalty-result[hidden] { display: none; }
+  .loyalty-stamps { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+  .loyalty-stamp {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent-dark);
+    font-size: 1rem;
+  }
+  .loyalty-stamp.is-filled { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
+  .loyalty-message { color: var(--color-dark); font-size: 1rem; margin-bottom: 4px; }
+  .loyalty-message.is-reward { font-family: var(--font-heading); font-size: 1.3rem; color: var(--color-primary); }
+  .loyalty-submessage { color: var(--color-muted); font-size: 0.9rem; }
+  .loyalty-hint { font-size: 0.85rem; color: var(--color-muted); min-height: 1.2em; margin-top: 12px; }
+  .loyalty-hint.is-error { color: #a13a2f; }
+</style>
+</head>
+<body>
+
+<div class="loyalty-wrap">
+  <p class="section-eyebrow" id="loyalty-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Tu tarjeta de lealtad</h1>
+  <p class="section-note" id="loyalty-explainer">
+    Cada 5 visitas confirmadas te ganas 20% de descuento en tu siguiente cita.
+    Escribe el teléfono con el que agendas para ver tu progreso.
+  </p>
+
+  <div class="loyalty-card">
+    <form class="loyalty-form" id="loyalty-form">
+      <label for="loyalty-phone">Tu teléfono</label>
+      <input type="tel" id="loyalty-phone" name="phone" required placeholder="Ej. 55 1234 5678" />
+      <button type="submit" class="btn btn-primary" id="loyalty-submit">Ver mi progreso</button>
+      <p class="loyalty-hint" id="loyalty-hint"></p>
+    </form>
+
+    <div class="loyalty-result" id="loyalty-result" hidden>
+      <div class="loyalty-stamps" id="loyalty-stamps"></div>
+      <p class="loyalty-message" id="loyalty-message"></p>
+      <p class="loyalty-submessage" id="loyalty-submessage"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  fetch("data/config.json")
+    .then((res) => res.json())
+    .then((cfg) => {
+      if (cfg.name) document.getElementById("loyalty-eyebrow").textContent = cfg.name;
+      if (cfg.loyalty) {
+        document.getElementById("loyalty-explainer").textContent =
+          `Cada ${cfg.loyalty.cycleSize} visitas confirmadas te ganas ${cfg.loyalty.discountPercent}% de descuento en tu siguiente cita. ` +
+          "Escribe el teléfono con el que agendas para ver tu progreso.";
+      }
+    })
+    .catch(() => {});
+
+  const form = document.getElementById("loyalty-form");
+  const phoneInput = document.getElementById("loyalty-phone");
+  const submitBtn = document.getElementById("loyalty-submit");
+  const hint = document.getElementById("loyalty-hint");
+  const result = document.getElementById("loyalty-result");
+  const stampsEl = document.getElementById("loyalty-stamps");
+  const messageEl = document.getElementById("loyalty-message");
+  const submessageEl = document.getElementById("loyalty-submessage");
+
+  function renderStamps(progress, cycleSize) {
+    stampsEl.innerHTML = "";
+    for (let i = 1; i <= cycleSize; i++) {
+      const stamp = document.createElement("span");
+      stamp.className = "loyalty-stamp" + (i <= progress ? " is-filled" : "");
+      stamp.textContent = i <= progress ? "✓" : "";
+      stampsEl.appendChild(stamp);
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    hint.textContent = "";
+    hint.classList.remove("is-error");
+    result.hidden = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Buscando…";
+
+    fetch(`/api/loyalty-status?phone=${encodeURIComponent(phoneInput.value)}`)
+      .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+      .then(({ ok, body }) => {
+        if (!ok) throw new Error(body.message || "No se pudo consultar tu progreso.");
+
+        renderStamps(body.progress, body.cycleSize);
+        messageEl.classList.toggle("is-reward", body.hasReward);
+
+        if (body.visits === 0) {
+          messageEl.textContent = "No encontramos citas confirmadas con este teléfono.";
+          submessageEl.textContent = "Verifica que sea el mismo número con el que agendas, o agenda tu primera cita.";
+        } else if (body.hasReward) {
+          messageEl.textContent = `¡Tienes ${body.discountPercent}% de descuento disponible!`;
+          submessageEl.textContent = "Muéstrale este mensaje a tu esteticista en tu próxima cita.";
+        } else {
+          messageEl.textContent = `Llevas ${body.progress} de ${body.cycleSize} visitas confirmadas.`;
+          submessageEl.textContent = `Te ${body.remaining === 1 ? "falta" : "faltan"} ${body.remaining} visita${body.remaining === 1 ? "" : "s"} más para tu ${body.discountPercent}% de descuento.`;
+        }
+
+        result.hidden = false;
+      })
+      .catch((err) => {
+        hint.textContent = err.message || "No se pudo consultar tu progreso. Intenta de nuevo.";
+        hint.classList.add("is-error");
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Ver mi progreso";
+      });
+  });
+})();
+</script>
+</body>
+</html>

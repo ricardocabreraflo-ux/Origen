@@ -152,6 +152,11 @@
 
   "closedDates": [],
 
+  "loyalty": {
+    "cycleSize": 5,
+    "discountPercent": 20
+  },
+
   "bankTransfer": {
     "bankName": "NU",
     "accountHolder": "Areli Serrano",

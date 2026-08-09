@@ -168,6 +168,13 @@ collections:
               - { label: "Fecha (AAAA-MM-DD)", name: "date", widget: "string", hint: "Ejemplo: 2026-12-25" }
               - { label: "Motivo (se muestra a las clientas)", name: "label", widget: "string", required: false, hint: "Ejemplo: Navidad" }
 
+          - label: "Tarjeta de lealtad"
+            name: "loyalty"
+            widget: "object"
+            fields:
+              - { label: "Cada cuántas visitas confirmadas se gana la recompensa", name: "cycleSize", widget: "number", value_type: "int" }
+              - { label: "Porcentaje de descuento al completar el ciclo", name: "discountPercent", widget: "number", value_type: "int" }
+
           - label: "Datos para transferencia (anticipo)"
             name: "bankTransfer"
             widget: "object"
