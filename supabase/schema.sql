@@ -36,7 +36,29 @@ create table if not exists bookings (
   calendar_event_id text,
 
   -- cuándo se envió el recordatorio de WhatsApp (null = todavía no se manda)
-  reminder_sent_at timestamptz
+  reminder_sent_at timestamptz,
+
+  -- true si esta cita se agendó usando el descuento de la tarjeta de
+  -- lealtad (la clienta ya completó su ciclo de visitas). Sirve para que
+  -- se vea marcada en el panel de citas y la administradora la revise
+  -- antes de confirmar el depósito.
+  reward_redemption boolean not null default false
+);
+
+-- Preferencia de cada clienta sobre cómo quiere que le avisemos (WhatsApp,
+-- correo, ambos o ninguno) cuando gana una recompensa de lealtad. La
+-- llave es su teléfono (últimos 10 dígitos, sin importar el formato con
+-- el que lo haya escrito).
+-- Por si la tabla bookings ya existía de antes de agregar esta columna.
+alter table bookings add column if not exists reward_redemption boolean not null default false;
+
+create table if not exists client_preferences (
+  phone text primary key,
+  email text,
+  notify_channel text not null default 'whatsapp'
+    check (notify_channel in ('whatsapp', 'email', 'both', 'none')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 -- Rango de tiempo que ocupa realmente la cita: desde que empieza hasta que
@@ -90,8 +112,15 @@ create trigger bookings_set_updated_at
   for each row
   execute function set_updated_at();
 
--- Seguridad: nadie puede leer ni escribir esta tabla directamente desde el
--- navegador. Todo el acceso pasa por las Netlify Functions, que usan la
--- Service Role Key (secreta, nunca expuesta al cliente) y por lo tanto se
--- saltan RLS. No se crean policies a propósito.
+drop trigger if exists client_preferences_set_updated_at on client_preferences;
+create trigger client_preferences_set_updated_at
+  before update on client_preferences
+  for each row
+  execute function set_updated_at();
+
+-- Seguridad: nadie puede leer ni escribir estas tablas directamente desde
+-- el navegador. Todo el acceso pasa por las Netlify Functions, que usan
+-- la Service Role Key (secreta, nunca expuesta al cliente) y por lo tanto
+-- se saltan RLS. No se crean policies a propósito.
 alter table bookings enable row level security;
+alter table client_preferences enable row level security;

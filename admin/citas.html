@@ -44,6 +44,7 @@
   <div class="admin-header">
     <h1>Citas</h1>
     <div class="row-actions">
+      <a class="btn btn-outline btn-sm" href="lealtad.html">Reporte de lealtad</a>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
       <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
     </div>
@@ -142,7 +143,7 @@
       .map(
         (b) => `
         <tr data-id="${b.id}">
-          <td>${b.reservation_code}</td>
+          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span></td>
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>

@@ -42,6 +42,22 @@
   .loyalty-submessage { color: var(--color-muted); font-size: 0.9rem; }
   .loyalty-hint { font-size: 0.85rem; color: var(--color-muted); min-height: 1.2em; margin-top: 12px; }
   .loyalty-hint.is-error { color: #a13a2f; }
+  .loyalty-pref { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(33,29,25,0.12); text-align: left; }
+  .loyalty-pref[hidden] { display: none; }
+  .loyalty-pref-summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 0.88rem; color: var(--color-muted); }
+  .loyalty-pref-summary button { background: none; border: none; color: var(--color-accent-dark); font-weight: 600; cursor: pointer; padding: 0; font-size: 0.85rem; }
+  .loyalty-pref-form { display: flex; flex-direction: column; gap: 14px; }
+  .loyalty-pref-form[hidden] { display: none; }
+  .loyalty-pref-form label { font-size: 0.85rem; font-weight: 600; color: var(--color-dark); }
+  .loyalty-pref-form select {
+    font-family: var(--font-body);
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(33, 29, 25, 0.15);
+    font-size: 0.95rem;
+    background: var(--color-cream-soft);
+    color: var(--color-dark);
+  }
 </style>
 </head>
 <body>
@@ -66,6 +82,27 @@
       <div class="loyalty-stamps" id="loyalty-stamps"></div>
       <p class="loyalty-message" id="loyalty-message"></p>
       <p class="loyalty-submessage" id="loyalty-submessage"></p>
+
+      <div class="loyalty-pref" id="loyalty-pref">
+        <div class="loyalty-pref-summary" id="loyalty-pref-summary" hidden>
+          <span id="loyalty-pref-text"></span>
+          <button type="button" id="loyalty-pref-edit">Cambiar</button>
+        </div>
+
+        <form class="loyalty-pref-form" id="loyalty-pref-form">
+          <label for="loyalty-channel">¿Cómo quieres que te avisemos cuando ganes tu recompensa?</label>
+          <select id="loyalty-channel" name="notifyChannel">
+            <option value="whatsapp">Por WhatsApp</option>
+            <option value="email">Por correo</option>
+            <option value="both">Por ambos</option>
+            <option value="none">No quiero avisos</option>
+          </select>
+          <label for="loyalty-email" id="loyalty-email-label">Tu correo</label>
+          <input type="email" id="loyalty-email" name="email" placeholder="tu@correo.com" />
+          <button type="submit" class="btn btn-outline" id="loyalty-pref-save">Guardar preferencia</button>
+          <p class="loyalty-hint" id="loyalty-pref-hint"></p>
+        </form>
+      </div>
     </div>
   </div>
 </div>
@@ -94,6 +131,80 @@
   const stampsEl = document.getElementById("loyalty-stamps");
   const messageEl = document.getElementById("loyalty-message");
   const submessageEl = document.getElementById("loyalty-submessage");
+
+  const prefSummary = document.getElementById("loyalty-pref-summary");
+  const prefText = document.getElementById("loyalty-pref-text");
+  const prefEditBtn = document.getElementById("loyalty-pref-edit");
+  const prefForm = document.getElementById("loyalty-pref-form");
+  const channelSelect = document.getElementById("loyalty-channel");
+  const emailInput = document.getElementById("loyalty-email");
+  const emailLabel = document.getElementById("loyalty-email-label");
+  const prefSaveBtn = document.getElementById("loyalty-pref-save");
+  const prefHint = document.getElementById("loyalty-pref-hint");
+
+  const CHANNEL_LABEL = { whatsapp: "WhatsApp", email: "correo", both: "WhatsApp y correo", none: "sin avisos" };
+
+  function updateEmailVisibility() {
+    const needsEmail = channelSelect.value === "email" || channelSelect.value === "both";
+    emailInput.hidden = !needsEmail;
+    emailLabel.hidden = !needsEmail;
+  }
+  channelSelect.addEventListener("change", updateEmailVisibility);
+
+  function showPrefForm(preference) {
+    prefSummary.hidden = true;
+    prefForm.hidden = false;
+    channelSelect.value = (preference && preference.notifyChannel) || "whatsapp";
+    emailInput.value = (preference && preference.email) || "";
+    updateEmailVisibility();
+  }
+
+  function showPrefSummary(preference) {
+    prefForm.hidden = true;
+    prefSummary.hidden = false;
+    prefText.textContent = `Te avisamos por ${CHANNEL_LABEL[preference.notifyChannel] || preference.notifyChannel}.`;
+  }
+
+  function renderPreference(preference) {
+    if (preference) {
+      showPrefSummary(preference);
+    } else {
+      showPrefForm(null);
+    }
+  }
+
+  prefEditBtn.addEventListener("click", () => showPrefForm(null));
+
+  prefForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    prefHint.textContent = "";
+    prefHint.classList.remove("is-error");
+    prefSaveBtn.disabled = true;
+    prefSaveBtn.textContent = "Guardando…";
+
+    fetch("/api/save-preference", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: phoneInput.value,
+        notifyChannel: channelSelect.value,
+        email: emailInput.value.trim(),
+      }),
+    })
+      .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+      .then(({ ok, body }) => {
+        if (!ok) throw new Error(body.message || "No se pudo guardar tu preferencia.");
+        showPrefSummary({ notifyChannel: channelSelect.value, email: emailInput.value.trim() });
+      })
+      .catch((err) => {
+        prefHint.textContent = err.message || "No se pudo guardar tu preferencia. Intenta de nuevo.";
+        prefHint.classList.add("is-error");
+      })
+      .finally(() => {
+        prefSaveBtn.disabled = false;
+        prefSaveBtn.textContent = "Guardar preferencia";
+      });
+  });
 
   function renderStamps(progress, cycleSize) {
     stampsEl.innerHTML = "";
@@ -132,6 +243,7 @@
           submessageEl.textContent = `Te ${body.remaining === 1 ? "falta" : "faltan"} ${body.remaining} visita${body.remaining === 1 ? "" : "s"} más para tu ${body.discountPercent}% de descuento.`;
         }
 
+        renderPreference(body.preference);
         result.hidden = false;
       })
       .catch((err) => {

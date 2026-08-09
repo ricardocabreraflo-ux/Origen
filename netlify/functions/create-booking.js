@@ -3,6 +3,7 @@ const { getServiceClient } = require("./_lib/supabase");
 const { slotsForDate, isTodayOrFuture, isWithinBookingWindow } = require("./_lib/slots");
 const { generateReservationCode } = require("./_lib/reservationCode");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
+const { getLoyaltyStatus } = require("./_lib/loyalty");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UNIQUE_VIOLATION = "23505";
@@ -65,6 +66,11 @@ exports.handler = async (event) => {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + holdMinutes * 60000);
 
+    // Si ya completó su ciclo de visitas, esta cita se marca como canje de
+    // lealtad para que se vea marcada en el panel y la administradora la
+    // revise antes de confirmar el depósito.
+    const loyaltyStatus = await getLoyaltyStatus(supabase, config.loyalty, customerPhone);
+
     const row = {
       reservation_code: generateReservationCode(date),
       service_id: service.id,
@@ -79,6 +85,7 @@ exports.handler = async (event) => {
       end_time: `${slot.endTime}:00`,
       status: "pending",
       expires_at: expiresAt.toISOString(),
+      reward_redemption: loyaltyStatus.hasReward,
     };
 
     const { data, error } = await supabase.from("bookings").insert(row).select().single();
@@ -124,6 +131,23 @@ exports.handler = async (event) => {
       } catch (notifyErr) {
         console.error("No se pudo avisar por WhatsApp de la nueva cita", notifyErr);
       }
+
+      if (data.reward_redemption) {
+        try {
+          await sendWhatsAppTemplate(ownerPhone, "canje_lealtad_origen", "es_MX", [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: data.customer_name },
+                { type: "text", text: data.booking_date },
+                { type: "text", text: data.start_time.slice(0, 5) },
+              ],
+            },
+          ]);
+        } catch (notifyErr) {
+          console.error("No se pudo avisar por WhatsApp del canje de lealtad", notifyErr);
+        }
+      }
     }
 
     return {
@@ -140,6 +164,8 @@ exports.handler = async (event) => {
         expiresAt: data.expires_at,
         bankTransfer: config.bankTransfer,
         whatsappNumber: config.whatsappNumber,
+        rewardRedemption: data.reward_redemption,
+        loyaltyDiscountPercent: loyaltyStatus.discountPercent,
       }),
     };
   } catch (err) {

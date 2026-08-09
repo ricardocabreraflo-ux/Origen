@@ -1,6 +1,9 @@
 const { getServiceClient } = require("./_lib/supabase");
 const { requireAdmin } = require("./_lib/requireAdmin");
 const { createCalendarEvent } = require("./_lib/googleCalendar");
+const { loadConfig } = require("./_lib/config");
+const { getLoyaltyStatus, last10 } = require("./_lib/loyalty");
+const { notifyClient } = require("./_lib/notify");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -79,6 +82,41 @@ exports.handler = async (event, context) => {
       updated.calendar_event_id = calendarEvent.id;
     } catch (calendarErr) {
       console.error("No se pudo crear el evento de Google Calendar", calendarErr);
+    }
+
+    // Mejor esfuerzo: revisa el estado de lealtad después de confirmar esta
+    // visita y avisa a la clienta si es su primera cita o si acaba de
+    // ganar su recompensa. Un fallo aquí no debe afectar la confirmación.
+    try {
+      const config = await loadConfig();
+      const status = await getLoyaltyStatus(supabase, config.loyalty, updated.customer_phone);
+
+      const { data: pref } = await supabase
+        .from("client_preferences")
+        .select("email, notify_channel")
+        .eq("phone", last10(updated.customer_phone))
+        .maybeSingle();
+
+      if (status.visits === 1) {
+        await notifyClient(pref, updated.customer_phone, {
+          whatsappTemplate: "bienvenida_lealtad_origen",
+          whatsappParams: [{ type: "text", text: updated.customer_name }],
+          emailSubject: "¡Bienvenida al programa de lealtad de Origen!",
+          emailHtml: `<p>Hola ${updated.customer_name}, esta es tu primera cita confirmada — a partir de ahora acumulas visitas para tu descuento de lealtad. Cada ${status.cycleSize} visitas confirmadas ganas ${status.discountPercent}% de descuento en tu siguiente cita.</p>`,
+        });
+      } else if (status.hasReward) {
+        await notifyClient(pref, updated.customer_phone, {
+          whatsappTemplate: "recompensa_lealtad_origen",
+          whatsappParams: [
+            { type: "text", text: updated.customer_name },
+            { type: "text", text: String(status.discountPercent) },
+          ],
+          emailSubject: "¡Ganaste tu descuento de lealtad!",
+          emailHtml: `<p>Hola ${updated.customer_name}, ¡completaste ${status.visits} visitas confirmadas! Tienes ${status.discountPercent}% de descuento disponible en tu próxima cita.</p>`,
+        });
+      }
+    } catch (loyaltyErr) {
+      console.error("No se pudo procesar el aviso de lealtad", loyaltyErr);
     }
 
     return { statusCode: 200, body: JSON.stringify({ booking: updated }) };

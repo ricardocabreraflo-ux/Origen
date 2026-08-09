@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lealtad · Origen Brows &amp; Hair Studio</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .admin-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 100px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .admin-header h1 { font-size: 1.8rem; margin: 0; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+  #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
+  #login-gate .btn { margin-top: 16px; }
+  table.loyalty-table { width: 100%; border-collapse: collapse; background: var(--color-white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .loyalty-table th, .loyalty-table td { padding: 14px 16px; text-align: left; font-size: 0.88rem; border-bottom: 1px solid rgba(33,29,25,0.08); vertical-align: top; }
+  .loyalty-table th { background: var(--color-cream); font-weight: 600; color: var(--color-dark); }
+  .reward-pill { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; background: #f0dcc0; color: #7a4a12; }
+  #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<div id="login-gate">
+  <p class="section-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Reporte de lealtad</h1>
+  <p class="section-note">Inicia sesión para ver el conteo de visitas de tus clientas.</p>
+  <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
+</div>
+
+<div class="admin-wrap" id="admin-wrap" hidden>
+  <div class="admin-header">
+    <h1>Reporte de lealtad</h1>
+    <div class="row-actions">
+      <a class="btn btn-outline btn-sm" href="citas.html">Ver citas</a>
+      <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
+      <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div id="loading-state">Cargando…</div>
+  <div id="empty-state" hidden>Todavía no hay citas confirmadas.</div>
+
+  <div class="table-scroll">
+    <table class="loyalty-table" id="loyalty-table" hidden>
+      <thead>
+        <tr>
+          <th>Clienta</th>
+          <th>Teléfono</th>
+          <th>Visitas confirmadas</th>
+          <th>Progreso del ciclo</th>
+          <th>Recompensa</th>
+          <th>Notificación preferida</th>
+        </tr>
+      </thead>
+      <tbody id="loyalty-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const CHANNEL_LABEL = { whatsapp: "WhatsApp", email: "Correo", both: "WhatsApp y correo", none: "Ninguna" };
+
+  const loginGate = document.getElementById("login-gate");
+  const adminWrap = document.getElementById("admin-wrap");
+  const loadingState = document.getElementById("loading-state");
+  const emptyState = document.getElementById("empty-state");
+  const table = document.getElementById("loyalty-table");
+  const tbody = document.getElementById("loyalty-tbody");
+
+  async function authHeaders() {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return {};
+    const token = await user.jwt();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  async function loadClients() {
+    loadingState.hidden = false;
+    table.hidden = true;
+    emptyState.hidden = true;
+
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-loyalty", { headers });
+    const body = await res.json();
+    loadingState.hidden = true;
+
+    if (!res.ok) {
+      emptyState.textContent = "No se pudo cargar el reporte.";
+      emptyState.hidden = false;
+      return;
+    }
+
+    const clients = body.clients || [];
+    if (clients.length === 0) {
+      emptyState.hidden = false;
+      return;
+    }
+
+    tbody.innerHTML = clients
+      .map(
+        (c) => `
+        <tr>
+          <td>${c.name}</td>
+          <td>${c.phone}</td>
+          <td>${c.visits}</td>
+          <td>${c.progress} de ${c.cycleSize}</td>
+          <td>${c.hasReward ? '<span class="reward-pill">🎁 Disponible</span>' : "—"}</td>
+          <td>${c.preference ? CHANNEL_LABEL[c.preference.notifyChannel] || c.preference.notifyChannel : "Sin definir"}</td>
+        </tr>`
+      )
+      .join("");
+
+    table.hidden = false;
+  }
+
+  document.getElementById("refresh-btn").addEventListener("click", loadClients);
+  document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
+  document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  function showAdmin() {
+    loginGate.hidden = true;
+    adminWrap.hidden = false;
+    loadClients();
+  }
+  function showLogin() {
+    loginGate.hidden = false;
+    adminWrap.hidden = true;
+  }
+
+  if (!window.netlifyIdentity) {
+    document.getElementById("login-btn").hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "form-hint is-error";
+    notice.textContent = "No se pudo cargar el inicio de sesión. Revisa tu conexión y recarga la página.";
+    loginGate.appendChild(notice);
+    return;
+  }
+
+  window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
+  window.netlifyIdentity.on("login", () => {
+    window.netlifyIdentity.close();
+    showAdmin();
+  });
+  window.netlifyIdentity.on("logout", showLogin);
+  window.netlifyIdentity.init();
+})();
+</script>
+</body>
+</html>

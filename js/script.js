@@ -307,6 +307,7 @@
         submitBtn: document.getElementById("booking-submit"),
         confirmationCode: document.getElementById("confirmation-code"),
         confirmationSummary: document.getElementById("confirmation-summary"),
+        confirmationLoyaltyNote: document.getElementById("confirmation-loyalty-note"),
         confirmationTimer: document.getElementById("confirmation-timer"),
         transferAmount: document.getElementById("transfer-amount"),
         transferBank: document.getElementById("transfer-bank"),
@@ -470,6 +471,13 @@
     function renderConfirmation(data) {
       els.confirmationCode.textContent = data.reservationCode;
       els.confirmationSummary.textContent = `${data.serviceName} · ${formatDateReadable(data.date)} · ${data.startTime} – ${data.endTime}`;
+
+      if (data.rewardRedemption) {
+        els.confirmationLoyaltyNote.textContent = `🎁 Estás usando tu ${data.loyaltyDiscountPercent}% de descuento de lealtad — lo confirmamos junto con tu depósito.`;
+        els.confirmationLoyaltyNote.hidden = false;
+      } else {
+        els.confirmationLoyaltyNote.hidden = true;
+      }
 
       els.transferAmount.textContent = formatMoney(data.depositAmount);
       els.transferBank.textContent = data.bankTransfer.bankName;
