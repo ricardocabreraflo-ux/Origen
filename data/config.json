@@ -132,6 +132,14 @@
       "price": "Valoración previa",
       "duration": 150,
       "depositAmount": 300
+    },
+    {
+      "id": "servicio-especial",
+      "name": "Servicio Especial",
+      "description": "Si ya conoces la trayectoria de nuestra CEO y necesitas agendar un servicio especial, ponte en contacto vía WhatsApp antes de reservar como servicio especial.",
+      "price": "Valoración previa",
+      "duration": 120,
+      "depositAmount": 200
     }
   ],
 
@@ -145,9 +153,9 @@
   "closedDates": [],
 
   "bankTransfer": {
-    "bankName": "Pendiente por definir",
-    "accountHolder": "Pendiente por definir",
-    "clabe": "Pendiente por definir",
+    "bankName": "NU",
+    "accountHolder": "Areli Serrano",
+    "clabe": "638180000117145784",
     "note": "Envía tu comprobante por WhatsApp para agilizar la confirmación."
   },
 
