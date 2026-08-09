@@ -157,6 +157,7 @@ exports.handler = async (event) => {
         serviceName: data.service_name,
         priceLabel: data.price_label,
         depositAmount: data.deposit_amount,
+        id: data.id,
         date: data.booking_date,
         startTime: data.start_time.slice(0, 5),
         endTime: data.end_time.slice(0, 5),

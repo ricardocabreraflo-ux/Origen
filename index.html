@@ -132,7 +132,9 @@
   <div class="container">
     <p class="section-eyebrow">Reserva en línea</p>
     <h2 class="section-title">Agenda tu cita</h2>
-    <p class="section-note">Elige tu servicio y horario, aparta con un anticipo por transferencia y tu cita queda confirmada en cuanto verificamos tu depósito.</p>
+    <p class="section-note">Elige tu servicio y horario, aparta con un anticipo por transferencia o tarjeta y tu cita queda confirmada en cuanto verificamos tu depósito.</p>
+
+    <div class="mp-return-banner" id="mp-return-banner" hidden></div>
 
     <div class="booking-card reveal">
       <ol class="booking-steps" id="booking-steps">
@@ -191,6 +193,14 @@
         <p class="section-note" id="confirmation-loyalty-note" hidden></p>
 
         <div class="confirmation-timer" id="confirmation-timer"></div>
+
+        <div class="pay-online-block" id="pay-online-block">
+          <button type="button" class="btn btn-primary" id="pay-online-btn">
+            Pagar anticipo con tarjeta
+          </button>
+          <p class="form-hint" id="pay-online-hint"></p>
+        </div>
+        <p class="section-note payment-divider">o si prefieres, transfiere tu anticipo manualmente:</p>
 
         <div class="transfer-details">
           <div class="transfer-row">

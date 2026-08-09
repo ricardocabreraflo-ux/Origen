@@ -703,6 +703,22 @@ img { max-width: 100%; display: block; }
 
 .confirmation-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px; }
 
+.pay-online-block { margin: 20px 0 0; }
+.pay-online-block .btn { width: 100%; }
+.payment-divider { text-align: center; margin: 16px 0 0; }
+
+.mp-return-banner {
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 0.92rem;
+  border: 1px solid rgba(33,29,25,0.14);
+}
+.mp-return-banner[hidden] { display: none; }
+.mp-return-banner.is-success { background: #d3ead8; color: #1f6b34; border-color: transparent; }
+.mp-return-banner.is-pending { background: #f4e3c1; color: #7a5b12; border-color: transparent; }
+.mp-return-banner.is-error { background: #f3ded9; color: #a13a2f; border-color: transparent; }
+
 /* Contact */
 .contact-grid {
   display: grid;

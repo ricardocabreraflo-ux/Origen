@@ -318,6 +318,9 @@
         confirmationWhatsapp: document.getElementById("confirmation-whatsapp"),
         confirmationCalendar: document.getElementById("confirmation-calendar"),
         bookingRestart: document.getElementById("booking-restart"),
+        payOnlineBtn: document.getElementById("pay-online-btn"),
+        payOnlineHint: document.getElementById("pay-online-hint"),
+        mpReturnBanner: document.getElementById("mp-return-banner"),
       };
     }
 
@@ -507,7 +510,64 @@
       });
       els.confirmationCalendar.href = `https://calendar.google.com/calendar/render?${calParams.toString()}`;
 
+      els.payOnlineHint.textContent = "";
+      els.payOnlineHint.classList.remove("is-error");
+      els.payOnlineBtn.disabled = false;
+      els.payOnlineBtn.textContent = "Pagar anticipo con tarjeta";
+
       startCountdown(data.expiresAt);
+    }
+
+    function payOnline() {
+      els.payOnlineBtn.disabled = true;
+      els.payOnlineBtn.textContent = "Preparando pago…";
+      els.payOnlineHint.textContent = "";
+      els.payOnlineHint.classList.remove("is-error");
+
+      fetch("/api/create-mp-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId: state.booking.id }),
+      })
+        .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+        .then(({ ok, body }) => {
+          if (!ok || !body.initPoint) throw new Error(body.message || "No se pudo iniciar el pago con tarjeta.");
+          window.location.href = body.initPoint;
+        })
+        .catch((err) => {
+          els.payOnlineHint.textContent = err.message || "No se pudo iniciar el pago con tarjeta. Intenta transferencia manual.";
+          els.payOnlineHint.classList.add("is-error");
+          els.payOnlineBtn.disabled = false;
+          els.payOnlineBtn.textContent = "Pagar anticipo con tarjeta";
+        });
+    }
+
+    function handleMpReturn() {
+      const params = new URLSearchParams(window.location.search);
+      const mp = params.get("mp");
+      if (!mp) return;
+
+      const codigo = params.get("codigo");
+      const codeSuffix = codigo ? ` (código ${codigo})` : "";
+      const MESSAGES = {
+        exito: { cls: "is-success", text: `Recibimos tu pago${codeSuffix}. Tu cita se confirmará automáticamente en unos momentos y te avisaremos por WhatsApp.` },
+        pendiente: { cls: "is-pending", text: `Tu pago${codeSuffix} está pendiente de aprobación. En cuanto se confirme, tu cita quedará agendada.` },
+        fallo: { cls: "is-error", text: `No se pudo completar tu pago${codeSuffix}. Puedes intentar de nuevo o transferir tu anticipo manualmente y enviarnos el comprobante por WhatsApp.` },
+      };
+      const info = MESSAGES[mp];
+      if (info) {
+        els.mpReturnBanner.textContent = `${info.text} (Toca para cerrar este aviso)`;
+        els.mpReturnBanner.className = `mp-return-banner ${info.cls}`;
+        els.mpReturnBanner.hidden = false;
+        els.mpReturnBanner.addEventListener("click", () => (els.mpReturnBanner.hidden = true), { once: true });
+        requestAnimationFrame(() => els.mpReturnBanner.scrollIntoView({ block: "start" }));
+      }
+
+      params.delete("mp");
+      params.delete("codigo");
+      const query = params.toString();
+      const cleanUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+      window.history.replaceState({}, "", cleanUrl);
     }
 
     function startCountdown(expiresAtIso) {
@@ -549,6 +609,7 @@
     function init() {
       cacheEls();
       renderServicePickGrid();
+      handleMpReturn();
 
       const today = new Date().toISOString().split("T")[0];
       els.dateInput.setAttribute("min", today);
@@ -568,6 +629,7 @@
       });
 
       els.form.addEventListener("submit", submitBooking);
+      els.payOnlineBtn.addEventListener("click", payOnline);
 
       els.copyClabe.addEventListener("click", () => {
         const clabe = els.transferClabe.textContent;

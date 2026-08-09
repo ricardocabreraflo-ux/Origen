@@ -143,7 +143,7 @@
       .map(
         (b) => `
         <tr data-id="${b.id}">
-          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}</td>
+          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${b.payment_method === "mercado_pago" ? '<br/><span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Pagado con tarjeta</span>' : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span></td>
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>

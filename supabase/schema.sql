@@ -52,6 +52,15 @@ create table if not exists bookings (
 -- Por si la tabla bookings ya existía de antes de agregar esta columna.
 alter table bookings add column if not exists reward_redemption boolean not null default false;
 
+-- Cómo se pagó el anticipo: por transferencia manual (confirmada a mano
+-- por la administradora) o con tarjeta a través de Mercado Pago
+-- (confirmada automáticamente por el webhook de pago). mp_payment_id y
+-- mp_preference_id solo se llenan cuando el pago fue con Mercado Pago.
+alter table bookings add column if not exists payment_method text not null default 'bank_transfer'
+  check (payment_method in ('bank_transfer', 'mercado_pago'));
+alter table bookings add column if not exists mp_payment_id text;
+alter table bookings add column if not exists mp_preference_id text;
+
 create table if not exists client_preferences (
   phone text primary key,
   email text,
