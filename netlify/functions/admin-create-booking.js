@@ -15,6 +15,7 @@ const { generateReservationCode } = require("./_lib/reservationCode");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
 const { getLoyaltyStatus } = require("./_lib/loyalty");
 const { runPostConfirmSideEffects } = require("./_lib/confirmBooking");
+const { parsePriceAmount } = require("./_lib/money");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UNIQUE_VIOLATION = "23505";
@@ -90,6 +91,7 @@ exports.handler = async (event, context) => {
       service_name: service.name,
       price_label: service.price,
       deposit_amount: service.depositAmount,
+      total_amount: parsePriceAmount(service.price),
       customer_name: customerName.trim(),
       customer_phone: customerPhone.trim(),
       notes: (notes || "").trim() || null,

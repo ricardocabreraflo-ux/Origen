@@ -151,3 +151,61 @@ create trigger client_preferences_set_updated_at
 -- se saltan RLS. No se crean policies a propósito.
 alter table bookings enable row level security;
 alter table client_preferences enable row level security;
+
+-- Monto real cobrado por la cita (no el anticipo). Para servicios de
+-- precio fijo se llena solo al crear la cita; para "Valoración previa"
+-- (Botox Capilar, Keratina Alisante, Servicio Especial) se llena a mano
+-- después, cuando ya se sabe cuánto se cobró. Sirve para los reportes de
+-- ingresos y el punto de equilibrio — sin este dato esas citas no se
+-- pueden contar como ingreso real.
+alter table bookings add column if not exists total_amount numeric;
+
+-- Gastos del negocio, para llevar control financiero y calcular el punto
+-- de equilibrio. Dos tipos:
+--   variable: un gasto puntual, con su fecha exacta (ej. compra de
+--     insumos el 12 de agosto).
+--   fixed: un gasto que se repite cada mes (ej. renta, luz, tu sueldo).
+--     Se captura una sola vez con su monto mensual y se cuenta
+--     automáticamente cada mes desde start_date hasta end_date (o hasta
+--     hoy si sigue activo) — no hay que volver a capturarlo.
+create table if not exists expenses (
+  id uuid primary key default gen_random_uuid(),
+  description text not null,
+  category text not null default 'otro'
+    check (category in ('renta', 'insumos', 'servicios', 'sueldo', 'marketing', 'mantenimiento', 'otro')),
+  amount numeric not null,
+  kind text not null default 'variable'
+    check (kind in ('variable', 'fixed')),
+
+  -- Para gastos variables: la fecha exacta del gasto.
+  expense_date date,
+
+  -- Para gastos fijos: desde cuándo aplica cada mes y, si ya no aplica
+  -- (lo editaste o lo diste de baja), hasta cuándo. active=false lo
+  -- excluye de los meses futuros pero conserva su historial en los
+  -- reportes de meses pasados.
+  start_date date,
+  end_date date,
+  active boolean not null default true,
+
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  check (
+    (kind = 'variable' and expense_date is not null and start_date is null and end_date is null)
+    or
+    (kind = 'fixed' and expense_date is null and start_date is not null)
+  )
+);
+
+create index if not exists expenses_kind_idx on expenses (kind);
+create index if not exists expenses_expense_date_idx on expenses (expense_date);
+
+drop trigger if exists expenses_set_updated_at on expenses;
+create trigger expenses_set_updated_at
+  before update on expenses
+  for each row
+  execute function set_updated_at();
+
+alter table expenses enable row level security;

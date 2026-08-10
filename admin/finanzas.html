@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Finanzas · Origen Brows &amp; Hair Studio</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .admin-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 100px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-header h1 { font-size: 1.8rem; margin: 0; }
+  #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
+  #login-gate .btn { margin-top: 16px; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+
+  .card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 24px; }
+  .card h2 { font-size: 1.1rem; margin: 0 0 6px; }
+  .card .section-note { margin: 0 0 16px; }
+
+  .breakeven-banner {
+    background: linear-gradient(135deg, #211b15, #3a3025); color: #fff;
+    border-radius: var(--radius); padding: 24px; margin-bottom: 24px;
+  }
+  .breakeven-banner .label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; margin: 0 0 6px; }
+  .breakeven-banner .headline { font-family: var(--font-heading); font-size: 1.9rem; margin: 0 0 4px; font-variant-numeric: tabular-nums; }
+  .breakeven-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-top: 18px; }
+  .breakeven-grid .item .num { font-size: 1.3rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .breakeven-grid .item .lbl { font-size: 0.78rem; opacity: 0.75; }
+
+  .salary-setup { text-align: center; padding: 20px; }
+
+  .expense-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .expense-form .full { grid-column: 1 / -1; }
+  .expense-form label { font-size: 0.85rem; font-weight: 600; color: var(--color-dark); display: block; margin-bottom: 4px; }
+  .expense-form select, .expense-form input, .expense-form textarea {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.15);
+    font-family: var(--font-body); background: var(--color-cream-soft);
+  }
+  .kind-toggle { display: flex; gap: 16px; font-weight: 400; font-size: 0.9rem; }
+  .kind-toggle label { display: flex; align-items: center; gap: 6px; font-weight: 400; margin: 0; }
+
+  table.expense-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .expense-table th, .expense-table td { padding: 10px 12px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid rgba(33,29,25,0.08); }
+  .expense-table th { color: var(--color-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .expense-table td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+  .expense-table tr.is-inactive { opacity: 0.5; }
+  .table-scroll { overflow-x: auto; }
+  .pill-inactive { background: #eee; color: #777; padding: 2px 10px; border-radius: 50px; font-size: 0.72rem; }
+
+  .ideas-list { display: flex; flex-direction: column; gap: 14px; }
+  .ideas-list .idea { display: flex; gap: 12px; }
+  .ideas-list .idea .n { font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-accent-dark); min-width: 22px; }
+  .ideas-list .idea p { margin: 0; font-size: 0.92rem; line-height: 1.55; }
+
+  #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
+</style>
+</head>
+<body>
+
+<div id="login-gate">
+  <p class="section-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Finanzas</h1>
+  <p class="section-note">Inicia sesión para ver tus gastos y tu punto de equilibrio.</p>
+  <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
+</div>
+
+<div class="admin-wrap" id="admin-wrap" hidden>
+  <div class="admin-header">
+    <h1>Finanzas</h1>
+    <div class="row-actions">
+      <a class="btn btn-outline btn-sm" href="citas.html">Ver citas</a>
+      <a class="btn btn-outline btn-sm" href="reportes.html">Reportes</a>
+      <a class="btn btn-outline btn-sm" href="lealtad.html">Reporte de lealtad</a>
+      <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div id="loading-state">Cargando…</div>
+
+  <div id="finanzas-content" hidden>
+    <div id="salary-setup-card" class="card" hidden>
+      <div class="salary-setup">
+        <h2>Configura tu sueldo objetivo</h2>
+        <p class="section-note">Para calcular tu punto de equilibrio necesitamos saber cuánto quieres ganar cada mes. Puedes cambiarlo después.</p>
+        <button class="btn btn-primary" id="seed-salary-btn">Empezar con $20,000 MXN/mes</button>
+      </div>
+    </div>
+
+    <div class="breakeven-banner" id="breakeven-banner" hidden>
+      <p class="label">Punto de equilibrio mensual</p>
+      <p class="headline" id="be-headline"></p>
+      <p style="margin:0;opacity:0.85;font-size:0.9rem;" id="be-sub"></p>
+      <div class="breakeven-grid" id="be-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Ideas para llegar a tu punto de equilibrio</h2>
+      <p class="section-note">Basadas en tus números actuales.</p>
+      <div class="ideas-list" id="ideas-list"></div>
+    </div>
+
+    <div class="card">
+      <h2>Agregar gasto</h2>
+      <p class="section-note">Un gasto fijo se captura una sola vez y se cuenta solo cada mes. Uno variable es puntual, con su fecha exacta.</p>
+      <form class="expense-form" id="expense-form">
+        <div class="full">
+          <label>Tipo de gasto</label>
+          <div class="kind-toggle">
+            <label><input type="radio" name="kind" value="fixed" checked /> Fijo (mensual, se repite)</label>
+            <label><input type="radio" name="kind" value="variable" /> Variable (un pago puntual)</label>
+          </div>
+        </div>
+        <div>
+          <label for="exp-description">Descripción</label>
+          <input type="text" id="exp-description" required placeholder="Ej. Renta del local" />
+        </div>
+        <div>
+          <label for="exp-category">Categoría</label>
+          <select id="exp-category">
+            <option value="renta">Renta</option>
+            <option value="insumos">Insumos</option>
+            <option value="servicios">Servicios (luz, agua, internet)</option>
+            <option value="sueldo">Sueldo</option>
+            <option value="marketing">Marketing</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label for="exp-amount">Monto (MXN)</label>
+          <input type="number" id="exp-amount" min="0" step="0.01" required />
+        </div>
+        <div id="exp-variable-date-field">
+          <label for="exp-date">Fecha del gasto</label>
+          <input type="date" id="exp-date" />
+        </div>
+        <div id="exp-fixed-start-field" hidden>
+          <label for="exp-start">Desde cuándo aplica</label>
+          <input type="date" id="exp-start" />
+        </div>
+        <div class="full">
+          <label for="exp-notes">Notas (opcional)</label>
+          <textarea id="exp-notes" rows="2"></textarea>
+        </div>
+        <div class="full">
+          <button type="submit" class="btn btn-primary" id="exp-submit">Guardar gasto</button>
+          <p class="form-hint" id="exp-hint"></p>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Gastos fijos</h2>
+      <div class="table-scroll">
+        <table class="expense-table" id="fixed-table">
+          <thead><tr><th>Descripción</th><th>Categoría</th><th class="numeric">Monto/mes</th><th>Desde</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="fixed-tbody"></tbody>
+        </table>
+      </div>
+      <p class="chart-empty" id="fixed-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Sin gastos fijos capturados.</p>
+    </div>
+
+    <div class="card">
+      <h2>Gastos variables</h2>
+      <div class="table-scroll">
+        <table class="expense-table" id="variable-table">
+          <thead><tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th class="numeric">Monto</th><th>Acciones</th></tr></thead>
+          <tbody id="variable-tbody"></tbody>
+        </table>
+      </div>
+      <p class="chart-empty" id="variable-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Sin gastos variables capturados.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const CATEGORY_LABEL = { renta: "Renta", insumos: "Insumos", servicios: "Servicios", sueldo: "Sueldo", marketing: "Marketing", mantenimiento: "Mantenimiento", otro: "Otro" };
+
+  const loginGate = document.getElementById("login-gate");
+  const adminWrap = document.getElementById("admin-wrap");
+  const loadingState = document.getElementById("loading-state");
+  const financeContent = document.getElementById("finanzas-content");
+
+  const expenseForm = document.getElementById("expense-form");
+  const expDescription = document.getElementById("exp-description");
+  const expCategory = document.getElementById("exp-category");
+  const expAmount = document.getElementById("exp-amount");
+  const expDate = document.getElementById("exp-date");
+  const expStart = document.getElementById("exp-start");
+  const expNotes = document.getElementById("exp-notes");
+  const expHint = document.getElementById("exp-hint");
+  const expSubmit = document.getElementById("exp-submit");
+  const variableDateField = document.getElementById("exp-variable-date-field");
+  const fixedStartField = document.getElementById("exp-fixed-start-field");
+
+  function fmtMoney(n) {
+    return "$" + Math.round(n).toLocaleString("es-MX");
+  }
+  function todayStr() {
+    return new Date().toISOString().split("T")[0];
+  }
+
+  async function authHeaders() {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return {};
+    const token = await user.jwt();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  expenseForm.querySelectorAll('input[name="kind"]').forEach((r) =>
+    r.addEventListener("change", () => {
+      const isFixed = expenseForm.querySelector('input[name="kind"]:checked').value === "fixed";
+      variableDateField.hidden = isFixed;
+      fixedStartField.hidden = !isFixed;
+    })
+  );
+
+  let expensesCache = [];
+
+  async function loadExpenses() {
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-expenses", { headers });
+    const body = await res.json();
+    if (!res.ok) throw new Error("No se pudieron cargar los gastos.");
+    expensesCache = body.expenses || [];
+    return expensesCache;
+  }
+
+  function renderExpenseTables() {
+    const fixed = expensesCache.filter((e) => e.kind === "fixed");
+    const variable = expensesCache.filter((e) => e.kind === "variable");
+
+    document.getElementById("fixed-empty").hidden = fixed.length > 0;
+    document.getElementById("fixed-tbody").innerHTML = fixed
+      .map(
+        (e) => `
+        <tr data-id="${e.id}" class="${e.active ? "" : "is-inactive"}">
+          <td>${e.description}</td>
+          <td>${CATEGORY_LABEL[e.category] || e.category}</td>
+          <td class="numeric">${fmtMoney(e.amount)}</td>
+          <td>${e.start_date}</td>
+          <td>${e.active ? "Activo" : `<span class="pill-inactive">Inactivo desde ${e.end_date || ""}</span>`}</td>
+          <td>
+            <div class="row-actions">
+              ${e.active ? '<button class="btn btn-outline btn-sm" data-action="deactivate">Desactivar</button>' : ""}
+              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
+            </div>
+          </td>
+        </tr>`
+      )
+      .join("");
+
+    document.getElementById("variable-empty").hidden = variable.length > 0;
+    document.getElementById("variable-tbody").innerHTML = variable
+      .map(
+        (e) => `
+        <tr data-id="${e.id}">
+          <td>${e.expense_date}</td>
+          <td>${e.description}</td>
+          <td>${CATEGORY_LABEL[e.category] || e.category}</td>
+          <td class="numeric">${fmtMoney(e.amount)}</td>
+          <td><button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button></td>
+        </tr>`
+      )
+      .join("");
+  }
+
+  document.getElementById("fixed-tbody").addEventListener("click", (e) => handleExpenseAction(e));
+  document.getElementById("variable-tbody").addEventListener("click", (e) => handleExpenseAction(e));
+
+  async function handleExpenseAction(e) {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const row = btn.closest("tr");
+    const id = row.getAttribute("data-id");
+    const action = btn.getAttribute("data-action");
+
+    if (action === "delete") {
+      if (!window.confirm("¿Eliminar este gasto? No se puede deshacer.")) return;
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      await fetch("/api/delete-expense", { method: "POST", headers, body: JSON.stringify({ id }) });
+    } else if (action === "deactivate") {
+      const expense = expensesCache.find((x) => x.id === id);
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      await fetch("/api/save-expense", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          id,
+          description: expense.description,
+          category: expense.category,
+          amount: expense.amount,
+          kind: "fixed",
+          startDate: expense.start_date,
+          endDate: todayStr(),
+          active: false,
+          notes: expense.notes,
+        }),
+      });
+    }
+    await refreshAll();
+  }
+
+  expenseForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    expHint.textContent = "";
+    expHint.classList.remove("is-error");
+    const kind = expenseForm.querySelector('input[name="kind"]:checked').value;
+
+    const payload = {
+      description: expDescription.value.trim(),
+      category: expCategory.value,
+      amount: expAmount.value,
+      kind,
+      notes: expNotes.value.trim(),
+    };
+    if (kind === "variable") payload.expenseDate = expDate.value;
+    else payload.startDate = expStart.value || todayStr();
+
+    expSubmit.disabled = true;
+    expSubmit.textContent = "Guardando…";
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/save-expense", { method: "POST", headers, body: JSON.stringify(payload) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar el gasto.");
+      expenseForm.reset();
+      fixedStartField.hidden = true;
+      variableDateField.hidden = false;
+      await refreshAll();
+    } catch (err) {
+      expHint.textContent = err.message;
+      expHint.classList.add("is-error");
+    } finally {
+      expSubmit.disabled = false;
+      expSubmit.textContent = "Guardar gasto";
+    }
+  });
+
+  document.getElementById("seed-salary-btn").addEventListener("click", async () => {
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/save-expense", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        description: "Sueldo de la dueña",
+        category: "sueldo",
+        amount: 20000,
+        kind: "fixed",
+        startDate: todayStr(),
+      }),
+    });
+    await refreshAll();
+  });
+
+  async function loadBreakeven() {
+    const headers = await authHeaders();
+    const today = todayStr();
+    const res = await fetch(`/api/financial-summary?periodType=month&referenceDate=${today}`, { headers });
+    const body = await res.json();
+    if (!res.ok) throw new Error("No se pudo calcular el punto de equilibrio.");
+    return body;
+  }
+
+  function renderBreakeven(financial, hasSalary) {
+    const banner = document.getElementById("breakeven-banner");
+    const salaryCard = document.getElementById("salary-setup-card");
+
+    if (!hasSalary) {
+      salaryCard.hidden = false;
+    } else {
+      salaryCard.hidden = true;
+    }
+
+    if (!financial.breakeven) {
+      banner.hidden = true;
+      renderIdeas(financial, null);
+      return;
+    }
+
+    const be = financial.breakeven;
+    banner.hidden = false;
+    document.getElementById("be-headline").textContent = `${fmtMoney(be.monthlyFixedCosts)} MXN al mes`;
+    document.getElementById("be-sub").textContent = be.basadoEnDatosReales
+      ? `Ticket promedio real: ${fmtMoney(be.averageTicket)} (de ${be.ticketsConsiderados} citas cobradas)`
+      : `Ticket promedio estimado con tus precios de lista: ${fmtMoney(be.averageTicket)} (todavía no hay suficientes citas cobradas con monto capturado)`;
+
+    document.getElementById("be-grid").innerHTML = `
+      <div class="item"><p class="num">${be.citasPorMes}</p><p class="lbl">citas al mes</p></div>
+      <div class="item"><p class="num">${be.citasPorSemana}</p><p class="lbl">citas a la semana</p></div>
+      <div class="item"><p class="num">${be.citasPorDia ?? "—"}</p><p class="lbl">citas por día que atiendes</p></div>
+    `;
+
+    renderIdeas(financial, be);
+  }
+
+  function renderIdeas(financial, be) {
+    const ideas = [];
+    if (be) {
+      ideas.push(
+        `Tu meta es llenar <strong>${be.citasPorDia ?? "?"} citas por día</strong> (en promedio) los días que atiendes. Revisa el reporte de "citas por día" que ya tienes para ver qué combinación de servicios te acerca más rápido a ese número.`
+      );
+      if (!be.basadoEnDatosReales) {
+        ideas.push(`Todavía no tienes suficientes citas con el monto real capturado — usa el botón "Editar monto" en el panel de citas cada vez que confirmes una, sobre todo en los servicios de "Valoración previa". Mientras más datos reales tengas, más preciso será este cálculo.`);
+      }
+    }
+    ideas.push(`Sube tu ticket promedio antes de subir tu volumen: ofrece combos (como el "Combo Full Look") o add-ons en la misma cita — cobras más sin necesitar una cita adicional.`);
+    ideas.push(`La tarjeta de lealtad ya está activa: cada clienta que repite cuenta directo hacia tus citas necesarias sin gastar en atraer una clienta nueva.`);
+    ideas.push(`Antes de subir precios, revisa si hay gastos variables que puedas recortar — cada peso de gasto que bajas es un peso menos que tienes que facturar para llegar a tu punto de equilibrio.`);
+    if (financial.revenue !== undefined) {
+      const delta = financial.revenue - (be ? be.monthlyFixedCosts : 0);
+      if (be) {
+        ideas.push(
+          delta >= 0
+            ? `Este mes vas ${fmtMoney(delta)} MXN por encima de tu punto de equilibrio — buen momento para decidir si ese excedente es ahorro, reinversión, o un aumento a tu sueldo objetivo.`
+            : `Este mes te faltan ${fmtMoney(Math.abs(delta))} MXN para llegar a tu punto de equilibrio. Si se repite varios meses seguidos, vale la pena revisar precios, ocupación o gastos fijos.`
+        );
+      }
+    }
+
+    document.getElementById("ideas-list").innerHTML = ideas
+      .map((text, i) => `<div class="idea"><span class="n">${i + 1}</span><p>${text}</p></div>`)
+      .join("");
+  }
+
+  async function refreshAll() {
+    loadingState.hidden = false;
+    loadingState.textContent = "Cargando…";
+    financeContent.hidden = true;
+    try {
+      const [expenses, financial] = await Promise.all([loadExpenses(), loadBreakeven()]);
+      const hasSalary = expenses.some((e) => e.category === "sueldo" && e.active);
+      renderExpenseTables();
+      renderBreakeven(financial, hasSalary);
+      loadingState.hidden = true;
+      financeContent.hidden = false;
+    } catch (err) {
+      loadingState.textContent = err.message || "No se pudo cargar la información.";
+    }
+  }
+
+  document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
+  document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  function showAdmin() {
+    loginGate.hidden = true;
+    adminWrap.hidden = false;
+    refreshAll();
+  }
+  function showLogin() {
+    loginGate.hidden = false;
+    adminWrap.hidden = true;
+  }
+
+  if (!window.netlifyIdentity) {
+    document.getElementById("login-btn").hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "form-hint is-error";
+    notice.textContent = "No se pudo cargar el inicio de sesión. Revisa tu conexión y recarga la página.";
+    loginGate.appendChild(notice);
+    return;
+  }
+
+  window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
+  window.netlifyIdentity.on("login", () => {
+    window.netlifyIdentity.close();
+    showAdmin();
+  });
+  window.netlifyIdentity.on("logout", showLogin);
+  window.netlifyIdentity.init();
+})();
+</script>
+</body>
+</html>

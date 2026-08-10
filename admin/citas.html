@@ -74,6 +74,8 @@
     <h1>Citas</h1>
     <div class="row-actions">
       <button class="btn btn-primary btn-sm" id="manual-open-btn">+ Agendar manualmente</button>
+      <a class="btn btn-outline btn-sm" href="reportes.html">Reportes</a>
+      <a class="btn btn-outline btn-sm" href="finanzas.html">Finanzas</a>
       <a class="btn btn-outline btn-sm" href="lealtad.html">Reporte de lealtad</a>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
       <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
@@ -103,6 +105,7 @@
           <th>Servicio</th>
           <th>Fecha / horario</th>
           <th>Anticipo</th>
+          <th>Monto cobrado</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
@@ -224,6 +227,7 @@
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
           <td>$${b.deposit_amount} MXN</td>
+          <td>${b.total_amount !== null && b.total_amount !== undefined ? `$${b.total_amount} MXN` : '<span style="color:var(--color-muted)">Sin capturar</span>'}<br/><button class="btn btn-outline btn-sm" data-action="edit-amount" style="margin-top:4px;padding:2px 8px;font-size:0.72rem;">Editar monto</button></td>
           <td><span class="status-pill status-${b.status}">${STATUS_LABEL[b.status] || b.status}</span></td>
           <td>
             <div class="row-actions">
@@ -254,6 +258,7 @@
     reactivate: "/api/reactivate-booking",
     "toggle-revenue": "/api/mark-no-revenue",
     delete: "/api/delete-booking",
+    "edit-amount": "/api/set-total-amount",
   };
 
   tbody.addEventListener("click", async (e) => {
@@ -282,6 +287,12 @@
       } else {
         extraPayload = { revenueExempt: false };
       }
+    }
+    if (action === "edit-amount") {
+      const current = btn.parentElement.textContent.match(/[\d.]+/);
+      const input = window.prompt("¿Cuánto se cobró en total por esta cita? (deja vacío para borrar el monto)", current ? current[0] : "");
+      if (input === null) return; // canceló el prompt
+      extraPayload = { totalAmount: input.trim() === "" ? null : input.trim() };
     }
 
     btn.disabled = true;

@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reportes · Origen Brows &amp; Hair Studio</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 100px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-header h1 { font-size: 1.8rem; margin: 0; }
+  #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
+  #login-gate .btn { margin-top: 16px; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+
+  .period-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    flex-wrap: wrap; margin-bottom: 24px; background: var(--color-white);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 18px;
+  }
+  .period-switch { display: flex; gap: 6px; }
+  .period-switch button {
+    padding: 6px 14px; border-radius: 8px; border: 1.5px solid rgba(33,29,25,0.15);
+    background: var(--color-white); font-size: 0.82rem; cursor: pointer; font-family: var(--font-body);
+  }
+  .period-switch button.is-active { background: var(--color-primary); color: var(--color-white); border-color: var(--color-primary); }
+  .period-nav { display: flex; align-items: center; gap: 10px; }
+  .period-nav button {
+    width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(33,29,25,0.15);
+    background: var(--color-white); cursor: pointer; font-size: 0.9rem;
+  }
+  .period-label { font-weight: 600; min-width: 160px; text-align: center; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+  .stat-card .label { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin: 0 0 6px; }
+  .stat-card .value { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 600; margin: 0; font-variant-numeric: tabular-nums; }
+  .stat-card.is-warning { border: 1.5px solid #d99a3a; }
+  .stat-card.is-warning .value { color: #9a6415; }
+
+  .chart-card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 20px 12px; margin-bottom: 24px; }
+  .chart-card h2 { font-size: 1.05rem; margin: 0 0 12px; }
+  .chart-wrap { position: relative; overflow-x: auto; }
+  .chart-tooltip {
+    position: absolute; pointer-events: none; background: var(--color-primary); color: var(--color-white);
+    font-size: 0.76rem; padding: 5px 9px; border-radius: 6px; transform: translate(-50%, -100%); white-space: nowrap;
+    opacity: 0; transition: opacity 100ms ease; z-index: 10;
+  }
+  .chart-tooltip.is-visible { opacity: 1; }
+  .chart-empty { text-align: center; color: var(--color-muted); padding: 40px 0; }
+
+  table.service-table { width: 100%; border-collapse: collapse; }
+  .service-table th, .service-table td { padding: 10px 12px; text-align: left; font-size: 0.86rem; border-bottom: 1px solid rgba(33,29,25,0.08); }
+  .service-table th { color: var(--color-muted); font-weight: 600; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .service-table td.numeric, .service-table th.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+
+  #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
+</style>
+</head>
+<body>
+
+<div id="login-gate">
+  <p class="section-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Reportes</h1>
+  <p class="section-note">Inicia sesión para ver tus reportes de citas e ingresos.</p>
+  <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
+</div>
+
+<div class="admin-wrap" id="admin-wrap" hidden>
+  <div class="admin-header">
+    <h1>Reportes</h1>
+    <div class="row-actions">
+      <a class="btn btn-outline btn-sm" href="citas.html">Ver citas</a>
+      <a class="btn btn-outline btn-sm" href="finanzas.html">Finanzas</a>
+      <a class="btn btn-outline btn-sm" href="lealtad.html">Reporte de lealtad</a>
+      <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="period-bar">
+    <div class="period-switch" id="period-switch">
+      <button type="button" data-period="week">Semana</button>
+      <button type="button" data-period="month">Mes</button>
+      <button type="button" data-period="year">Año</button>
+    </div>
+    <div class="period-nav">
+      <button type="button" id="period-prev" aria-label="Periodo anterior">←</button>
+      <span class="period-label" id="period-label"></span>
+      <button type="button" id="period-next" aria-label="Periodo siguiente">→</button>
+    </div>
+  </div>
+
+  <div id="loading-state">Cargando reporte…</div>
+
+  <div id="report-content" hidden>
+    <div class="stat-row" id="stat-row"></div>
+
+    <div class="chart-card">
+      <h2>Ingresos por periodo</h2>
+      <div class="chart-wrap"><svg id="revenue-chart" width="100%" height="220"></svg></div>
+      <p class="chart-empty" id="revenue-empty" hidden>No hay ingresos registrados en este periodo.</p>
+    </div>
+
+    <div class="chart-card">
+      <h2>Citas confirmadas por periodo</h2>
+      <div class="chart-wrap"><svg id="bookings-chart" width="100%" height="220"></svg></div>
+      <p class="chart-empty" id="bookings-empty" hidden>No hay citas confirmadas en este periodo.</p>
+    </div>
+
+    <div class="chart-card">
+      <h2>Desglose por servicio</h2>
+      <table class="service-table" id="service-table">
+        <thead>
+          <tr><th>Servicio</th><th class="numeric">Citas</th><th class="numeric">Ingreso</th></tr>
+        </thead>
+        <tbody id="service-tbody"></tbody>
+      </table>
+      <p class="chart-empty" id="service-empty" hidden>No hay ingresos por servicio en este periodo.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const ACCENT = "#b9a37f";
+  const INK = "#211b15";
+  const MONTHS_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const WEEKDAYS_SHORT = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
+  const loginGate = document.getElementById("login-gate");
+  const adminWrap = document.getElementById("admin-wrap");
+  const loadingState = document.getElementById("loading-state");
+  const reportContent = document.getElementById("report-content");
+  const periodSwitch = document.getElementById("period-switch");
+  const periodLabel = document.getElementById("period-label");
+  const statRow = document.getElementById("stat-row");
+
+  let periodType = "month";
+  let referenceDate = new Date().toISOString().split("T")[0];
+
+  function parseLocalDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function fmtMoney(n) {
+    return "$" + Math.round(n).toLocaleString("es-MX");
+  }
+
+  async function authHeaders() {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return {};
+    const token = await user.jwt();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  function updatePeriodLabel(rangeStart, rangeEnd) {
+    const start = parseLocalDate(rangeStart);
+    const end = parseLocalDate(rangeEnd);
+    if (periodType === "year") {
+      periodLabel.textContent = String(start.getFullYear());
+    } else if (periodType === "month") {
+      periodLabel.textContent = `${MONTHS_SHORT[start.getMonth()]} ${start.getFullYear()}`;
+    } else {
+      const sameMonth = start.getMonth() === end.getMonth();
+      periodLabel.textContent = sameMonth
+        ? `${start.getDate()}–${end.getDate()} ${MONTHS_SHORT[start.getMonth()]} ${start.getFullYear()}`
+        : `${start.getDate()} ${MONTHS_SHORT[start.getMonth()]} – ${end.getDate()} ${MONTHS_SHORT[end.getMonth()]} ${end.getFullYear()}`;
+    }
+  }
+
+  function shiftReferenceDate(direction) {
+    const d = parseLocalDate(referenceDate);
+    if (periodType === "week") d.setDate(d.getDate() + direction * 7);
+    else if (periodType === "month") d.setMonth(d.getMonth() + direction);
+    else d.setFullYear(d.getFullYear() + direction);
+    referenceDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function bucketLabel(key) {
+    if (periodType === "year") return MONTHS_SHORT[Number(key.slice(5, 7)) - 1];
+    const d = parseLocalDate(key);
+    return periodType === "week" ? `${WEEKDAYS_SHORT[d.getDay()]} ${d.getDate()}` : String(d.getDate());
+  }
+
+  function renderBarChart(svg, buckets, valueKey, color, valueFormatter) {
+    svg.innerHTML = "";
+    const width = svg.parentElement.clientWidth || 700;
+    const height = 220;
+    const marginBottom = 28;
+    const marginTop = 10;
+    const plotHeight = height - marginBottom - marginTop;
+    const n = buckets.length;
+    const barGap = 4;
+    const minWidth = Math.max(width, n * 26);
+    svg.setAttribute("viewBox", `0 0 ${minWidth} ${height}`);
+    svg.setAttribute("width", minWidth);
+
+    const maxValue = Math.max(1, ...buckets.map((b) => b[valueKey]));
+    const barWidth = minWidth / n - barGap;
+
+    const tooltip = svg.parentElement.querySelector(".chart-tooltip") || (() => {
+      const t = document.createElement("div");
+      t.className = "chart-tooltip";
+      svg.parentElement.appendChild(t);
+      return t;
+    })();
+
+    buckets.forEach((b, i) => {
+      const value = b[valueKey];
+      const barHeight = (value / maxValue) * plotHeight;
+      const x = i * (barWidth + barGap) + barGap / 2;
+      const y = marginTop + (plotHeight - barHeight);
+
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", x);
+      rect.setAttribute("y", y);
+      rect.setAttribute("width", barWidth);
+      rect.setAttribute("height", Math.max(barHeight, value > 0 ? 2 : 0));
+      rect.setAttribute("rx", 3);
+      rect.setAttribute("fill", color);
+      rect.style.cursor = "pointer";
+
+      rect.addEventListener("mouseenter", () => {
+        tooltip.textContent = `${bucketLabel(b.key)}: ${valueFormatter(value)}`;
+        tooltip.classList.add("is-visible");
+      });
+      rect.addEventListener("mousemove", (e) => {
+        const wrapRect = svg.parentElement.getBoundingClientRect();
+        tooltip.style.left = `${e.clientX - wrapRect.left}px`;
+        tooltip.style.top = `${e.clientY - wrapRect.top - 8}px`;
+      });
+      rect.addEventListener("mouseleave", () => tooltip.classList.remove("is-visible"));
+
+      svg.appendChild(rect);
+
+      if (n <= 31) {
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", x + barWidth / 2);
+        label.setAttribute("y", height - 8);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("font-size", "10");
+        label.setAttribute("fill", "#6f6558");
+        label.textContent = bucketLabel(b.key);
+        svg.appendChild(label);
+      }
+    });
+
+    const baseline = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    baseline.setAttribute("x1", 0);
+    baseline.setAttribute("x2", minWidth);
+    baseline.setAttribute("y1", marginTop + plotHeight);
+    baseline.setAttribute("y2", marginTop + plotHeight);
+    baseline.setAttribute("stroke", "rgba(33,29,25,0.14)");
+    svg.insertBefore(baseline, svg.firstChild);
+  }
+
+  function renderStats(financial, report) {
+    const items = [
+      { label: "Ingresos del periodo", value: fmtMoney(financial.revenue) },
+      { label: "Gastos del periodo", value: fmtMoney(financial.totalExpenses) },
+      { label: "Utilidad", value: fmtMoney(financial.profit) },
+      { label: "Citas confirmadas", value: String(report.totals.confirmedCount) },
+    ];
+    if (financial.breakeven) {
+      items.push({ label: "Necesitas al mes", value: fmtMoney(financial.breakeven.monthlyFixedCosts) });
+      items.push({ label: "Citas/mes para tu punto de equilibrio", value: String(financial.breakeven.citasPorMes) });
+    }
+    statRow.innerHTML = items
+      .map((it) => `<div class="stat-card"><p class="label">${it.label}</p><p class="value">${it.value}</p></div>`)
+      .join("");
+
+    if (report.totals.missingAmountCount > 0) {
+      statRow.innerHTML += `<div class="stat-card is-warning"><p class="label">Citas sin monto capturado</p><p class="value">${report.totals.missingAmountCount}</p></div>`;
+    }
+  }
+
+  async function loadReport() {
+    loadingState.hidden = false;
+    reportContent.hidden = true;
+
+    const headers = await authHeaders();
+    const qs = `periodType=${periodType}&referenceDate=${referenceDate}`;
+    const [reportRes, financialRes] = await Promise.all([
+      fetch(`/api/booking-report?${qs}`, { headers }),
+      fetch(`/api/financial-summary?${qs}`, { headers }),
+    ]);
+    const report = await reportRes.json();
+    const financial = await financialRes.json();
+    loadingState.hidden = true;
+
+    if (!reportRes.ok || !financialRes.ok) {
+      loadingState.textContent = "No se pudo cargar el reporte.";
+      loadingState.hidden = false;
+      return;
+    }
+
+    updatePeriodLabel(report.rangeStart, report.rangeEnd);
+    renderStats(financial, report);
+
+    const revenueEmpty = report.buckets.every((b) => b.revenue === 0);
+    document.getElementById("revenue-empty").hidden = !revenueEmpty;
+    if (!revenueEmpty) renderBarChart(document.getElementById("revenue-chart"), report.buckets, "revenue", ACCENT, fmtMoney);
+
+    const bookingsEmpty = report.buckets.every((b) => b.confirmedCount === 0);
+    document.getElementById("bookings-empty").hidden = !bookingsEmpty;
+    if (!bookingsEmpty) renderBarChart(document.getElementById("bookings-chart"), report.buckets, "confirmedCount", INK, (v) => `${v} cita${v === 1 ? "" : "s"}`);
+
+    const serviceTbody = document.getElementById("service-tbody");
+    document.getElementById("service-empty").hidden = report.byService.length > 0;
+    serviceTbody.innerHTML = report.byService
+      .map((s) => `<tr><td>${s.serviceName}</td><td class="numeric">${s.count}</td><td class="numeric">${fmtMoney(s.revenue)}</td></tr>`)
+      .join("");
+
+    reportContent.hidden = false;
+  }
+
+  periodSwitch.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-period]");
+    if (!btn) return;
+    periodType = btn.getAttribute("data-period");
+    periodSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("is-active", b === btn));
+    loadReport();
+  });
+  document.getElementById("period-prev").addEventListener("click", () => {
+    shiftReferenceDate(-1);
+    loadReport();
+  });
+  document.getElementById("period-next").addEventListener("click", () => {
+    shiftReferenceDate(1);
+    loadReport();
+  });
+
+  document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
+  document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  function showAdmin() {
+    loginGate.hidden = true;
+    adminWrap.hidden = false;
+    periodSwitch.querySelector('[data-period="month"]').classList.add("is-active");
+    loadReport();
+  }
+  function showLogin() {
+    loginGate.hidden = false;
+    adminWrap.hidden = true;
+  }
+
+  if (!window.netlifyIdentity) {
+    document.getElementById("login-btn").hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "form-hint is-error";
+    notice.textContent = "No se pudo cargar el inicio de sesión. Revisa tu conexión y recarga la página.";
+    loginGate.appendChild(notice);
+    return;
+  }
+
+  window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
+  window.netlifyIdentity.on("login", () => {
+    window.netlifyIdentity.close();
+    showAdmin();
+  });
+  window.netlifyIdentity.on("logout", showLogin);
+  window.netlifyIdentity.init();
+})();
+</script>
+</body>
+</html>
