@@ -53,6 +53,8 @@ exports.handler = async (event, context) => {
           progress: status.progress,
           cycleSize: status.cycleSize,
           hasReward: status.hasReward,
+          discountPercent: status.discountPercent,
+          remaining: status.remaining,
           preference: pref ? { email: pref.email, notifyChannel: pref.notify_channel } : null,
         };
       })

@@ -49,6 +49,7 @@
   <div class="admin-header">
     <h1>Reporte de lealtad</h1>
     <div class="row-actions">
+      <button class="btn btn-outline btn-sm" id="preview-bulk-btn">Ver mensaje</button>
       <button class="btn btn-primary btn-sm" id="notify-all-btn">Avisar a todas (WhatsApp)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
@@ -57,12 +58,6 @@
 
   <div id="loading-state">Cargando…</div>
   <div id="empty-state" hidden>Todavía no hay citas confirmadas.</div>
-
-  <div class="card" id="chart-card" hidden>
-    <h2 style="font-size:1.05rem;margin:0 0 6px;">Clientas por progreso del ciclo</h2>
-    <p class="section-note" style="margin:0 0 10px;">Cuántas clientas llevan cada número de visitas dentro de su ciclo actual.</p>
-    <div class="chart-wrap"><svg id="progress-chart" width="100%" height="180"></svg></div>
-  </div>
 
   <div class="table-scroll">
     <table class="loyalty-table" id="loyalty-table" hidden>
@@ -80,6 +75,12 @@
       <tbody id="loyalty-tbody"></tbody>
     </table>
   </div>
+
+  <div class="card" id="chart-card" hidden>
+    <h2 style="font-size:1.05rem;margin:0 0 6px;">Clientas por progreso del ciclo</h2>
+    <p class="section-note" style="margin:0 0 10px;">Cuántas clientas llevan cada número de visitas dentro de su ciclo actual.</p>
+    <div class="chart-wrap"><svg id="progress-chart" width="100%" height="180"></svg></div>
+  </div>
   </div>
 </div>
 
@@ -96,6 +97,37 @@
   const emptyState = document.getElementById("empty-state");
   const table = document.getElementById("loyalty-table");
   const tbody = document.getElementById("loyalty-tbody");
+
+  let clientsCache = [];
+  let siteConfig = null;
+
+  async function loadSiteConfig() {
+    if (siteConfig) return siteConfig;
+    try {
+      const res = await fetch("../data/config.json");
+      siteConfig = await res.json();
+    } catch {
+      siteConfig = {};
+    }
+    return siteConfig;
+  }
+
+  // Debe coincidir exactamente con el texto que arma resend-loyalty-notice.js,
+  // para que la vista previa sea real y no solo aproximada.
+  function buildStatusMessage(c) {
+    const tail = c.hasReward
+      ? `¡Ya tienes ${c.discountPercent}% de descuento disponible!`
+      : `Te ${c.remaining === 1 ? "falta" : "faltan"} ${c.remaining} visita${c.remaining === 1 ? "" : "s"} más para tu ${c.discountPercent}% de descuento.`;
+    return `Hola ${c.name}, este es tu progreso en el programa de lealtad de Origen Brows & Hair Studio: llevas ${c.progress} de ${c.cycleSize} visitas confirmadas. ${tail}`;
+  }
+
+  // Debe coincidir exactamente con notify-loyalty-all.js.
+  function buildBulkMessage(exampleName, cfg) {
+    const loyalty = cfg.loyalty || { cycleSize: 5, discountPercent: 20 };
+    const facebook = (cfg.social && cfg.social.facebook) || "—";
+    const instagram = (cfg.social && cfg.social.instagram) || "—";
+    return `Hola ${exampleName}, en Origen Brows & Hair Studio ahora tenemos programa de lealtad: cada ${loyalty.cycleSize} citas confirmadas ganas ${loyalty.discountPercent}% de descuento en tu siguiente visita. Consulta tu progreso en https://origen-brows.netlify.app/lealtad.html. Síguenos en Facebook (${facebook}) e Instagram (${instagram}) para enterarte de promociones.`;
+  }
 
   async function authHeaders() {
     const user = window.netlifyIdentity.currentUser();
@@ -121,6 +153,7 @@
     }
 
     const clients = body.clients || [];
+    clientsCache = clients;
     if (clients.length === 0) {
       emptyState.hidden = false;
       document.getElementById("chart-card").hidden = true;
@@ -208,6 +241,14 @@
     const row = btn.closest("tr");
     const phone = row.getAttribute("data-phone");
     const name = row.getAttribute("data-name");
+    const client = clientsCache.find((c) => c.phone === phone);
+
+    if (client) {
+      const preview = buildStatusMessage(client);
+      if (!window.confirm(`Se enviará este WhatsApp a ${name} (${phone}):\n\n"${preview}"\n\n¿Enviarlo?`)) return;
+    } else if (!window.confirm(`¿Reenviar confirmación por WhatsApp a ${name} (${phone})?`)) {
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = "Enviando…";
@@ -224,10 +265,18 @@
     }
   });
 
+  document.getElementById("preview-bulk-btn").addEventListener("click", async () => {
+    const cfg = await loadSiteConfig();
+    const preview = buildBulkMessage("Ana", cfg);
+    window.alert(`Así se ve el mensaje (ejemplo con el nombre "Ana"):\n\n"${preview}"`);
+  });
+
   document.getElementById("notify-all-btn").addEventListener("click", async () => {
     const btn = document.getElementById("notify-all-btn");
     const hint = document.getElementById("notify-all-hint");
-    if (!window.confirm("¿Avisar por WhatsApp a TODAS las clientas con al menos una cita confirmada sobre el programa de lealtad y las redes sociales?")) return;
+    const cfg = await loadSiteConfig();
+    const preview = buildBulkMessage("Ana", cfg);
+    if (!window.confirm(`Se enviará este WhatsApp a TODAS las clientas con al menos una cita confirmada (ejemplo con el nombre "Ana"):\n\n"${preview}"\n\n¿Enviarlo a todas?`)) return;
 
     btn.disabled = true;
     btn.textContent = "Enviando…";
