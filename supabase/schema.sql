@@ -238,3 +238,25 @@ create trigger expenses_set_updated_at
   execute function set_updated_at();
 
 alter table expenses enable row level security;
+
+-- Clientas que la administradora agrega a mano (ej. de su agenda física,
+-- clientas de siempre que todavía no reservan por el sitio), para poder
+-- incluirlas también en la lista de contactos y en futuras promociones.
+-- No están ligadas a ninguna cita — para eso ya existe bookings.
+create table if not exists manual_clients (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  phone text not null,
+  email text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists manual_clients_set_updated_at on manual_clients;
+create trigger manual_clients_set_updated_at
+  before update on manual_clients
+  for each row
+  execute function set_updated_at();
+
+alter table manual_clients enable row level security;

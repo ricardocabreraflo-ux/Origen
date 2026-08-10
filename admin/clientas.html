@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Clientas · Origen Brows &amp; Hair Studio</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .admin-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 100px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-header h1 { font-size: 1.8rem; margin: 0; }
+  #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
+  #login-gate .btn { margin-top: 16px; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+
+  .card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 24px; }
+  .card h2 { font-size: 1.1rem; margin: 0 0 6px; }
+  .card .section-note { margin: 0 0 16px; }
+
+  .client-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .client-form .full { grid-column: 1 / -1; }
+  .client-form label { font-size: 0.85rem; font-weight: 600; color: var(--color-dark); display: block; margin-bottom: 4px; }
+  .client-form input, .client-form textarea {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.15);
+    font-family: var(--font-body); background: var(--color-cream-soft);
+  }
+
+  .filters-bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .filters-bar select, .filters-bar input[type="search"] {
+    padding: 8px 12px; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.15);
+    font-family: var(--font-body); background: var(--color-white);
+  }
+  .filters-bar label { display: flex; align-items: center; gap: 6px; font-size: 0.86rem; }
+
+  table.clients-table { width: 100%; border-collapse: collapse; }
+  .clients-table th, .clients-table td { padding: 10px 12px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid rgba(33,29,25,0.08); }
+  .clients-table th { color: var(--color-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .table-scroll { overflow-x: auto; }
+  .source-pill { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; }
+  .source-agenda { background: #d6e4f0; color: #1a4a73; }
+  .source-manual { background: #e6e2da; color: #5c5344; }
+  .source-ambos { background: #d3ead8; color: #1f6b34; }
+
+  #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
+</style>
+</head>
+<body>
+
+<div id="login-gate">
+  <p class="section-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Clientas</h1>
+  <p class="section-note">Inicia sesión para ver y agregar clientas.</p>
+  <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
+</div>
+
+<div class="admin-shell" id="admin-shell" hidden>
+  <nav class="admin-sidebar">
+    <div class="sidebar-brand">Origen · Panel</div>
+    <a class="sidebar-link" href="citas.html">📅 Citas</a>
+    <a class="sidebar-link is-active" href="clientas.html">👥 Clientas</a>
+    <a class="sidebar-link" href="lealtad.html">🎁 Lealtad</a>
+    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
+    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
+    <a class="sidebar-link" href="index.html">✏️ Contenido</a>
+    <div class="sidebar-user" id="sidebar-user"></div>
+    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+  </nav>
+  <div class="admin-wrap" id="admin-wrap">
+  <div class="admin-header">
+    <h1>Clientas</h1>
+    <div class="row-actions">
+      <button class="btn btn-outline btn-sm" id="export-btn">Exportar CSV</button>
+      <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
+    </div>
+  </div>
+
+  <div id="loading-state">Cargando…</div>
+
+  <div id="clients-content" hidden>
+    <div class="card">
+      <h2 id="client-form-title">Agregar clienta</h2>
+      <p class="section-note">Para clientas que ya conoces (de tu agenda física) pero que todavía no han reservado por el sitio.</p>
+      <div class="editing-banner" id="editing-banner" hidden style="background:#fdf1de;border:1px solid #e4c98a;border-radius:10px;padding:10px 14px;font-size:0.85rem;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <span>Editando una clienta.</span>
+        <button type="button" id="cancel-edit-btn" style="background:none;border:none;color:var(--color-accent-dark);font-weight:600;cursor:pointer;">Cancelar edición</button>
+      </div>
+      <form class="client-form" id="client-form">
+        <div>
+          <label for="cl-name">Nombre</label>
+          <input type="text" id="cl-name" required placeholder="Nombre de la clienta" />
+        </div>
+        <div>
+          <label for="cl-phone">Teléfono</label>
+          <input type="tel" id="cl-phone" required placeholder="Ej. 55 1234 5678" />
+        </div>
+        <div>
+          <label for="cl-email">Correo (opcional)</label>
+          <input type="email" id="cl-email" placeholder="tu@correo.com" />
+        </div>
+        <div class="full">
+          <label for="cl-notes">Notas (opcional)</label>
+          <textarea id="cl-notes" rows="2"></textarea>
+        </div>
+        <div class="full">
+          <button type="submit" class="btn btn-primary" id="cl-submit">Agregar clienta</button>
+          <p class="form-hint" id="cl-hint"></p>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Todas las clientas</h2>
+      <div class="filters-bar">
+        <input type="search" id="search-input" placeholder="Buscar por nombre o teléfono…" />
+        <label><input type="checkbox" id="only-email-filter" /> Solo con correo</label>
+      </div>
+      <div class="table-scroll">
+        <table class="clients-table" id="clients-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Visitas confirmadas</th>
+              <th>Origen</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="clients-tbody"></tbody>
+        </table>
+      </div>
+      <p id="empty-state" hidden>No hay clientas con esos filtros.</p>
+    </div>
+  </div>
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const SOURCE_LABEL = { agenda: "Reservó en el sitio", manual: "Agregada a mano", ambos: "Ambos" };
+
+  const loginGate = document.getElementById("login-gate");
+  const adminShell = document.getElementById("admin-shell");
+  const loadingState = document.getElementById("loading-state");
+  const clientsContent = document.getElementById("clients-content");
+  const emptyState = document.getElementById("empty-state");
+  const table = document.getElementById("clients-table");
+  const tbody = document.getElementById("clients-tbody");
+  const searchInput = document.getElementById("search-input");
+  const onlyEmailFilter = document.getElementById("only-email-filter");
+
+  const clientForm = document.getElementById("client-form");
+  const clFormTitle = document.getElementById("client-form-title");
+  const clName = document.getElementById("cl-name");
+  const clPhone = document.getElementById("cl-phone");
+  const clEmail = document.getElementById("cl-email");
+  const clNotes = document.getElementById("cl-notes");
+  const clHint = document.getElementById("cl-hint");
+  const clSubmit = document.getElementById("cl-submit");
+  const editingBanner = document.getElementById("editing-banner");
+
+  let editingId = null;
+  let clientsCache = [];
+
+  async function authHeaders() {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return {};
+    const token = await user.jwt();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  function resetEditingState() {
+    editingId = null;
+    editingBanner.hidden = true;
+    clFormTitle.textContent = "Agregar clienta";
+    clSubmit.textContent = "Agregar clienta";
+    clientForm.reset();
+  }
+  document.getElementById("cancel-edit-btn").addEventListener("click", resetEditingState);
+
+  async function loadClients() {
+    loadingState.hidden = false;
+    clientsContent.hidden = true;
+
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-clients", { headers });
+    const body = await res.json();
+    loadingState.hidden = true;
+
+    if (!res.ok) {
+      loadingState.hidden = false;
+      loadingState.textContent = "No se pudo cargar la lista de clientas.";
+      return;
+    }
+
+    clientsCache = body.clients || [];
+    clientsContent.hidden = false;
+    renderTable();
+  }
+
+  function renderTable() {
+    const search = searchInput.value.trim().toLowerCase();
+    const onlyEmail = onlyEmailFilter.checked;
+
+    const filtered = clientsCache.filter((c) => {
+      if (onlyEmail && !c.email) return false;
+      if (search && !c.name.toLowerCase().includes(search) && !c.phone.includes(search)) return false;
+      return true;
+    });
+
+    emptyState.hidden = filtered.length > 0;
+    table.hidden = filtered.length === 0;
+
+    tbody.innerHTML = filtered
+      .map(
+        (c) => `
+        <tr data-manual-id="${c.manualId || ""}">
+          <td>${c.name}</td>
+          <td>${c.phone}</td>
+          <td>${c.email || "—"}</td>
+          <td>${c.visits}</td>
+          <td><span class="source-pill source-${c.source}">${SOURCE_LABEL[c.source]}</span></td>
+          <td>
+            ${
+              c.manualId
+                ? `<div class="row-actions">
+                     <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
+                     <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
+                   </div>`
+                : `<span style="color:var(--color-muted);font-size:0.8rem;">Edítala desde Citas</span>`
+            }
+          </td>
+        </tr>`
+      )
+      .join("");
+  }
+
+  searchInput.addEventListener("input", renderTable);
+  onlyEmailFilter.addEventListener("change", renderTable);
+
+  tbody.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const row = btn.closest("tr");
+    const manualId = row.getAttribute("data-manual-id");
+    const action = btn.getAttribute("data-action");
+
+    if (action === "edit") {
+      const client = clientsCache.find((c) => c.manualId === manualId);
+      if (!client) return;
+      editingId = manualId;
+      editingBanner.hidden = false;
+      clFormTitle.textContent = "Editar clienta";
+      clSubmit.textContent = "Actualizar clienta";
+      clName.value = client.name;
+      clPhone.value = client.phone;
+      clEmail.value = client.email || "";
+      clNotes.value = client.notes || "";
+      clientForm.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (action === "delete") {
+      if (!window.confirm("¿Eliminar esta clienta agregada a mano? No se puede deshacer.")) return;
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      await fetch("/api/delete-manual-client", { method: "POST", headers, body: JSON.stringify({ id: manualId }) });
+      await loadClients();
+    }
+  });
+
+  clientForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clHint.textContent = "";
+    clHint.classList.remove("is-error");
+
+    const payload = {
+      id: editingId || undefined,
+      name: clName.value.trim(),
+      phone: clPhone.value.trim(),
+      email: clEmail.value.trim(),
+      notes: clNotes.value.trim(),
+    };
+
+    clSubmit.disabled = true;
+    const originalLabel = clSubmit.textContent;
+    clSubmit.textContent = editingId ? "Actualizando…" : "Agregando…";
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/save-manual-client", { method: "POST", headers, body: JSON.stringify(payload) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar la clienta.");
+      resetEditingState();
+      await loadClients();
+    } catch (err) {
+      clHint.textContent = err.message;
+      clHint.classList.add("is-error");
+      clSubmit.textContent = originalLabel;
+    } finally {
+      clSubmit.disabled = false;
+    }
+  });
+
+  document.getElementById("export-btn").addEventListener("click", () => {
+    const onlyEmail = onlyEmailFilter.checked;
+    const rows = [["Nombre", "Teléfono", "Correo"]];
+    clientsCache.forEach((c) => {
+      if (onlyEmail && !c.email) return;
+      rows.push([c.name, c.phone, c.email || ""]);
+    });
+    if (rows.length === 1) {
+      alert("No hay ninguna clienta con correo registrado todavía.");
+      return;
+    }
+    const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clientas-origen-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("refresh-btn").addEventListener("click", loadClients);
+  document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
+  document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  function renderSidebarUser() {
+    const el = document.getElementById("sidebar-user");
+    const user = window.netlifyIdentity.currentUser();
+    if (el && user) el.innerHTML = `Sesión activa<span>${user.email}</span>`;
+  }
+
+  function showAdmin() {
+    loginGate.hidden = true;
+    adminShell.hidden = false;
+    renderSidebarUser();
+    loadClients();
+  }
+  function showLogin() {
+    loginGate.hidden = false;
+    adminShell.hidden = true;
+  }
+
+  if (!window.netlifyIdentity) {
+    document.getElementById("login-btn").hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "form-hint is-error";
+    notice.textContent = "No se pudo cargar el inicio de sesión. Revisa tu conexión y recarga la página.";
+    loginGate.appendChild(notice);
+    return;
+  }
+
+  window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
+  window.netlifyIdentity.on("login", () => {
+    window.netlifyIdentity.close();
+    showAdmin();
+  });
+  window.netlifyIdentity.on("logout", showLogin);
+  window.netlifyIdentity.init();
+})();
+</script>
+</body>
+</html>
