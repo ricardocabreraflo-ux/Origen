@@ -143,7 +143,7 @@
       .map(
         (b) => `
         <tr data-id="${b.id}">
-          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${b.payment_method === "mercado_pago" ? '<br/><span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Pagado con tarjeta</span>' : ""}</td>
+          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${b.payment_method === "mercado_pago" ? '<br/><span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Pagado con tarjeta</span>' : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span></td>
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
@@ -157,8 +157,11 @@
                      <button class="btn btn-outline btn-sm" data-action="cancel">Cancelar</button>`
                   : b.status === "confirmed"
                     ? `<button class="btn btn-outline btn-sm" data-action="cancel">Cancelar</button>`
-                    : ""
+                    : b.status === "expired"
+                      ? `<button class="btn btn-primary btn-sm" data-action="reactivate">Reactivar (ya llegó el depósito)</button>`
+                      : ""
               }
+              <button class="btn btn-outline btn-sm" data-action="toggle-revenue" data-revenue-exempt="${b.revenue_exempt}">${b.revenue_exempt ? "Quitar marca de sin ingreso" : "Marcar sin ingreso"}</button>
             </div>
           </td>
         </tr>`
@@ -168,17 +171,36 @@
     table.hidden = false;
   }
 
+  const ACTION_ENDPOINT = {
+    confirm: "/api/confirm-booking",
+    cancel: "/api/cancel-booking",
+    reactivate: "/api/reactivate-booking",
+    "toggle-revenue": "/api/mark-no-revenue",
+  };
+
   tbody.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
     const row = btn.closest("tr");
     const id = row.getAttribute("data-id");
     const action = btn.getAttribute("data-action");
-    const endpoint = action === "confirm" ? "/api/confirm-booking" : "/api/cancel-booking";
+    const endpoint = ACTION_ENDPOINT[action];
+
+    let extraPayload = {};
+    if (action === "toggle-revenue") {
+      const currentlyExempt = btn.getAttribute("data-revenue-exempt") === "true";
+      if (!currentlyExempt) {
+        const reason = window.prompt("¿Por qué no genera ingreso esta cita? (ej. Rifa de apertura)", "Rifa de apertura");
+        if (reason === null) return; // canceló el prompt
+        extraPayload = { revenueExempt: true, reason };
+      } else {
+        extraPayload = { revenueExempt: false };
+      }
+    }
 
     btn.disabled = true;
     const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
-    const res = await fetch(endpoint, { method: "POST", headers, body: JSON.stringify({ id }) });
+    const res = await fetch(endpoint, { method: "POST", headers, body: JSON.stringify({ id, ...extraPayload }) });
     const body = await res.json();
     if (!res.ok) {
       alert(body.message || "No se pudo completar la acción.");

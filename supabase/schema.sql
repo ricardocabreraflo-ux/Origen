@@ -61,6 +61,12 @@ alter table bookings add column if not exists payment_method text not null defau
 alter table bookings add column if not exists mp_payment_id text;
 alter table bookings add column if not exists mp_preference_id text;
 
+-- Para citas que no generan ingreso real (ej. ganadoras de una rifa,
+-- cortesías) aunque tengan un anticipo/precio de lista asociado. Sirve
+-- para que la administradora pueda excluirlas de sus cuentas de ingresos.
+alter table bookings add column if not exists revenue_exempt boolean not null default false;
+alter table bookings add column if not exists revenue_exempt_reason text;
+
 create table if not exists client_preferences (
   phone text primary key,
   email text,
