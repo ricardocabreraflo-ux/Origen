@@ -79,6 +79,23 @@
   .editing-banner button { background: none; border: none; color: var(--color-accent-dark); font-weight: 600; cursor: pointer; }
 
   #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
+
+  .tab-switch { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid rgba(33,29,25,0.1); }
+  .tab-switch button {
+    padding: 10px 4px; margin-bottom: -1px; border: none; background: none; cursor: pointer;
+    font-family: var(--font-body); font-size: 0.92rem; color: var(--color-muted);
+    border-bottom: 2px solid transparent;
+  }
+  .tab-switch button.is-active { color: var(--color-dark); font-weight: 600; border-bottom-color: var(--color-primary); }
+  .tab-panel[hidden] { display: none; }
+
+  table.statement-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .statement-table th, .statement-table td { padding: 10px 12px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid rgba(33,29,25,0.08); }
+  .statement-table th { color: var(--color-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .statement-table td.numeric, .statement-table th.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+  .statement-table tr.is-total td { font-weight: 700; border-top: 2px solid rgba(33,29,25,0.15); }
+  .statement-table tr.is-negative td.numeric { color: #a13a2f; }
+  .statement-table tr.row-label td:first-child { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -106,9 +123,15 @@
     <h1>Finanzas</h1>
   </div>
 
+  <div class="tab-switch" id="tab-switch">
+    <button type="button" data-tab="gastos" class="is-active">Gastos y punto de equilibrio</button>
+    <button type="button" data-tab="contabilidad">Contabilidad</button>
+  </div>
+
   <div id="loading-state">Cargando…</div>
 
   <div id="finanzas-content" hidden>
+  <div class="tab-panel" id="tab-panel-gastos">
     <div id="salary-setup-card" class="card" hidden>
       <div class="salary-setup">
         <h2>Configura tu sueldo objetivo</h2>
@@ -124,14 +147,6 @@
       <p class="headline" id="be-headline"></p>
       <p style="margin:0;opacity:0.85;font-size:0.9rem;" id="be-sub"></p>
       <div class="breakeven-grid" id="be-grid"></div>
-    </div>
-
-    <div class="card">
-      <h2>Gráfica de punto de equilibrio</h2>
-      <p class="section-note">Costos fijos, costos totales (fijos + variable por cita) e ingresos, según cuántas citas agendes al mes. Donde la línea de ingresos cruza la de costos totales está tu punto de equilibrio.</p>
-      <div class="chart-wrap"><svg id="breakeven-chart" width="100%" height="260"></svg></div>
-      <div class="chart-legend" id="breakeven-legend"></div>
-      <p class="chart-empty" id="breakeven-chart-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Configura tu sueldo objetivo y tus gastos fijos para ver esta gráfica.</p>
     </div>
 
     <div class="card">
@@ -233,6 +248,37 @@
       </div>
       <p class="chart-empty" id="variable-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Sin gastos variables capturados.</p>
     </div>
+
+    <div class="card">
+      <h2>Gráfica de punto de equilibrio</h2>
+      <p class="section-note">Costos fijos, costos totales (fijos + variable por cita) e ingresos, según cuántas citas agendes al mes. Donde la línea de ingresos cruza la de costos totales está tu punto de equilibrio.</p>
+      <div class="chart-wrap"><svg id="breakeven-chart" width="100%" height="260"></svg></div>
+      <div class="chart-legend" id="breakeven-legend"></div>
+      <p class="chart-empty" id="breakeven-chart-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Configura tu sueldo objetivo y tus gastos fijos para ver esta gráfica.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-panel-contabilidad" hidden>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:6px;">
+        <div>
+          <h2 style="margin-bottom:2px;">Estado de resultados</h2>
+          <p class="section-note" style="margin:0;">Ingresos, gastos y utilidad de cada mes, para llevar tu contabilidad mes a mes.</p>
+        </div>
+        <select id="statement-months">
+          <option value="3">Últimos 3 meses</option>
+          <option value="6" selected>Últimos 6 meses</option>
+          <option value="12">Últimos 12 meses</option>
+        </select>
+      </div>
+      <div class="table-scroll">
+        <table class="statement-table" id="statement-table">
+          <thead id="statement-thead"></thead>
+          <tbody id="statement-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
   </div>
   </div>
 </div>
@@ -730,6 +776,64 @@
     } catch (err) {
       loadingState.textContent = err.message || "No se pudo cargar la información.";
     }
+  }
+
+  /* ---------------------------------------------------------
+     Pestañas
+  --------------------------------------------------------- */
+  document.getElementById("tab-switch").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-tab]");
+    if (!btn) return;
+    const tab = btn.getAttribute("data-tab");
+    document.querySelectorAll("#tab-switch button").forEach((b) => b.classList.toggle("is-active", b === btn));
+    document.getElementById("tab-panel-gastos").hidden = tab !== "gastos";
+    document.getElementById("tab-panel-contabilidad").hidden = tab !== "contabilidad";
+    if (tab === "contabilidad") loadIncomeStatement();
+  });
+
+  document.getElementById("statement-months").addEventListener("change", loadIncomeStatement);
+
+  async function loadIncomeStatement() {
+    const tbody = document.getElementById("statement-tbody");
+    const thead = document.getElementById("statement-thead");
+    tbody.innerHTML = `<tr><td colspan="20" style="color:var(--color-muted);text-align:center;padding:20px;">Cargando…</td></tr>`;
+    thead.innerHTML = "";
+
+    const months = document.getElementById("statement-months").value;
+    const headers = await authHeaders();
+    const res = await fetch(`/api/income-statement?months=${months}`, { headers });
+    const body = await res.json();
+    if (!res.ok) {
+      tbody.innerHTML = `<tr><td style="color:var(--color-muted);text-align:center;padding:20px;">No se pudo cargar el estado de resultados.</td></tr>`;
+      return;
+    }
+
+    const rows = body.rows || [];
+    thead.innerHTML = `<tr><th>Concepto</th>${rows.map((r) => `<th class="numeric">${r.monthLabel}</th>`).join("")}<th class="numeric">Total</th></tr>`;
+
+    const sum = (key) => rows.reduce((a, r) => a + r[key], 0);
+    const lines = [
+      { label: "Ingresos", key: "revenue" },
+      { label: "Gastos variables", key: "variableExpenses" },
+      { label: "Gastos fijos", key: "fixedExpenses" },
+    ];
+
+    tbody.innerHTML =
+      lines
+        .map(
+          (line) => `
+        <tr class="row-label">
+          <td>${line.label}</td>
+          ${rows.map((r) => `<td class="numeric">${fmtMoney(r[line.key])}</td>`).join("")}
+          <td class="numeric">${fmtMoney(sum(line.key))}</td>
+        </tr>`
+        )
+        .join("") +
+      `<tr class="is-total${sum("profit") < 0 ? " is-negative" : ""}">
+        <td>Utilidad</td>
+        ${rows.map((r) => `<td class="numeric">${fmtMoney(r.profit)}</td>`).join("")}
+        <td class="numeric">${fmtMoney(sum("profit"))}</td>
+      </tr>`;
   }
 
   document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
