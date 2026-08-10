@@ -77,6 +77,7 @@
     <a class="sidebar-link is-active" href="reportes.html">📊 Reportes</a>
     <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
     <a class="sidebar-link" href="index.html">✏️ Contenido</a>
+    <div class="sidebar-user" id="sidebar-user"></div>
     <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
   </nav>
   <div class="admin-wrap" id="admin-wrap">
@@ -345,9 +346,16 @@
   document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
   document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
 
+  function renderSidebarUser() {
+    const el = document.getElementById("sidebar-user");
+    const user = window.netlifyIdentity.currentUser();
+    if (el && user) el.innerHTML = `Sesión activa<span>${user.email}</span>`;
+  }
+
   function showAdmin() {
     loginGate.hidden = true;
     adminShell.hidden = false;
+    renderSidebarUser();
     periodSwitch.querySelector('[data-period="month"]').classList.add("is-active");
     loadReport();
   }

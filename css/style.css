@@ -1045,6 +1045,15 @@ img { max-width: 100%; display: block; }
 .sidebar-link:hover { background: rgba(255,255,255,0.08); color: var(--color-white); }
 .sidebar-link.is-active { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 600; }
 .sidebar-logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.14); padding-top: 16px; }
+.sidebar-user {
+  margin-top: auto;
+  padding: 0 12px 10px;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.5);
+  word-break: break-all;
+}
+.sidebar-user span { display: block; color: rgba(255,255,255,0.85); font-weight: 600; }
+.sidebar-user + .sidebar-logout { margin-top: 0; }
 
 .admin-shell .admin-wrap { flex: 1; min-width: 0; }
 
