@@ -2,9 +2,10 @@ const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 // Cada cuánto se ofrece un horario candidato dentro del día. Como los
 // servicios ya no duran todos lo mismo, en vez de una rejilla fija de
-// bloques iguales generamos posibles inicios cada 15 minutos y luego
-// filtramos los que se traslapan con citas existentes.
-const SLOT_STEP_MINUTES = 15;
+// bloques iguales generamos posibles inicios cada 30 minutos y luego
+// filtramos los que se traslapan con citas existentes. Con esto se ven
+// menos botones de horario sin perder la posibilidad de elegir.
+const SLOT_STEP_MINUTES = 30;
 
 function toMinutes(hhmm) {
   const [h, m] = hhmm.split(":").map(Number);
