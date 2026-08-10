@@ -100,6 +100,9 @@
     </select>
     <input type="date" id="filter-date" />
     <input type="month" id="filter-month" />
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.88rem;color:var(--color-dark);">
+      <input type="checkbox" id="export-only-email" /> Exportar solo con correo registrado
+    </label>
   </div>
 
   <div id="loading-state">Cargando citas…</div>
@@ -482,14 +485,20 @@
       alert("No hay citas cargadas para exportar. Ajusta los filtros primero.");
       return;
     }
+    const onlyEmail = document.getElementById("export-only-email").checked;
     const seen = new Set();
     const rows = [["Nombre", "Teléfono", "Correo"]];
     lastLoadedBookings.forEach((b) => {
+      if (onlyEmail && !b.customer_email) return;
       const key = (b.customer_phone || "") + "|" + (b.customer_email || "");
       if (seen.has(key)) return;
       seen.add(key);
       rows.push([b.customer_name, b.customer_phone, b.customer_email || ""]);
     });
+    if (rows.length === 1) {
+      alert("No hay ninguna clienta con correo registrado todavía en lo que está cargado.");
+      return;
+    }
     const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
