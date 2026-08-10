@@ -128,4 +128,4 @@ async function reactivateExpiredBooking(supabase, id) {
   return { booking: updated, alreadyConfirmed: false };
 }
 
-module.exports = { confirmBookingById, reactivateExpiredBooking, ConfirmBookingError };
+module.exports = { confirmBookingById, reactivateExpiredBooking, runPostConfirmSideEffects, ConfirmBookingError };

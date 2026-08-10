@@ -53,11 +53,16 @@ create table if not exists bookings (
 alter table bookings add column if not exists reward_redemption boolean not null default false;
 
 -- Cómo se pagó el anticipo: por transferencia manual (confirmada a mano
--- por la administradora) o con tarjeta a través de Mercado Pago
--- (confirmada automáticamente por el webhook de pago). mp_payment_id y
--- mp_preference_id solo se llenan cuando el pago fue con Mercado Pago.
-alter table bookings add column if not exists payment_method text not null default 'bank_transfer'
-  check (payment_method in ('bank_transfer', 'mercado_pago'));
+-- por la administradora), con tarjeta a través de Mercado Pago
+-- (confirmada automáticamente por el webhook de pago), o en efectivo
+-- (citas agendadas manualmente por la administradora, ya cobradas en el
+-- momento). mp_payment_id y mp_preference_id solo se llenan cuando el
+-- pago fue con Mercado Pago.
+alter table bookings add column if not exists payment_method text not null default 'bank_transfer';
+alter table bookings drop constraint if exists bookings_payment_method_check;
+alter table bookings
+  add constraint bookings_payment_method_check
+  check (payment_method in ('bank_transfer', 'mercado_pago', 'cash'));
 alter table bookings add column if not exists mp_payment_id text;
 alter table bookings add column if not exists mp_preference_id text;
 

@@ -29,6 +29,35 @@
   .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
   #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
   .table-scroll { overflow-x: auto; }
+
+  .manual-overlay {
+    position: fixed; inset: 0; background: rgba(20, 17, 14, 0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; z-index: 50;
+  }
+  .manual-overlay[hidden] { display: none; }
+  .manual-modal {
+    background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow);
+    max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px 28px 32px;
+  }
+  .manual-modal h2 { font-size: 1.3rem; margin: 0 0 4px; }
+  .manual-modal .section-note { margin: 0 0 20px; }
+  .manual-form { display: flex; flex-direction: column; gap: 14px; }
+  .manual-form label { font-size: 0.85rem; font-weight: 600; color: var(--color-dark); }
+  .manual-form select, .manual-form input, .manual-form textarea {
+    width: 100%; margin-top: 4px; padding: 10px 12px; border-radius: 10px;
+    border: 1.5px solid rgba(33,29,25,0.15); font-family: var(--font-body); background: var(--color-cream-soft);
+  }
+  .manual-slot-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .manual-slot-grid button {
+    padding: 6px 10px; border-radius: 8px; border: 1.5px solid rgba(33,29,25,0.15);
+    background: var(--color-white); font-size: 0.82rem; cursor: pointer;
+  }
+  .manual-slot-grid button:disabled { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
+  .manual-slot-grid button.is-selected { background: var(--color-primary); color: var(--color-white); border-color: var(--color-primary); }
+  .manual-payment-options { display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; font-weight: 400; }
+  .manual-payment-options label { display: flex; align-items: flex-start; gap: 8px; font-weight: 400; }
+  .manual-actions { display: flex; gap: 10px; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -44,6 +73,7 @@
   <div class="admin-header">
     <h1>Citas</h1>
     <div class="row-actions">
+      <button class="btn btn-primary btn-sm" id="manual-open-btn">+ Agendar manualmente</button>
       <a class="btn btn-outline btn-sm" href="lealtad.html">Reporte de lealtad</a>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
       <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
@@ -79,6 +109,52 @@
       </thead>
       <tbody id="bookings-tbody"></tbody>
     </table>
+  </div>
+</div>
+
+<div class="manual-overlay" id="manual-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Agendar manualmente</h2>
+    <p class="section-note">Para clientas que agendan por teléfono o en persona.</p>
+    <form class="manual-form" id="manual-form">
+      <div>
+        <label for="mb-service">Servicio</label>
+        <select id="mb-service" required></select>
+      </div>
+      <div>
+        <label for="mb-date">Fecha</label>
+        <input type="date" id="mb-date" required />
+      </div>
+      <div>
+        <label>Horario</label>
+        <div class="manual-slot-grid" id="mb-slot-grid"></div>
+        <p class="slot-status" id="mb-slot-status" style="margin-top:6px;">Elige un servicio y una fecha para ver horarios.</p>
+      </div>
+      <div>
+        <label for="mb-name">Nombre de la clienta</label>
+        <input type="text" id="mb-name" required />
+      </div>
+      <div>
+        <label for="mb-phone">Teléfono</label>
+        <input type="tel" id="mb-phone" required placeholder="Ej. 55 1234 5678" />
+      </div>
+      <div>
+        <label for="mb-notes">Notas (opcional)</label>
+        <textarea id="mb-notes" rows="2"></textarea>
+      </div>
+      <div>
+        <label>Forma de pago del anticipo</label>
+        <div class="manual-payment-options">
+          <label><input type="radio" name="mb-payment" value="transfer" checked /> Transferencia — queda pendiente hasta que llegue el comprobante (le mandamos WhatsApp pidiéndolo)</label>
+          <label><input type="radio" name="mb-payment" value="cash" /> Efectivo — ya se cobró, confirmar la cita de una vez</label>
+        </div>
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="mb-submit">Crear cita</button>
+        <button type="button" class="btn btn-outline" id="manual-cancel-btn">Cancelar</button>
+      </div>
+      <p class="form-hint" id="mb-hint"></p>
+    </form>
   </div>
 </div>
 
@@ -216,6 +292,144 @@
       alert(body.message || "No se pudo completar la acción.");
     }
     loadBookings();
+  });
+
+  /* ---------------------------------------------------------
+     Agendar manualmente
+  --------------------------------------------------------- */
+  const manualOverlay = document.getElementById("manual-overlay");
+  const manualForm = document.getElementById("manual-form");
+  const mbService = document.getElementById("mb-service");
+  const mbDate = document.getElementById("mb-date");
+  const mbSlotGrid = document.getElementById("mb-slot-grid");
+  const mbSlotStatus = document.getElementById("mb-slot-status");
+  const mbName = document.getElementById("mb-name");
+  const mbPhone = document.getElementById("mb-phone");
+  const mbNotes = document.getElementById("mb-notes");
+  const mbSubmit = document.getElementById("mb-submit");
+  const mbHint = document.getElementById("mb-hint");
+
+  let siteConfig = null;
+  let mbSelectedSlot = null;
+
+  async function loadSiteConfig() {
+    if (siteConfig) return siteConfig;
+    const res = await fetch("../data/config.json");
+    siteConfig = await res.json();
+    return siteConfig;
+  }
+
+  function fetchManualAvailability() {
+    mbSelectedSlot = null;
+    mbSlotGrid.innerHTML = "";
+    if (!mbService.value || !mbDate.value) {
+      mbSlotStatus.textContent = "Elige un servicio y una fecha para ver horarios.";
+      return;
+    }
+    mbSlotStatus.textContent = "Buscando horarios…";
+    fetch(`/api/availability?date=${encodeURIComponent(mbDate.value)}&serviceId=${encodeURIComponent(mbService.value)}`)
+      .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+      .then(({ ok, body }) => {
+        if (!ok) throw new Error(body.message || "No se pudo cargar la disponibilidad.");
+        const slots = body.slots || [];
+        if (slots.length === 0) {
+          mbSlotStatus.textContent = body.closedReason || "Cerrado ese día — elige otra fecha.";
+          return;
+        }
+        mbSlotStatus.textContent = "Elige un horario:";
+        mbSlotGrid.innerHTML = slots
+          .map(
+            (s) =>
+              `<button type="button" data-start="${s.startTime}" data-end="${s.endTime}" ${s.available ? "" : "disabled"}>${s.startTime} – ${s.endTime}</button>`
+          )
+          .join("");
+        mbSlotGrid.querySelectorAll("button:not(:disabled)").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            mbSlotGrid.querySelectorAll("button").forEach((b) => b.classList.remove("is-selected"));
+            btn.classList.add("is-selected");
+            mbSelectedSlot = { startTime: btn.getAttribute("data-start"), endTime: btn.getAttribute("data-end") };
+          });
+        });
+      })
+      .catch((err) => {
+        mbSlotStatus.textContent = err.message || "No se pudo cargar la disponibilidad.";
+      });
+  }
+
+  async function openManualModal() {
+    mbHint.textContent = "";
+    manualForm.reset();
+    mbSlotGrid.innerHTML = "";
+    mbSlotStatus.textContent = "Elige un servicio y una fecha para ver horarios.";
+    mbSelectedSlot = null;
+
+    const cfg = await loadSiteConfig();
+    mbService.innerHTML = (cfg.services || [])
+      .map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`)
+      .join("");
+
+    const today = new Date().toISOString().split("T")[0];
+    mbDate.setAttribute("min", today);
+    const maxAdvanceMonths = (cfg.booking && cfg.booking.maxAdvanceMonths) || 2;
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + maxAdvanceMonths);
+    mbDate.setAttribute("max", maxDate.toISOString().split("T")[0]);
+
+    manualOverlay.hidden = false;
+  }
+
+  function closeManualModal() {
+    manualOverlay.hidden = true;
+  }
+
+  document.getElementById("manual-open-btn").addEventListener("click", openManualModal);
+  document.getElementById("manual-cancel-btn").addEventListener("click", closeManualModal);
+  mbService.addEventListener("change", fetchManualAvailability);
+  mbDate.addEventListener("change", fetchManualAvailability);
+
+  manualForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    mbHint.textContent = "";
+    mbHint.classList.remove("is-error");
+
+    if (!mbSelectedSlot) {
+      mbHint.textContent = "Elige un horario disponible.";
+      mbHint.classList.add("is-error");
+      return;
+    }
+
+    const paymentMethod = manualForm.querySelector('input[name="mb-payment"]:checked').value;
+
+    mbSubmit.disabled = true;
+    mbSubmit.textContent = "Creando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/admin-create-booking", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          serviceId: mbService.value,
+          date: mbDate.value,
+          startTime: mbSelectedSlot.startTime,
+          customerName: mbName.value.trim(),
+          customerPhone: mbPhone.value.trim(),
+          notes: mbNotes.value.trim(),
+          paymentMethod,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo crear la cita.");
+
+      closeManualModal();
+      loadBookings();
+    } catch (err) {
+      mbHint.textContent = err.message || "No se pudo crear la cita. Intenta de nuevo.";
+      mbHint.classList.add("is-error");
+    } finally {
+      mbSubmit.disabled = false;
+      mbSubmit.textContent = "Crear cita";
+    }
   });
 
   filterStatus.addEventListener("change", loadBookings);
