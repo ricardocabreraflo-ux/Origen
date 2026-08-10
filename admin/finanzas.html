@@ -55,6 +55,29 @@
   .ideas-list .idea .n { font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-accent-dark); min-width: 22px; }
   .ideas-list .idea p { margin: 0; font-size: 0.92rem; line-height: 1.55; }
 
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+  .stat-card .label { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin: 0 0 6px; }
+  .stat-card .value { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 600; margin: 0; font-variant-numeric: tabular-nums; }
+  .stat-card.is-negative .value { color: #a13a2f; }
+
+  .chart-wrap { position: relative; overflow-x: auto; margin-top: 8px; }
+  .chart-legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 10px 0 0; font-size: 0.8rem; }
+  .chart-legend .item { display: flex; align-items: center; gap: 7px; color: var(--color-muted); }
+  .chart-legend .dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .chart-tooltip {
+    position: absolute; pointer-events: none; background: var(--color-primary); color: var(--color-white);
+    font-size: 0.76rem; padding: 5px 9px; border-radius: 6px; transform: translate(-50%, -100%); white-space: nowrap;
+    opacity: 0; transition: opacity 100ms ease; z-index: 10;
+  }
+  .chart-tooltip.is-visible { opacity: 1; }
+
+  .editing-banner {
+    background: #fdf1de; border: 1px solid #e4c98a; border-radius: 10px; padding: 10px 14px;
+    font-size: 0.85rem; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  }
+  .editing-banner button { background: none; border: none; color: var(--color-accent-dark); font-weight: 600; cursor: pointer; }
+
   #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
 </style>
 </head>
@@ -94,11 +117,21 @@
       </div>
     </div>
 
+    <div class="stat-row" id="stat-row"></div>
+
     <div class="breakeven-banner" id="breakeven-banner" hidden>
       <p class="label">Punto de equilibrio mensual</p>
       <p class="headline" id="be-headline"></p>
       <p style="margin:0;opacity:0.85;font-size:0.9rem;" id="be-sub"></p>
       <div class="breakeven-grid" id="be-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Gráfica de punto de equilibrio</h2>
+      <p class="section-note">Costos fijos, costos totales (fijos + variable por cita) e ingresos, según cuántas citas agendes al mes. Donde la línea de ingresos cruza la de costos totales está tu punto de equilibrio.</p>
+      <div class="chart-wrap"><svg id="breakeven-chart" width="100%" height="260"></svg></div>
+      <div class="chart-legend" id="breakeven-legend"></div>
+      <p class="chart-empty" id="breakeven-chart-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Configura tu sueldo objetivo y tus gastos fijos para ver esta gráfica.</p>
     </div>
 
     <div class="card">
@@ -108,14 +141,19 @@
     </div>
 
     <div class="card">
-      <h2>Agregar gasto</h2>
-      <p class="section-note">Un gasto fijo se captura una sola vez y se cuenta solo cada mes. Uno variable es puntual, con su fecha exacta.</p>
+      <h2 id="expense-form-title">Agregar gasto</h2>
+      <p class="section-note">Fijo: se captura una vez y se cuenta solo cada mes. Variable: un pago puntual, con su fecha exacta. Inversión: un gasto grande (ej. remodelación) que se reparte entre los meses que decidas.</p>
+      <div class="editing-banner" id="editing-banner" hidden>
+        <span>Editando un gasto existente.</span>
+        <button type="button" id="cancel-edit-btn">Cancelar edición</button>
+      </div>
       <form class="expense-form" id="expense-form">
         <div class="full">
           <label>Tipo de gasto</label>
           <div class="kind-toggle">
             <label><input type="radio" name="kind" value="fixed" checked /> Fijo (mensual, se repite)</label>
             <label><input type="radio" name="kind" value="variable" /> Variable (un pago puntual)</label>
+            <label><input type="radio" name="kind" value="investment" /> Inversión (prorratear)</label>
           </div>
         </div>
         <div>
@@ -131,11 +169,12 @@
             <option value="sueldo">Sueldo</option>
             <option value="marketing">Marketing</option>
             <option value="mantenimiento">Mantenimiento</option>
+            <option value="inversion">Inversión</option>
             <option value="otro">Otro</option>
           </select>
         </div>
         <div>
-          <label for="exp-amount">Monto (MXN)</label>
+          <label for="exp-amount" id="exp-amount-label">Monto (MXN)</label>
           <input type="number" id="exp-amount" min="0" step="0.01" required />
         </div>
         <div id="exp-variable-date-field">
@@ -143,8 +182,12 @@
           <input type="date" id="exp-date" />
         </div>
         <div id="exp-fixed-start-field" hidden>
-          <label for="exp-start">Desde cuándo aplica</label>
+          <label for="exp-start" id="exp-start-label">Desde cuándo aplica</label>
           <input type="date" id="exp-start" />
+        </div>
+        <div id="exp-months-field" hidden>
+          <label for="exp-months">Repartir en cuántos meses</label>
+          <input type="number" id="exp-months" min="1" step="1" placeholder="Ej. 6" />
         </div>
         <div class="full">
           <label for="exp-notes">Notas (opcional)</label>
@@ -169,6 +212,18 @@
     </div>
 
     <div class="card">
+      <h2>Inversiones (prorrateadas)</h2>
+      <p class="section-note">Ej. remodelación del estudio — el monto total se reparte entre los meses que elegiste.</p>
+      <div class="table-scroll">
+        <table class="expense-table" id="investment-table">
+          <thead><tr><th>Descripción</th><th class="numeric">Monto total</th><th class="numeric">Monto/mes</th><th>Periodo</th><th>Acciones</th></tr></thead>
+          <tbody id="investment-tbody"></tbody>
+        </table>
+      </div>
+      <p class="chart-empty" id="investment-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Sin inversiones capturadas.</p>
+    </div>
+
+    <div class="card">
       <h2>Gastos variables</h2>
       <div class="table-scroll">
         <table class="expense-table" id="variable-table">
@@ -187,7 +242,7 @@
 (function () {
   "use strict";
 
-  const CATEGORY_LABEL = { renta: "Renta", insumos: "Insumos", servicios: "Servicios", sueldo: "Sueldo", marketing: "Marketing", mantenimiento: "Mantenimiento", otro: "Otro" };
+  const CATEGORY_LABEL = { renta: "Renta", insumos: "Insumos", servicios: "Servicios", sueldo: "Sueldo", marketing: "Marketing", mantenimiento: "Mantenimiento", inversion: "Inversión", otro: "Otro" };
 
   const loginGate = document.getElementById("login-gate");
   const adminShell = document.getElementById("admin-shell");
@@ -195,16 +250,24 @@
   const financeContent = document.getElementById("finanzas-content");
 
   const expenseForm = document.getElementById("expense-form");
+  const expFormTitle = document.getElementById("expense-form-title");
   const expDescription = document.getElementById("exp-description");
   const expCategory = document.getElementById("exp-category");
   const expAmount = document.getElementById("exp-amount");
+  const expAmountLabel = document.getElementById("exp-amount-label");
   const expDate = document.getElementById("exp-date");
   const expStart = document.getElementById("exp-start");
+  const expStartLabel = document.getElementById("exp-start-label");
+  const expMonths = document.getElementById("exp-months");
   const expNotes = document.getElementById("exp-notes");
   const expHint = document.getElementById("exp-hint");
   const expSubmit = document.getElementById("exp-submit");
   const variableDateField = document.getElementById("exp-variable-date-field");
   const fixedStartField = document.getElementById("exp-fixed-start-field");
+  const monthsField = document.getElementById("exp-months-field");
+  const editingBanner = document.getElementById("editing-banner");
+
+  let editingId = null;
 
   function fmtMoney(n) {
     return "$" + Math.round(n).toLocaleString("es-MX");
@@ -220,13 +283,46 @@
     return { Authorization: `Bearer ${token}` };
   }
 
-  expenseForm.querySelectorAll('input[name="kind"]').forEach((r) =>
-    r.addEventListener("change", () => {
-      const isFixed = expenseForm.querySelector('input[name="kind"]:checked').value === "fixed";
-      variableDateField.hidden = isFixed;
-      fixedStartField.hidden = !isFixed;
-    })
-  );
+  function updateFormFieldsForKind() {
+    const kind = expenseForm.querySelector('input[name="kind"]:checked').value;
+    variableDateField.hidden = kind !== "variable";
+    fixedStartField.hidden = kind === "variable";
+    monthsField.hidden = kind !== "investment";
+    expAmountLabel.textContent = kind === "investment" ? "Monto total (MXN)" : "Monto (MXN)";
+    expStartLabel.textContent = kind === "investment" ? "Desde cuándo empieza a contar" : "Desde cuándo aplica";
+  }
+  expenseForm.querySelectorAll('input[name="kind"]').forEach((r) => r.addEventListener("change", updateFormFieldsForKind));
+
+  function resetEditingState() {
+    editingId = null;
+    editingBanner.hidden = true;
+    expFormTitle.textContent = "Agregar gasto";
+    expSubmit.textContent = "Guardar gasto";
+    expenseForm.reset();
+    updateFormFieldsForKind();
+  }
+  document.getElementById("cancel-edit-btn").addEventListener("click", resetEditingState);
+
+  function startEditingExpense(expense) {
+    editingId = expense.id;
+    editingBanner.hidden = false;
+    expFormTitle.textContent = "Editar gasto";
+    expSubmit.textContent = "Actualizar gasto";
+
+    expenseForm.querySelector(`input[name="kind"][value="${expense.kind}"]`).checked = true;
+    expDescription.value = expense.description;
+    expCategory.value = expense.category;
+    expAmount.value = expense.amount;
+    expNotes.value = expense.notes || "";
+    if (expense.kind === "variable") {
+      expDate.value = expense.expense_date;
+    } else {
+      expStart.value = expense.start_date;
+      if (expense.kind === "investment") expMonths.value = expense.amortize_months;
+    }
+    updateFormFieldsForKind();
+    expenseForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   let expensesCache = [];
 
@@ -242,6 +338,7 @@
   function renderExpenseTables() {
     const fixed = expensesCache.filter((e) => e.kind === "fixed");
     const variable = expensesCache.filter((e) => e.kind === "variable");
+    const investment = expensesCache.filter((e) => e.kind === "investment");
 
     document.getElementById("fixed-empty").hidden = fixed.length > 0;
     document.getElementById("fixed-tbody").innerHTML = fixed
@@ -255,7 +352,27 @@
           <td>${e.active ? "Activo" : `<span class="pill-inactive">Inactivo desde ${e.end_date || ""}</span>`}</td>
           <td>
             <div class="row-actions">
+              <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
               ${e.active ? '<button class="btn btn-outline btn-sm" data-action="deactivate">Desactivar</button>' : ""}
+              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
+            </div>
+          </td>
+        </tr>`
+      )
+      .join("");
+
+    document.getElementById("investment-empty").hidden = investment.length > 0;
+    document.getElementById("investment-tbody").innerHTML = investment
+      .map(
+        (e) => `
+        <tr data-id="${e.id}">
+          <td>${e.description}</td>
+          <td class="numeric">${fmtMoney(e.amount)}</td>
+          <td class="numeric">${fmtMoney(e.amount / e.amortize_months)}</td>
+          <td>${e.start_date} → ${e.end_date}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
               <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
             </div>
           </td>
@@ -272,7 +389,12 @@
           <td>${e.description}</td>
           <td>${CATEGORY_LABEL[e.category] || e.category}</td>
           <td class="numeric">${fmtMoney(e.amount)}</td>
-          <td><button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
+              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
+            </div>
+          </td>
         </tr>`
       )
       .join("");
@@ -280,6 +402,7 @@
 
   document.getElementById("fixed-tbody").addEventListener("click", (e) => handleExpenseAction(e));
   document.getElementById("variable-tbody").addEventListener("click", (e) => handleExpenseAction(e));
+  document.getElementById("investment-tbody").addEventListener("click", (e) => handleExpenseAction(e));
 
   async function handleExpenseAction(e) {
     const btn = e.target.closest("button[data-action]");
@@ -287,6 +410,12 @@
     const row = btn.closest("tr");
     const id = row.getAttribute("data-id");
     const action = btn.getAttribute("data-action");
+
+    if (action === "edit") {
+      const expense = expensesCache.find((x) => x.id === id);
+      if (expense) startEditingExpense(expense);
+      return;
+    }
 
     if (action === "delete") {
       if (!window.confirm("¿Eliminar este gasto? No se puede deshacer.")) return;
@@ -319,8 +448,10 @@
     expHint.textContent = "";
     expHint.classList.remove("is-error");
     const kind = expenseForm.querySelector('input[name="kind"]:checked').value;
+    const wasEditing = editingId;
 
     const payload = {
+      id: editingId || undefined,
       description: expDescription.value.trim(),
       category: expCategory.value,
       amount: expAmount.value,
@@ -328,25 +459,27 @@
       notes: expNotes.value.trim(),
     };
     if (kind === "variable") payload.expenseDate = expDate.value;
-    else payload.startDate = expStart.value || todayStr();
+    else {
+      payload.startDate = expStart.value || todayStr();
+      if (kind === "investment") payload.amortizeMonths = expMonths.value;
+    }
 
+    const originalLabel = expSubmit.textContent;
     expSubmit.disabled = true;
-    expSubmit.textContent = "Guardando…";
+    expSubmit.textContent = wasEditing ? "Actualizando…" : "Guardando…";
     try {
       const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
       const res = await fetch("/api/save-expense", { method: "POST", headers, body: JSON.stringify(payload) });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || "No se pudo guardar el gasto.");
-      expenseForm.reset();
-      fixedStartField.hidden = true;
-      variableDateField.hidden = false;
+      resetEditingState();
       await refreshAll();
     } catch (err) {
       expHint.textContent = err.message;
       expHint.classList.add("is-error");
+      expSubmit.textContent = originalLabel;
     } finally {
       expSubmit.disabled = false;
-      expSubmit.textContent = "Guardar gasto";
     }
   });
 
@@ -375,9 +508,20 @@
     return body;
   }
 
+  function renderStatRow(financial) {
+    const profitNegative = financial.profit < 0;
+    document.getElementById("stat-row").innerHTML = `
+      <div class="stat-card"><p class="label">Ingresos del mes</p><p class="value">${fmtMoney(financial.revenue)}</p></div>
+      <div class="stat-card"><p class="label">Gastos del mes</p><p class="value">${fmtMoney(financial.totalExpenses)}</p></div>
+      <div class="stat-card${profitNegative ? " is-negative" : ""}"><p class="label">Utilidad del mes</p><p class="value">${fmtMoney(financial.profit)}</p></div>
+    `;
+  }
+
   function renderBreakeven(financial, hasSalary) {
     const banner = document.getElementById("breakeven-banner");
     const salaryCard = document.getElementById("salary-setup-card");
+
+    renderStatRow(financial);
 
     if (!hasSalary) {
       salaryCard.hidden = false;
@@ -387,24 +531,160 @@
 
     if (!financial.breakeven) {
       banner.hidden = true;
+      document.getElementById("breakeven-chart-empty").hidden = false;
+      document.getElementById("breakeven-chart").innerHTML = "";
       renderIdeas(financial, null);
       return;
     }
 
     const be = financial.breakeven;
     banner.hidden = false;
-    document.getElementById("be-headline").textContent = `${fmtMoney(be.monthlyFixedCosts)} MXN al mes`;
-    document.getElementById("be-sub").textContent = be.basadoEnDatosReales
-      ? `Ticket promedio real: ${fmtMoney(be.averageTicket)} (de ${be.ticketsConsiderados} citas cobradas)`
-      : `Ticket promedio estimado con tus precios de lista: ${fmtMoney(be.averageTicket)} (todavía no hay suficientes citas cobradas con monto capturado)`;
 
-    document.getElementById("be-grid").innerHTML = `
-      <div class="item"><p class="num">${be.citasPorMes}</p><p class="lbl">citas al mes</p></div>
-      <div class="item"><p class="num">${be.citasPorSemana}</p><p class="lbl">citas a la semana</p></div>
-      <div class="item"><p class="num">${be.citasPorDia ?? "—"}</p><p class="lbl">citas por día que atiendes</p></div>
-    `;
+    if (be.margenNegativo) {
+      document.getElementById("be-headline").textContent = "No se alcanza con los precios actuales";
+      document.getElementById("be-sub").textContent = `Tu costo variable por cita (${fmtMoney(be.variableCostPerBooking)}) es igual o mayor a tu ticket promedio (${fmtMoney(be.averageTicket)}) — revisa tus precios o tus gastos variables antes de calcular cuántas citas necesitas.`;
+      document.getElementById("be-grid").innerHTML = "";
+      document.getElementById("breakeven-chart-empty").hidden = false;
+      document.getElementById("breakeven-chart").innerHTML = "";
+    } else {
+      document.getElementById("be-headline").textContent = `${fmtMoney(be.monthlyFixedCosts)} MXN al mes`;
+      document.getElementById("be-sub").textContent = be.basadoEnDatosReales
+        ? `Ticket promedio real: ${fmtMoney(be.averageTicket)} (de ${be.ticketsConsiderados} citas cobradas) · costo variable estimado por cita: ${fmtMoney(be.variableCostPerBooking)}`
+        : `Ticket promedio estimado con tus precios de lista: ${fmtMoney(be.averageTicket)} (todavía no hay suficientes citas cobradas con monto capturado)`;
+
+      document.getElementById("be-grid").innerHTML = `
+        <div class="item"><p class="num">${be.citasPorMes}</p><p class="lbl">citas al mes</p></div>
+        <div class="item"><p class="num">${be.citasPorSemana}</p><p class="lbl">citas a la semana</p></div>
+        <div class="item"><p class="num">${be.citasPorDia ?? "—"}</p><p class="lbl">citas por día que atiendes</p></div>
+      `;
+      document.getElementById("breakeven-chart-empty").hidden = true;
+      renderBreakevenChart(be);
+    }
 
     renderIdeas(financial, be);
+  }
+
+  function renderBreakevenChart(be) {
+    const svg = document.getElementById("breakeven-chart");
+    svg.innerHTML = "";
+
+    const INK = "#211b15";
+    const ACCENT = "#b9a37f";
+    const MUTED = "#a9a094";
+
+    const maxCitas = Math.max(be.citasPorMes * 1.6, 4);
+    const width = Math.max(svg.parentElement.clientWidth || 700, 500);
+    const height = 260;
+    const marginLeft = 56;
+    const marginBottom = 30;
+    const marginTop = 14;
+    const plotW = width - marginLeft - 16;
+    const plotH = height - marginTop - marginBottom;
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svg.setAttribute("width", width);
+
+    const revenueAt = (n) => n * be.averageTicket;
+    const totalCostAt = (n) => be.monthlyFixedCosts + n * be.variableCostPerBooking;
+    const maxY = Math.max(revenueAt(maxCitas), totalCostAt(maxCitas), be.monthlyFixedCosts) * 1.08;
+
+    const x = (n) => marginLeft + (n / maxCitas) * plotW;
+    const y = (v) => marginTop + plotH - (v / maxY) * plotH;
+
+    function pathFor(fn) {
+      const p0 = `M ${x(0)} ${y(fn(0))}`;
+      const p1 = `L ${x(maxCitas)} ${y(fn(maxCitas))}`;
+      return `${p0} ${p1}`;
+    }
+
+    // ejes
+    const axis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    axis.setAttribute("x1", marginLeft);
+    axis.setAttribute("x2", marginLeft);
+    axis.setAttribute("y1", marginTop);
+    axis.setAttribute("y2", marginTop + plotH);
+    axis.setAttribute("stroke", "rgba(33,29,25,0.14)");
+    svg.appendChild(axis);
+    const baseline = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    baseline.setAttribute("x1", marginLeft);
+    baseline.setAttribute("x2", marginLeft + plotW);
+    baseline.setAttribute("y1", marginTop + plotH);
+    baseline.setAttribute("y2", marginTop + plotH);
+    baseline.setAttribute("stroke", "rgba(33,29,25,0.14)");
+    svg.appendChild(baseline);
+
+    // etiquetas del eje Y ($)
+    [0, 0.5, 1].forEach((f) => {
+      const val = maxY * f;
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", marginLeft - 8);
+      label.setAttribute("y", y(val) + 4);
+      label.setAttribute("text-anchor", "end");
+      label.setAttribute("font-size", "10");
+      label.setAttribute("fill", "#6f6558");
+      label.textContent = fmtMoney(val);
+      svg.appendChild(label);
+    });
+
+    // etiquetas del eje X (citas)
+    [0, 0.5, 1].forEach((f) => {
+      const n = maxCitas * f;
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", x(n));
+      label.setAttribute("y", height - 8);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("font-size", "10");
+      label.setAttribute("fill", "#6f6558");
+      label.textContent = Math.round(n);
+      svg.appendChild(label);
+    });
+
+    function drawLine(fn, color, dashed) {
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", pathFor(fn));
+      path.setAttribute("stroke", color);
+      path.setAttribute("stroke-width", "2.5");
+      path.setAttribute("fill", "none");
+      if (dashed) path.setAttribute("stroke-dasharray", "6 5");
+      svg.appendChild(path);
+    }
+
+    drawLine(() => be.monthlyFixedCosts, MUTED, true);
+    drawLine(totalCostAt, INK, false);
+    drawLine(revenueAt, ACCENT, false);
+
+    // punto de equilibrio
+    const bx = x(be.citasPorMes);
+    const by = y(revenueAt(be.citasPorMes));
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", bx);
+    dot.setAttribute("cy", by);
+    dot.setAttribute("r", 5);
+    dot.setAttribute("fill", INK);
+    svg.appendChild(dot);
+    const vline = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    vline.setAttribute("x1", bx);
+    vline.setAttribute("x2", bx);
+    vline.setAttribute("y1", by);
+    vline.setAttribute("y2", marginTop + plotH);
+    vline.setAttribute("stroke", INK);
+    vline.setAttribute("stroke-width", "1");
+    vline.setAttribute("stroke-dasharray", "3 4");
+    svg.appendChild(vline);
+    const bLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    bLabel.setAttribute("x", bx);
+    bLabel.setAttribute("y", by - 10);
+    bLabel.setAttribute("text-anchor", "middle");
+    bLabel.setAttribute("font-size", "10");
+    bLabel.setAttribute("font-weight", "700");
+    bLabel.setAttribute("fill", INK);
+    bLabel.textContent = `${be.citasPorMes} citas`;
+    svg.appendChild(bLabel);
+
+    document.getElementById("breakeven-legend").innerHTML = `
+      <span class="item"><span class="dot" style="background:${ACCENT}"></span>Ingresos</span>
+      <span class="item"><span class="dot" style="background:${INK}"></span>Costos totales</span>
+      <span class="item"><span class="dot" style="background:${MUTED}"></span>Costos fijos</span>
+    `;
   }
 
   function renderIdeas(financial, be) {
