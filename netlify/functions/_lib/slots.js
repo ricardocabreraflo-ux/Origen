@@ -74,14 +74,14 @@ function rangesOverlap(aStart, aEnd, bStart, bEnd) {
 
 /**
  * Marca cada slot candidato como disponible o no, comparándolo contra las
- * citas activas del día. Cada cita existente "ocupa" su duración real más
- * el colchón de limpieza de los DOS lados (antes y después), para que
- * ningún horario candidato pueda quedar pegado a otra cita ya reservada,
- * sin importar si el candidato va antes o después de ella.
+ * citas activas del día. Cada cita existente "ocupa" desde su inicio hasta
+ * su fin + el colchón de limpieza, para que la siguiente cita no pueda
+ * empezar pegada a la anterior. El margen solo aplica DESPUÉS de cada
+ * cita, no antes.
  */
 function markAvailability(candidateSlots, existingBookings, bufferMinutes) {
   const occupied = existingBookings.map((b) => ({
-    start: toMinutes(b.start_time.slice(0, 5)) - bufferMinutes,
+    start: toMinutes(b.start_time.slice(0, 5)),
     end: toMinutes(b.end_time.slice(0, 5)) + bufferMinutes,
   }));
 
