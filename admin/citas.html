@@ -85,6 +85,7 @@
     <h1>Citas</h1>
     <div class="row-actions">
       <button class="btn btn-primary btn-sm" id="manual-open-btn">+ Agendar manualmente</button>
+      <button class="btn btn-outline btn-sm" id="export-btn">Exportar clientas (CSV)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
   </div>
@@ -98,6 +99,7 @@
       <option value="expired">Vencidas</option>
     </select>
     <input type="date" id="filter-date" />
+    <input type="month" id="filter-month" />
   </div>
 
   <div id="loading-state">Cargando citas…</div>
@@ -150,6 +152,10 @@
         <input type="tel" id="mb-phone" required placeholder="Ej. 55 1234 5678" />
       </div>
       <div>
+        <label for="mb-email">Correo (opcional)</label>
+        <input type="email" id="mb-email" placeholder="tu@correo.com" />
+      </div>
+      <div>
         <label for="mb-notes">Notas (opcional)</label>
         <textarea id="mb-notes" rows="2"></textarea>
       </div>
@@ -184,6 +190,7 @@
   const tbody = document.getElementById("bookings-tbody");
   const filterStatus = document.getElementById("filter-status");
   const filterDate = document.getElementById("filter-date");
+  const filterMonth = document.getElementById("filter-month");
 
   function formatDateTime(dateStr, start, end) {
     const [y, m, d] = dateStr.split("-").map(Number);
@@ -199,6 +206,8 @@
     return { Authorization: `Bearer ${token}` };
   }
 
+  let lastLoadedBookings = [];
+
   async function loadBookings() {
     loadingState.hidden = false;
     table.hidden = true;
@@ -207,6 +216,7 @@
     const params = new URLSearchParams();
     if (filterStatus.value) params.set("status", filterStatus.value);
     if (filterDate.value) params.set("date", filterDate.value);
+    if (filterMonth.value) params.set("month", filterMonth.value);
 
     const headers = await authHeaders();
     const res = await fetch(`/api/list-bookings?${params.toString()}`, { headers });
@@ -220,6 +230,7 @@
     }
 
     const bookings = body.bookings || [];
+    lastLoadedBookings = bookings;
     if (bookings.length === 0) {
       emptyState.textContent = "No hay citas con esos filtros.";
       emptyState.hidden = false;
@@ -231,7 +242,7 @@
         (b) => `
         <tr data-id="${b.id}">
           <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${b.payment_method === "mercado_pago" ? '<br/><span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Pagado con tarjeta</span>' : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
-          <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span></td>
+          <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
           <td>$${b.deposit_amount} MXN</td>
@@ -277,15 +288,17 @@
     const action = btn.getAttribute("data-action");
     const endpoint = ACTION_ENDPOINT[action];
 
+    let extraPayload = {};
     if (action === "delete") {
       const code = row.querySelector("td")?.textContent.trim().split("\n")[0] || "";
       const confirmed = window.confirm(
         `¿Eliminar PERMANENTEMENTE la cita ${code}?\n\nEsta acción no se puede deshacer y borra el registro completo. Para una cancelación normal, usa "Cancelar" en vez de esto.`
       );
       if (!confirmed) return;
+      const pin = window.prompt("Escribe el PIN de seguridad para eliminar esta cita:");
+      if (pin === null) return; // canceló el prompt
+      extraPayload = { pin };
     }
-
-    let extraPayload = {};
     if (action === "toggle-revenue") {
       const currentlyExempt = btn.getAttribute("data-revenue-exempt") === "true";
       if (!currentlyExempt) {
@@ -324,6 +337,7 @@
   const mbSlotStatus = document.getElementById("mb-slot-status");
   const mbName = document.getElementById("mb-name");
   const mbPhone = document.getElementById("mb-phone");
+  const mbEmail = document.getElementById("mb-email");
   const mbNotes = document.getElementById("mb-notes");
   const mbSubmit = document.getElementById("mb-submit");
   const mbHint = document.getElementById("mb-hint");
@@ -433,6 +447,7 @@
           startTime: mbSelectedSlot.startTime,
           customerName: mbName.value.trim(),
           customerPhone: mbPhone.value.trim(),
+          customerEmail: mbEmail.value.trim(),
           notes: mbNotes.value.trim(),
           paymentMethod,
         }),
@@ -452,8 +467,39 @@
   });
 
   filterStatus.addEventListener("change", loadBookings);
-  filterDate.addEventListener("change", loadBookings);
+  filterDate.addEventListener("change", () => {
+    if (filterDate.value) filterMonth.value = "";
+    loadBookings();
+  });
+  filterMonth.addEventListener("change", () => {
+    if (filterMonth.value) filterDate.value = "";
+    loadBookings();
+  });
   document.getElementById("refresh-btn").addEventListener("click", loadBookings);
+
+  document.getElementById("export-btn").addEventListener("click", () => {
+    if (lastLoadedBookings.length === 0) {
+      alert("No hay citas cargadas para exportar. Ajusta los filtros primero.");
+      return;
+    }
+    const seen = new Set();
+    const rows = [["Nombre", "Teléfono", "Correo"]];
+    lastLoadedBookings.forEach((b) => {
+      const key = (b.customer_phone || "") + "|" + (b.customer_email || "");
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push([b.customer_name, b.customer_phone, b.customer_email || ""]);
+    });
+    const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clientas-origen-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
   document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
   document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
 

@@ -202,6 +202,35 @@ create table if not exists expenses (
 create index if not exists expenses_kind_idx on expenses (kind);
 create index if not exists expenses_expense_date_idx on expenses (expense_date);
 
+-- Correo opcional de la clienta (con el teléfono/WhatsApp basta para
+-- agendar; el correo es solo para poder armar una base de datos y
+-- mandar publicidad/promociones más adelante).
+alter table bookings add column if not exists customer_email text;
+
+-- Gasto tipo "inversión" (ej. remodelación del estudio): se captura el
+-- monto TOTAL una sola vez y se reparte entre los meses que decida la
+-- administradora (amortize_months), en vez de contarse completo en un
+-- solo mes o repetirse indefinidamente como un gasto fijo normal.
+alter table expenses add column if not exists amortize_months integer;
+
+alter table expenses drop constraint if exists expenses_category_check;
+alter table expenses add constraint expenses_category_check
+  check (category in ('renta', 'insumos', 'servicios', 'sueldo', 'marketing', 'mantenimiento', 'inversion', 'otro'));
+
+alter table expenses drop constraint if exists expenses_kind_check;
+alter table expenses add constraint expenses_kind_check
+  check (kind in ('variable', 'fixed', 'investment'));
+
+alter table expenses drop constraint if exists expenses_check;
+alter table expenses add constraint expenses_check
+  check (
+    (kind = 'variable' and expense_date is not null and start_date is null and end_date is null and amortize_months is null)
+    or
+    (kind = 'fixed' and expense_date is null and start_date is not null and amortize_months is null)
+    or
+    (kind = 'investment' and expense_date is null and start_date is not null and amortize_months is not null and amortize_months > 0)
+  );
+
 drop trigger if exists expenses_set_updated_at on expenses;
 create trigger expenses_set_updated_at
   before update on expenses

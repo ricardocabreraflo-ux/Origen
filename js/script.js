@@ -509,6 +509,7 @@
           startTime: state.slot.startTime,
           customerName: form.name.value.trim(),
           customerPhone: form.phone.value.trim(),
+          customerEmail: form.email.value.trim(),
           notes: form.notes.value.trim(),
         }),
       })

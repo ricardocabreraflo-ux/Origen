@@ -26,13 +26,16 @@ exports.handler = async (event) => {
     return badRequest("JSON inválido.");
   }
 
-  const { serviceId, date, startTime, customerName, customerPhone, notes } = payload;
+  const { serviceId, date, startTime, customerName, customerPhone, customerEmail, notes } = payload;
 
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
   if (!date || !DATE_RE.test(date)) return badRequest("Fecha inválida.");
   if (!startTime || !/^\d{2}:\d{2}$/.test(startTime)) return badRequest("Horario inválido.");
   if (!customerName || !customerName.trim()) return badRequest("Falta el nombre.");
   if (!customerPhone || !customerPhone.trim()) return badRequest("Falta el teléfono.");
+  if (customerEmail && customerEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim())) {
+    return badRequest("El correo no es válido.");
+  }
   if (!isTodayOrFuture(date)) return badRequest("La fecha debe ser hoy o una fecha futura.");
 
   try {
@@ -81,6 +84,7 @@ exports.handler = async (event) => {
       total_amount: parsePriceAmount(service.price),
       customer_name: customerName.trim(),
       customer_phone: customerPhone.trim(),
+      customer_email: (customerEmail || "").trim() || null,
       notes: (notes || "").trim() || null,
       booking_date: date,
       start_time: `${slot.startTime}:00`,

@@ -43,7 +43,7 @@ exports.handler = async (event, context) => {
     return badRequest("JSON inválido.");
   }
 
-  const { serviceId, date, startTime, customerName, customerPhone, notes, paymentMethod } = payload;
+  const { serviceId, date, startTime, customerName, customerPhone, customerEmail, notes, paymentMethod } = payload;
 
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
   if (!date || !DATE_RE.test(date)) return badRequest("Fecha inválida.");
@@ -94,6 +94,7 @@ exports.handler = async (event, context) => {
       total_amount: parsePriceAmount(service.price),
       customer_name: customerName.trim(),
       customer_phone: customerPhone.trim(),
+      customer_email: (customerEmail || "").trim() || null,
       notes: (notes || "").trim() || null,
       booking_date: date,
       start_time: `${slot.startTime}:00`,

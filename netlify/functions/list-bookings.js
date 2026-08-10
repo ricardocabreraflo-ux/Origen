@@ -27,6 +27,13 @@ exports.handler = async (event, context) => {
       .order("start_time", { ascending: true });
 
     if (params.date) query = query.eq("booking_date", params.date);
+    if (params.month && /^\d{4}-\d{2}$/.test(params.month)) {
+      const [y, m] = params.month.split("-").map(Number);
+      const monthStart = `${params.month}-01`;
+      const lastDay = new Date(y, m, 0).getDate();
+      const monthEnd = `${params.month}-${String(lastDay).padStart(2, "0")}`;
+      query = query.gte("booking_date", monthStart).lte("booking_date", monthEnd);
+    }
     if (params.status) query = query.eq("status", params.status);
 
     const { data, error } = await query;
