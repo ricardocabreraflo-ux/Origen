@@ -67,15 +67,18 @@
   <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
 </div>
 
-<div class="admin-wrap" id="admin-wrap" hidden>
+<div class="admin-shell" id="admin-shell" hidden>
+  <nav class="admin-sidebar">
+    <div class="sidebar-brand">Origen · Panel</div>
+    <a class="sidebar-link" href="citas.html">📅 Citas</a>
+    <a class="sidebar-link" href="lealtad.html">🎁 Lealtad</a>
+    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
+    <a class="sidebar-link is-active" href="finanzas.html">💰 Finanzas</a>
+    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+  </nav>
+  <div class="admin-wrap" id="admin-wrap">
   <div class="admin-header">
     <h1>Finanzas</h1>
-    <div class="row-actions">
-      <a class="btn btn-outline btn-sm" href="citas.html">Ver citas</a>
-      <a class="btn btn-outline btn-sm" href="reportes.html">Reportes</a>
-      <a class="btn btn-outline btn-sm" href="lealtad.html">Reporte de lealtad</a>
-      <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
-    </div>
   </div>
 
   <div id="loading-state">Cargando…</div>
@@ -174,6 +177,7 @@
       <p class="chart-empty" id="variable-empty" hidden style="text-align:center;color:var(--color-muted);padding:20px 0;">Sin gastos variables capturados.</p>
     </div>
   </div>
+  </div>
 </div>
 
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -184,7 +188,7 @@
   const CATEGORY_LABEL = { renta: "Renta", insumos: "Insumos", servicios: "Servicios", sueldo: "Sueldo", marketing: "Marketing", mantenimiento: "Mantenimiento", otro: "Otro" };
 
   const loginGate = document.getElementById("login-gate");
-  const adminWrap = document.getElementById("admin-wrap");
+  const adminShell = document.getElementById("admin-shell");
   const loadingState = document.getElementById("loading-state");
   const financeContent = document.getElementById("finanzas-content");
 
@@ -451,12 +455,12 @@
 
   function showAdmin() {
     loginGate.hidden = true;
-    adminWrap.hidden = false;
+    adminShell.hidden = false;
     refreshAll();
   }
   function showLogin() {
     loginGate.hidden = false;
-    adminWrap.hidden = true;
+    adminShell.hidden = true;
   }
 
   if (!window.netlifyIdentity) {

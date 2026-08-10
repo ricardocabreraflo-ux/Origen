@@ -32,15 +32,20 @@
   <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
 </div>
 
-<div class="admin-wrap" id="admin-wrap" hidden>
+<div class="admin-shell" id="admin-shell" hidden>
+  <nav class="admin-sidebar">
+    <div class="sidebar-brand">Origen · Panel</div>
+    <a class="sidebar-link" href="citas.html">📅 Citas</a>
+    <a class="sidebar-link is-active" href="lealtad.html">🎁 Lealtad</a>
+    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
+    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
+    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+  </nav>
+  <div class="admin-wrap" id="admin-wrap">
   <div class="admin-header">
     <h1>Reporte de lealtad</h1>
     <div class="row-actions">
-      <a class="btn btn-outline btn-sm" href="citas.html">Ver citas</a>
-      <a class="btn btn-outline btn-sm" href="reportes.html">Reportes</a>
-      <a class="btn btn-outline btn-sm" href="finanzas.html">Finanzas</a>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
-      <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
     </div>
   </div>
 
@@ -62,6 +67,7 @@
       <tbody id="loyalty-tbody"></tbody>
     </table>
   </div>
+  </div>
 </div>
 
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -72,7 +78,7 @@
   const CHANNEL_LABEL = { whatsapp: "WhatsApp", email: "Correo", both: "WhatsApp y correo", none: "Ninguna" };
 
   const loginGate = document.getElementById("login-gate");
-  const adminWrap = document.getElementById("admin-wrap");
+  const adminShell = document.getElementById("admin-shell");
   const loadingState = document.getElementById("loading-state");
   const emptyState = document.getElementById("empty-state");
   const table = document.getElementById("loyalty-table");
@@ -130,12 +136,12 @@
 
   function showAdmin() {
     loginGate.hidden = true;
-    adminWrap.hidden = false;
+    adminShell.hidden = false;
     loadClients();
   }
   function showLogin() {
     loginGate.hidden = false;
-    adminWrap.hidden = true;
+    adminShell.hidden = true;
   }
 
   if (!window.netlifyIdentity) {

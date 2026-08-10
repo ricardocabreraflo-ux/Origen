@@ -965,3 +965,73 @@ img { max-width: 100%; display: block; }
   }
   .section { padding: 70px 0; }
 }
+
+/* =========================================================
+   PANEL DE ADMINISTRACIÓN — cascarón compartido (sidebar) entre
+   citas.html, lealtad.html, reportes.html y finanzas.html
+========================================================= */
+.admin-shell { display: flex; min-height: 100vh; align-items: stretch; }
+.admin-shell[hidden] { display: none; }
+
+.admin-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar-brand {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-white);
+  padding: 0 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.14);
+  margin-bottom: 12px;
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.78);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-family: var(--font-body);
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 140ms ease, color 140ms ease;
+}
+.sidebar-link:hover { background: rgba(255,255,255,0.08); color: var(--color-white); }
+.sidebar-link.is-active { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 600; }
+.sidebar-logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.14); padding-top: 16px; }
+
+.admin-shell .admin-wrap { flex: 1; min-width: 0; }
+
+@media (max-width: 720px) {
+  .admin-shell { flex-direction: column; }
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 16px;
+  }
+  .sidebar-brand { display: none; }
+  .sidebar-link { width: auto; padding: 8px 12px; font-size: 0.85rem; }
+  .sidebar-logout { margin-top: 0; border-top: none; margin-left: auto; }
+}

@@ -69,15 +69,18 @@
   <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
 </div>
 
-<div class="admin-wrap" id="admin-wrap" hidden>
+<div class="admin-shell" id="admin-shell" hidden>
+  <nav class="admin-sidebar">
+    <div class="sidebar-brand">Origen · Panel</div>
+    <a class="sidebar-link" href="citas.html">📅 Citas</a>
+    <a class="sidebar-link" href="lealtad.html">🎁 Lealtad</a>
+    <a class="sidebar-link is-active" href="reportes.html">📊 Reportes</a>
+    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
+    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+  </nav>
+  <div class="admin-wrap" id="admin-wrap">
   <div class="admin-header">
     <h1>Reportes</h1>
-    <div class="row-actions">
-      <a class="btn btn-outline btn-sm" href="citas.html">Ver citas</a>
-      <a class="btn btn-outline btn-sm" href="finanzas.html">Finanzas</a>
-      <a class="btn btn-outline btn-sm" href="lealtad.html">Reporte de lealtad</a>
-      <button class="btn btn-outline btn-sm" id="logout-btn">Cerrar sesión</button>
-    </div>
   </div>
 
   <div class="period-bar">
@@ -121,6 +124,7 @@
       <p class="chart-empty" id="service-empty" hidden>No hay ingresos por servicio en este periodo.</p>
     </div>
   </div>
+  </div>
 </div>
 
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
@@ -134,7 +138,7 @@
   const WEEKDAYS_SHORT = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
   const loginGate = document.getElementById("login-gate");
-  const adminWrap = document.getElementById("admin-wrap");
+  const adminShell = document.getElementById("admin-shell");
   const loadingState = document.getElementById("loading-state");
   const reportContent = document.getElementById("report-content");
   const periodSwitch = document.getElementById("period-switch");
@@ -342,13 +346,13 @@
 
   function showAdmin() {
     loginGate.hidden = true;
-    adminWrap.hidden = false;
+    adminShell.hidden = false;
     periodSwitch.querySelector('[data-period="month"]').classList.add("is-active");
     loadReport();
   }
   function showLogin() {
     loginGate.hidden = false;
-    adminWrap.hidden = true;
+    adminShell.hidden = true;
   }
 
   if (!window.netlifyIdentity) {
