@@ -21,6 +21,8 @@
   .reward-pill { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; background: #f0dcc0; color: #7a4a12; }
   #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
   .table-scroll { overflow-x: auto; }
+  .card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 24px; }
+  .chart-wrap { position: relative; overflow-x: auto; }
 </style>
 </head>
 <body>
@@ -47,12 +49,20 @@
   <div class="admin-header">
     <h1>Reporte de lealtad</h1>
     <div class="row-actions">
+      <button class="btn btn-primary btn-sm" id="notify-all-btn">Avisar a todas (WhatsApp)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
   </div>
+  <p class="form-hint" id="notify-all-hint"></p>
 
   <div id="loading-state">Cargando…</div>
   <div id="empty-state" hidden>Todavía no hay citas confirmadas.</div>
+
+  <div class="card" id="chart-card" hidden>
+    <h2 style="font-size:1.05rem;margin:0 0 6px;">Clientas por progreso del ciclo</h2>
+    <p class="section-note" style="margin:0 0 10px;">Cuántas clientas llevan cada número de visitas dentro de su ciclo actual.</p>
+    <div class="chart-wrap"><svg id="progress-chart" width="100%" height="180"></svg></div>
+  </div>
 
   <div class="table-scroll">
     <table class="loyalty-table" id="loyalty-table" hidden>
@@ -64,6 +74,7 @@
           <th>Progreso del ciclo</th>
           <th>Recompensa</th>
           <th>Notificación preferida</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody id="loyalty-tbody"></tbody>
@@ -112,25 +123,130 @@
     const clients = body.clients || [];
     if (clients.length === 0) {
       emptyState.hidden = false;
+      document.getElementById("chart-card").hidden = true;
       return;
     }
 
     tbody.innerHTML = clients
       .map(
         (c) => `
-        <tr>
+        <tr data-phone="${c.phone}" data-name="${c.name}">
           <td>${c.name}</td>
           <td>${c.phone}</td>
           <td>${c.visits}</td>
           <td>${c.progress} de ${c.cycleSize}</td>
           <td>${c.hasReward ? '<span class="reward-pill">🎁 Disponible</span>' : "—"}</td>
           <td>${c.preference ? CHANNEL_LABEL[c.preference.notifyChannel] || c.preference.notifyChannel : "Sin definir"}</td>
+          <td><button class="btn btn-outline btn-sm" data-action="resend">Reenviar confirmación</button></td>
         </tr>`
       )
       .join("");
 
     table.hidden = false;
+    renderProgressChart(clients);
   }
+
+  function renderProgressChart(clients) {
+    const chartCard = document.getElementById("chart-card");
+    chartCard.hidden = false;
+    const cycleSize = clients[0].cycleSize;
+    const counts = Array.from({ length: cycleSize }, () => 0);
+    clients.forEach((c) => {
+      const idx = Math.max(1, Math.min(c.progress, cycleSize)) - 1;
+      counts[idx] += 1;
+    });
+
+    const svg = document.getElementById("progress-chart");
+    svg.innerHTML = "";
+    const width = Math.max(svg.parentElement.clientWidth || 600, 320);
+    const height = 180;
+    const marginBottom = 26;
+    const marginTop = 10;
+    const plotH = height - marginBottom - marginTop;
+    const barGap = 10;
+    const barWidth = width / cycleSize - barGap;
+    const maxCount = Math.max(1, ...counts);
+
+    counts.forEach((count, i) => {
+      const barHeight = (count / maxCount) * plotH;
+      const x = i * (barWidth + barGap) + barGap / 2;
+      const y = marginTop + (plotH - barHeight);
+
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", x);
+      rect.setAttribute("y", y);
+      rect.setAttribute("width", barWidth);
+      rect.setAttribute("height", Math.max(barHeight, count > 0 ? 2 : 0));
+      rect.setAttribute("rx", 3);
+      rect.setAttribute("fill", i === cycleSize - 1 ? "#b9a37f" : "#211b15");
+      svg.appendChild(rect);
+
+      const countLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      countLabel.setAttribute("x", x + barWidth / 2);
+      countLabel.setAttribute("y", y - 6);
+      countLabel.setAttribute("text-anchor", "middle");
+      countLabel.setAttribute("font-size", "11");
+      countLabel.setAttribute("font-weight", "700");
+      countLabel.setAttribute("fill", "#211b15");
+      countLabel.textContent = count;
+      if (count > 0) svg.appendChild(countLabel);
+
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", x + barWidth / 2);
+      label.setAttribute("y", height - 8);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("font-size", "10");
+      label.setAttribute("fill", "#6f6558");
+      label.textContent = `${i + 1} visita${i === 0 ? "" : "s"}`;
+      svg.appendChild(label);
+    });
+  }
+
+  tbody.addEventListener("click", async (e) => {
+    const btn = e.target.closest('button[data-action="resend"]');
+    if (!btn) return;
+    const row = btn.closest("tr");
+    const phone = row.getAttribute("data-phone");
+    const name = row.getAttribute("data-name");
+
+    btn.disabled = true;
+    btn.textContent = "Enviando…";
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/resend-loyalty-notice", { method: "POST", headers, body: JSON.stringify({ phone, name }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo enviar.");
+      btn.textContent = "Enviado ✓";
+    } catch (err) {
+      alert(err.message || "No se pudo enviar el WhatsApp.");
+      btn.textContent = "Reenviar confirmación";
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("notify-all-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("notify-all-btn");
+    const hint = document.getElementById("notify-all-hint");
+    if (!window.confirm("¿Avisar por WhatsApp a TODAS las clientas con al menos una cita confirmada sobre el programa de lealtad y las redes sociales?")) return;
+
+    btn.disabled = true;
+    btn.textContent = "Enviando…";
+    hint.textContent = "";
+    hint.classList.remove("is-error");
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/notify-loyalty-all", { method: "POST", headers });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo enviar el aviso masivo.");
+      hint.textContent = `Enviado a ${body.sent} de ${body.total} clientas${body.failed ? ` (${body.failed} fallaron)` : ""}.`;
+    } catch (err) {
+      hint.textContent = err.message || "No se pudo enviar el aviso masivo.";
+      hint.classList.add("is-error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Avisar a todas (WhatsApp)";
+    }
+  });
 
   document.getElementById("refresh-btn").addEventListener("click", loadClients);
   document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
