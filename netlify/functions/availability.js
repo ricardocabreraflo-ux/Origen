@@ -30,7 +30,7 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message: "Servicio inválido." }) };
     }
 
-    const bufferMinutes = (config.booking && config.booking.bufferMinutes) || 15;
+    const bufferMinutes = (config.booking && config.booking.bufferMinutes) || 30;
     const maxAdvanceMonths = (config.booking && config.booking.maxAdvanceMonths) || 2;
 
     if (!isWithinBookingWindow(date, maxAdvanceMonths)) {

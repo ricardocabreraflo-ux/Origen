@@ -162,6 +162,7 @@
                       : ""
               }
               <button class="btn btn-outline btn-sm" data-action="toggle-revenue" data-revenue-exempt="${b.revenue_exempt}">${b.revenue_exempt ? "Quitar marca de sin ingreso" : "Marcar sin ingreso"}</button>
+              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
             </div>
           </td>
         </tr>`
@@ -176,6 +177,7 @@
     cancel: "/api/cancel-booking",
     reactivate: "/api/reactivate-booking",
     "toggle-revenue": "/api/mark-no-revenue",
+    delete: "/api/delete-booking",
   };
 
   tbody.addEventListener("click", async (e) => {
@@ -185,6 +187,14 @@
     const id = row.getAttribute("data-id");
     const action = btn.getAttribute("data-action");
     const endpoint = ACTION_ENDPOINT[action];
+
+    if (action === "delete") {
+      const code = row.querySelector("td")?.textContent.trim().split("\n")[0] || "";
+      const confirmed = window.confirm(
+        `¿Eliminar PERMANENTEMENTE la cita ${code}?\n\nEsta acción no se puede deshacer y borra el registro completo. Para una cancelación normal, usa "Cancelar" en vez de esto.`
+      );
+      if (!confirmed) return;
+    }
 
     let extraPayload = {};
     if (action === "toggle-revenue") {

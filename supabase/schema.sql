@@ -77,17 +77,24 @@ create table if not exists client_preferences (
 );
 
 -- Rango de tiempo que ocupa realmente la cita: desde que empieza hasta que
--- termina, más 15 minutos de colchón de limpieza. Como los servicios ya no
+-- termina, más 30 minutos de colchón de limpieza. Como los servicios ya no
 -- duran todos lo mismo (antes eran bloques fijos de 2 horas para
 -- cualquier servicio), la protección contra traslapes ya no puede basarse
 -- en que el horario de inicio sea idéntico — ahora se compara el rango
--- completo de cada cita.
+-- completo de cada cita. Postgres no permite cambiar la fórmula de una
+-- columna generada in situ, así que si ya existía con otro colchón (antes
+-- eran 15 minutos) hay que quitarla junto con lo que depende de ella y
+-- recrearla con el valor nuevo.
+alter table bookings drop constraint if exists bookings_no_overlap;
+drop index if exists bookings_occupied_range_idx;
+alter table bookings drop column if exists occupied_range;
+
 alter table bookings
-  add column if not exists occupied_range tsrange
+  add column occupied_range tsrange
   generated always as (
     tsrange(
       (booking_date + start_time)::timestamp,
-      (booking_date + end_time)::timestamp + interval '15 minutes'
+      (booking_date + end_time)::timestamp + interval '30 minutes'
     )
   ) stored;
 
