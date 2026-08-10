@@ -89,6 +89,73 @@
     }, 1000);
   }
 
+  function initPwaInstallBanner() {
+    const banner = document.getElementById("pwa-install-banner");
+    if (!banner) return;
+
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    if (isStandalone) return;
+    if (localStorage.getItem("pwaInstallDismissed")) return;
+
+    const closeBtn = document.getElementById("pwa-install-close");
+    const actionBtn = document.getElementById("pwa-install-action");
+    const messageEl = document.getElementById("pwa-install-message");
+
+    function dismiss() {
+      banner.hidden = true;
+      localStorage.setItem("pwaInstallDismissed", "1");
+    }
+    closeBtn.addEventListener("click", dismiss);
+
+    // No mostramos el aviso encima de la ventana emergente de promoción:
+    // esperamos a que se cierre (o a que nunca aparezca) antes de mostrarlo.
+    function revealWhenClear() {
+      const overlay = document.getElementById("promo-popup-overlay");
+      if (overlay && !overlay.hidden) {
+        setTimeout(revealWhenClear, 800);
+        return;
+      }
+      banner.hidden = false;
+    }
+
+    const ua = window.navigator.userAgent;
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isIOSOtherBrowser = /crios|fxios/i.test(ua); // Chrome/Firefox en iOS no pueden agregar a inicio
+
+    let deferredPrompt = null;
+    let canShowNativePrompt = false;
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      canShowNativePrompt = true;
+      actionBtn.hidden = false;
+    });
+
+    actionBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      actionBtn.disabled = true;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      if (choice.outcome === "accepted") dismiss();
+      else actionBtn.disabled = false;
+    });
+
+    // Le damos 3.5s para que el navegador dispare "beforeinstallprompt" (si
+    // lo soporta) antes de decidir qué mensaje mostrar.
+    setTimeout(() => {
+      if (canShowNativePrompt) {
+        revealWhenClear();
+      } else if (isIOS && !isIOSOtherBrowser) {
+        messageEl.textContent = "Toca el botón de compartir (⬆️) en Safari y luego 'Agregar a inicio'.";
+        revealWhenClear();
+      }
+      // En otros navegadores sin "Agregar a inicio" disponible, no forzamos
+      // ningún aviso — no hay una acción real que la clienta pueda tomar.
+    }, 3500);
+  }
+
   function renderFounder() {
     if (cfg.founder) {
       document.getElementById("founder-name").textContent = cfg.founder.name;
@@ -659,6 +726,7 @@
     renderBrand();
     renderAnnouncement();
     initPromoPopup();
+    initPwaInstallBanner();
     renderFounder();
     renderGallery();
     renderContact();
