@@ -87,7 +87,10 @@
     { "src": "assets/gallery-4.jpg", "alt": "Diseño de cejas en Origen Brows & Hair Studio" },
     { "src": "assets/gallery-5.jpg", "alt": "Productos profesionales InLei usados en Origen Brows" },
     { "src": "assets/gallery-6.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" },
-    { "src": "assets/gallery-7.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" }
+    { "src": "assets/gallery-7.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" },
+    { "type": "video", "src": "assets/gallery-video-1.mov", "alt": "Video de trabajo en Origen Brows & Hair Studio" },
+    { "type": "video", "src": "assets/gallery-video-2.mov", "alt": "Video de trabajo en Origen Brows & Hair Studio" },
+    { "type": "video", "src": "assets/gallery-video-3.mp4", "alt": "Video de trabajo en Origen Brows & Hair Studio" }
   ],
 
   "services": [

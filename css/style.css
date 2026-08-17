@@ -472,7 +472,8 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
   background: var(--color-cream);
 }
-.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
+.gallery-item img,
+.gallery-item video { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
 
 /* ---------------------------------------------------------
    Reserva por pasos

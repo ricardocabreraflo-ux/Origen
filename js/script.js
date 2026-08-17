@@ -185,7 +185,13 @@
     const grid = document.getElementById("gallery-grid");
     if (!grid || !cfg.galleryImages) return;
     grid.innerHTML = cfg.galleryImages
-      .map((g) => `<div class="gallery-item"><img src="${g.src}" alt="${g.alt || ""}" loading="lazy" /></div>`)
+      .map((g) => {
+        const media =
+          g.type === "video"
+            ? `<video src="${g.src}" controls playsinline preload="metadata" aria-label="${escapeHtml(g.alt || "")}"></video>`
+            : `<img src="${g.src}" alt="${g.alt || ""}" loading="lazy" />`;
+        return `<div class="gallery-item">${media}</div>`;
+      })
       .join("");
   }
 
