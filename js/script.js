@@ -119,16 +119,22 @@
 
   function renderGallery() {
     const grid = document.getElementById("gallery-grid");
-    if (!grid || !cfg.galleryImages) return;
-    grid.innerHTML = cfg.galleryImages
-      .map((g) => {
-        const media =
-          g.type === "video"
-            ? `<video src="${g.src}" controls playsinline preload="metadata" aria-label="${escapeHtml(g.alt || "")}"></video>`
-            : `<img src="${g.src}" alt="${g.alt || ""}" loading="lazy" />`;
-        return `<div class="gallery-item">${media}</div>`;
-      })
-      .join("");
+    const items = cfg.galleryImages;
+    if (!grid || !items || items.length === 0) return;
+
+    // El carrete se desliza solo en bucle infinito: duplicamos las fotos
+    // una vez para que, al llegar a la mitad, el "salto" de regreso al
+    // inicio sea invisible (la segunda copia queda oculta a lectores de
+    // pantalla para no anunciar cada foto dos veces).
+    function renderItem(g, hidden) {
+      const media =
+        g.type === "video"
+          ? `<video src="${g.src}" controls playsinline preload="metadata" aria-label="${escapeHtml(g.alt || "")}"></video>`
+          : `<img src="${g.src}" alt="${g.alt || ""}" loading="lazy" />`;
+      return `<div class="gallery-item"${hidden ? ' aria-hidden="true"' : ""}>${media}</div>`;
+    }
+
+    grid.innerHTML = items.map((g) => renderItem(g, false)).join("") + items.map((g) => renderItem(g, true)).join("");
   }
 
   function renderTransformationReel() {

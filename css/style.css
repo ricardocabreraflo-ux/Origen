@@ -460,13 +460,29 @@ img { max-width: 100%; display: block; }
 .founder-credit { font-size: 0.88rem; color: var(--color-muted); }
 .founder-credit strong { color: var(--color-dark); }
 
-/* Gallery */
+/* Gallery — carrete horizontal que se desliza solo */
+.gallery-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+}
 .gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  display: flex;
+  width: max-content;
   gap: 18px;
+  animation: gallery-scroll 50s linear infinite;
+}
+.gallery-marquee:hover .gallery-grid,
+.gallery-marquee:focus-within .gallery-grid { animation-play-state: paused; }
+@keyframes gallery-scroll {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-grid { animation: none; }
 }
 .gallery-item {
+  flex: 0 0 260px;
   aspect-ratio: 4/5;
   border-radius: var(--radius);
   overflow: hidden;
