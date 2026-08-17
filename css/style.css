@@ -463,8 +463,6 @@ img { max-width: 100%; display: block; }
 /* Gallery — carrete horizontal que se desliza solo */
 .gallery-marquee {
   overflow: hidden;
-  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
 }
 .gallery-grid {
   display: flex;
