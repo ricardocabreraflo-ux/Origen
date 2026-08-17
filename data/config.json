@@ -27,9 +27,9 @@
 
   "promoPopup": {
     "show": true,
-    "eyebrow": "Gran apertura",
+    "eyebrow": "Oferta especial",
     "title": "15% de descuento en tu primera cita",
-    "message": "Por nuestra gran apertura, agenda tu primera cita y recibe 15% de descuento en cualquier servicio. Además, nuestras tarifas actuales de apertura están vigentes solo por tiempo limitado — asegura tu precio de lanzamiento antes del cambio a tarifario regular.",
+    "message": "Agenda tu primera cita y recibe 15% de descuento en cualquier servicio. Además, nuestras tarifas actuales están vigentes solo por tiempo limitado — asegura tu precio antes del cambio a tarifario regular.",
     "ctaLabel": "Agenda tu cita",
     "expiresOn": "2026-08-31"
   },
