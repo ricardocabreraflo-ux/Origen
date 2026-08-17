@@ -44,9 +44,12 @@
   .manual-modal .section-note { margin: 0 0 20px; }
   .manual-form { display: flex; flex-direction: column; gap: 14px; }
   .manual-form label { font-size: 0.85rem; font-weight: 600; color: var(--color-dark); }
-  .manual-form select, .manual-form input, .manual-form textarea {
+  .manual-form select, .manual-form input:not([type="radio"]):not([type="checkbox"]), .manual-form textarea {
     width: 100%; margin-top: 4px; padding: 10px 12px; border-radius: 10px;
     border: 1.5px solid rgba(33,29,25,0.15); font-family: var(--font-body); background: var(--color-cream-soft);
+  }
+  .manual-form input[type="radio"], .manual-form input[type="checkbox"] {
+    width: 18px; height: 18px; flex-shrink: 0; margin: 0; padding: 0;
   }
   .manual-slot-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
   .manual-slot-grid button {
@@ -64,14 +67,14 @@
   .manual-payment-options label:has(input:checked) {
     border-color: var(--color-primary); background: var(--color-cream);
   }
-  .manual-payment-options input[type="radio"] { accent-color: var(--color-primary); margin-top: 2px; flex-shrink: 0; }
+  .manual-payment-options input[type="radio"] { accent-color: var(--color-primary); }
   .manual-actions { display: flex; gap: 10px; margin-top: 6px; }
 
   .checkbox-option {
     display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; font-weight: 400;
     padding: 10px 14px; border-radius: 12px; border: 1.5px solid rgba(33,29,25,0.15); background: var(--color-white);
   }
-  .checkbox-option input { width: auto; margin: 2px 0 0; flex-shrink: 0; accent-color: var(--color-primary); }
+  .checkbox-option input { accent-color: var(--color-primary); }
 
   .field-row { display: flex; gap: 12px; }
   .field-row > div { flex: 1; }
