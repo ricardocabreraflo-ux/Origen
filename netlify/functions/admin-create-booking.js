@@ -169,9 +169,11 @@ exports.handler = async (event, context) => {
     }
 
     // Si ya se cobró en efectivo, corre lo mismo que cualquier
-    // confirmación (Google Calendar + avisos de lealtad) — salvo que sea
-    // un registro retroactivo (fecha pasada), donde no tiene sentido crear
-    // un evento de Calendar ni avisos de lealtad para algo que ya pasó.
+    // confirmación (evento de Google Calendar + aviso de bienvenida/premio
+    // de lealtad) — salvo que sea un registro retroactivo (fecha pasada),
+    // donde no tiene sentido crear un evento de Calendar para algo que ya
+    // pasó. El aviso de lealtad para estos casos se manda aparte, más
+    // abajo, con el estado actualizado en vez del mensaje de bienvenida/premio.
     if (isCash && !isPast) {
       try {
         await runPostConfirmSideEffects(supabase, data);
@@ -183,11 +185,27 @@ exports.handler = async (event, context) => {
     // Mejor esfuerzo: avisarle a la CLIENTA por WhatsApp. Requiere Meta
     // configurado y la plantilla correspondiente aprobada — si aún no
     // está listo, la cita de todas formas ya quedó creada en el sistema.
-    // Tampoco aplica a registros retroactivos: no se le avisa a la clienta
-    // de una cita que ya sucedió.
+    // Un registro retroactivo no manda la confirmación de cita (ya pasó),
+    // pero sí le avisa su estado de lealtad actualizado, para que quede
+    // informada aunque la cita no se haya agendado por el sistema.
     try {
       if (isPast) {
-        // no notificar
+        const updatedStatus = await getLoyaltyStatus(supabase, config.loyalty, data.customer_phone);
+        const statusTail = updatedStatus.hasReward
+          ? `¡Ya tienes ${updatedStatus.discountPercent}% de descuento disponible!`
+          : `Te ${updatedStatus.remaining === 1 ? "falta" : "faltan"} ${updatedStatus.remaining} visita${updatedStatus.remaining === 1 ? "" : "s"} más para tu ${updatedStatus.discountPercent}% de descuento.`;
+
+        await sendWhatsAppTemplate(data.customer_phone, "estado_lealtad_origen", "es_MX", [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: data.customer_name },
+              { type: "text", text: String(updatedStatus.progress) },
+              { type: "text", text: String(updatedStatus.cycleSize) },
+              { type: "text", text: statusTail },
+            ],
+          },
+        ]);
       } else if (isCash) {
         await sendWhatsAppTemplate(data.customer_phone, "confirmacion_cita_pagada_origen", "es_MX", [
           {
