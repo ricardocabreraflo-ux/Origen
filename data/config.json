@@ -83,7 +83,11 @@
 
   "galleryImages": [
     { "src": "assets/gallery-2.jpg", "alt": "Origen Brows & Hair Studio" },
-    { "src": "assets/gallery-3.jpg", "alt": "Origen Brows & Hair Studio" }
+    { "src": "assets/gallery-3.jpg", "alt": "Origen Brows & Hair Studio" },
+    { "src": "assets/gallery-4.jpg", "alt": "Diseño de cejas en Origen Brows & Hair Studio" },
+    { "src": "assets/gallery-5.jpg", "alt": "Productos profesionales InLei usados en Origen Brows" },
+    { "src": "assets/gallery-6.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" },
+    { "src": "assets/gallery-7.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" }
   ],
 
   "services": [
