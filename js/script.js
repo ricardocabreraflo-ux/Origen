@@ -135,6 +135,23 @@
     }
 
     grid.innerHTML = items.map((g) => renderItem(g, false)).join("") + items.map((g) => renderItem(g, true)).join("");
+
+    // Reproduce en automático (sin sonido) el video con el que el cursor
+    // se detiene encima, como vista previa; se pausa y regresa al inicio
+    // al quitar el cursor. En celular (sin cursor) el botón de play normal
+    // del video sigue funcionando igual.
+    grid.querySelectorAll(".gallery-item").forEach((item) => {
+      const video = item.querySelector("video");
+      if (!video) return;
+      item.addEventListener("mouseenter", () => {
+        video.muted = true;
+        video.play().catch(() => {});
+      });
+      item.addEventListener("mouseleave", () => {
+        video.pause();
+        video.currentTime = 0;
+      });
+    });
   }
 
   function renderTransformationReel() {
