@@ -29,6 +29,11 @@
 
   "testimonials": [],
 
+  "reviews": {
+    "googlePlaceId": "ChIJxU4nlAD90YURF83FOaw97Hs",
+    "minRating": 4
+  },
+
   "whatsappNumber": "525566095405",
   "phoneDisplay": "+52 55 6609 5405",
   "email": "origenbrowsmx@gmail.com",

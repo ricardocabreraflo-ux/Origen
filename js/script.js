@@ -11,6 +11,18 @@
     return (str || "").replace(/\D/g, "");
   }
 
+  // Las reseñas de Google son texto público que cualquier persona puede
+  // escribir — a diferencia del resto de cfg (editado solo por la dueña
+  // vía CMS), hay que escaparlo antes de insertarlo como HTML.
+  function escapeHtml(str) {
+    return (str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function whatsappLink(message) {
     const phone = digitsOnly(cfg.whatsappNumber);
     const text = encodeURIComponent(message || "");
@@ -252,9 +264,26 @@
       .join("");
   }
 
-  function renderTestimonials() {
+  async function renderTestimonials() {
     const grid = document.getElementById("testimonial-grid");
-    const items = cfg.testimonials || [];
+
+    // Fuente principal: reseñas reales de Google Maps de 4-5 estrellas.
+    // Si Google no responde o no hay ninguna todavía, cae de vuelta a los
+    // testimonios manuales que la dueña carga en el panel de Contenido.
+    let items = [];
+    try {
+      const res = await fetch("/.netlify/functions/google-reviews");
+      if (res.ok) {
+        const data = await res.json();
+        items = (data.reviews || []).map((r) => ({ quote: r.quote, author: r.author, stars: r.rating }));
+      }
+    } catch (err) {
+      // Sin conexión con Google: seguimos con el respaldo manual de abajo.
+    }
+    if (items.length === 0) {
+      items = (cfg.testimonials || []).map((t) => ({ quote: t.quote, author: t.author, stars: 5 }));
+    }
+
     if (items.length === 0) {
       grid.outerHTML = `
         <div class="testimonial-empty" id="testimonial-grid">
@@ -267,9 +296,9 @@
       .map(
         (t) => `
         <div class="testimonial-card">
-          <div class="testimonial-stars" aria-hidden="true">★★★★★</div>
-          <p class="testimonial-quote">“${t.quote}”</p>
-          <p class="testimonial-author">${t.author}</p>
+          <div class="testimonial-stars" aria-hidden="true">${"★".repeat(Math.round(t.stars) || 5)}</div>
+          <p class="testimonial-quote">“${escapeHtml(t.quote)}”</p>
+          <p class="testimonial-author">${escapeHtml(t.author)}</p>
         </div>`
       )
       .join("");
