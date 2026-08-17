@@ -18,6 +18,13 @@
     "date": "8 de agosto de 2026"
   },
 
+  "transformationReel": {
+    "show": false,
+    "title": "Mira la transformación",
+    "caption": "Antes y después reales de nuestras clientas en Origen Brows & Hair Studio.",
+    "videoSrc": "assets/gallery-video-1.mov"
+  },
+
   "promoPopup": {
     "show": true,
     "eyebrow": "Gran apertura",

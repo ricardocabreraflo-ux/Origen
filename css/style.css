@@ -475,6 +475,20 @@ img { max-width: 100%; display: block; }
 .gallery-item img,
 .gallery-item video { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
 
+/* Reel antes y después */
+.reel-container { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.reel-caption { color: var(--color-muted); max-width: 560px; margin: 0 auto 32px; }
+.reel-video-wrap {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 9/16;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-cream);
+  box-shadow: var(--shadow-soft, 0 12px 30px rgba(0,0,0,0.12));
+}
+.reel-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* ---------------------------------------------------------
    Reserva por pasos
 --------------------------------------------------------- */

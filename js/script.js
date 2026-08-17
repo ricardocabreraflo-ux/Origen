@@ -195,6 +195,17 @@
       .join("");
   }
 
+  function renderTransformationReel() {
+    const reel = cfg.transformationReel;
+    const section = document.getElementById("transformacion");
+    if (!section || !reel || !reel.show) return;
+    document.getElementById("reel-title").textContent = reel.title || "";
+    document.getElementById("reel-caption").textContent = reel.caption || "";
+    const video = document.getElementById("reel-video");
+    video.src = reel.videoSrc;
+    section.hidden = false;
+  }
+
   function renderContact() {
     const addressLink = document.getElementById("contact-address");
     addressLink.textContent = cfg.address;
@@ -765,6 +776,7 @@
     initPwaInstallBanner();
     renderFounder();
     renderGallery();
+    renderTransformationReel();
     renderContact();
     renderSocialLinks();
     renderWhatsappButtons();
