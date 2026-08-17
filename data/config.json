@@ -19,7 +19,7 @@
   },
 
   "transformationReel": {
-    "show": true,
+    "show": false,
     "title": "Mira la transformación",
     "caption": "Antes y después reales de nuestras clientas en Origen Brows & Hair Studio.",
     "videoSrc": "assets/gallery-video-1.mov"
