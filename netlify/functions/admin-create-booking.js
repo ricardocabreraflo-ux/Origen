@@ -56,6 +56,7 @@ exports.handler = async (event, context) => {
     directEntry,
     totalAmount,
     durationMinutes,
+    notifyLoyalty,
   } = payload;
 
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
@@ -190,22 +191,26 @@ exports.handler = async (event, context) => {
     // informada aunque la cita no se haya agendado por el sistema.
     try {
       if (isPast) {
-        const updatedStatus = await getLoyaltyStatus(supabase, config.loyalty, data.customer_phone);
-        const statusTail = updatedStatus.hasReward
-          ? `¡Ya tienes ${updatedStatus.discountPercent}% de descuento disponible!`
-          : `Te ${updatedStatus.remaining === 1 ? "falta" : "faltan"} ${updatedStatus.remaining} visita${updatedStatus.remaining === 1 ? "" : "s"} más para tu ${updatedStatus.discountPercent}% de descuento.`;
+        if (notifyLoyalty !== false) {
+          const updatedStatus = await getLoyaltyStatus(supabase, config.loyalty, data.customer_phone);
+          const statusTail = updatedStatus.hasReward
+            ? `¡Ya tienes ${updatedStatus.discountPercent}% de descuento disponible!`
+            : `Te ${updatedStatus.remaining === 1 ? "falta" : "faltan"} ${updatedStatus.remaining} visita${updatedStatus.remaining === 1 ? "" : "s"} más para tu ${updatedStatus.discountPercent}% de descuento.`;
 
-        await sendWhatsAppTemplate(data.customer_phone, "estado_lealtad_origen", "es_MX", [
-          {
-            type: "body",
-            parameters: [
-              { type: "text", text: data.customer_name },
-              { type: "text", text: String(updatedStatus.progress) },
-              { type: "text", text: String(updatedStatus.cycleSize) },
-              { type: "text", text: statusTail },
-            ],
-          },
-        ]);
+          await sendWhatsAppTemplate(data.customer_phone, "estado_lealtad_origen", "es_MX", [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: data.customer_name },
+                { type: "text", text: String(updatedStatus.progress) },
+                { type: "text", text: String(updatedStatus.cycleSize) },
+                { type: "text", text: statusTail },
+              ],
+            },
+          ]);
+        }
+        // Si notifyLoyalty es false, no se manda ningún WhatsApp — nunca
+        // la confirmación de cita, que no aplica a una fecha ya pasada.
       } else if (isCash) {
         await sendWhatsAppTemplate(data.customer_phone, "confirmacion_cita_pagada_origen", "es_MX", [
           {

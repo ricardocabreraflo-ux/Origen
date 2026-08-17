@@ -56,8 +56,22 @@
   .manual-slot-grid button:disabled { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
   .manual-slot-grid button.is-selected { background: var(--color-primary); color: var(--color-white); border-color: var(--color-primary); }
   .manual-payment-options { display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; font-weight: 400; }
-  .manual-payment-options label { display: flex; align-items: flex-start; gap: 8px; font-weight: 400; }
+  .manual-payment-options label {
+    display: flex; align-items: flex-start; gap: 10px; font-weight: 400;
+    padding: 10px 14px; border-radius: 12px; border: 1.5px solid rgba(33,29,25,0.15);
+    background: var(--color-white); cursor: pointer; transition: border-color 150ms ease, background 150ms ease;
+  }
+  .manual-payment-options label:has(input:checked) {
+    border-color: var(--color-primary); background: var(--color-cream);
+  }
+  .manual-payment-options input[type="radio"] { accent-color: var(--color-primary); margin-top: 2px; flex-shrink: 0; }
   .manual-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+  .checkbox-option {
+    display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; font-weight: 400;
+    padding: 10px 14px; border-radius: 12px; border: 1.5px solid rgba(33,29,25,0.15); background: var(--color-white);
+  }
+  .checkbox-option input { width: auto; margin: 2px 0 0; flex-shrink: 0; accent-color: var(--color-primary); }
 
   .field-row { display: flex; gap: 12px; }
   .field-row > div { flex: 1; }
@@ -247,6 +261,10 @@
           <label><input type="radio" name="db-payment" value="transfer" /> Transferencia</label>
         </div>
       </div>
+      <label class="checkbox-option">
+        <input type="checkbox" id="db-notify-loyalty" checked />
+        <span>Avisar por WhatsApp su estado de lealtad actualizado</span>
+      </label>
       <div class="manual-actions">
         <button type="submit" class="btn btn-primary" id="db-submit">Registrar cita</button>
         <button type="button" class="btn btn-outline" id="direct-cancel-btn">Cancelar</button>
@@ -601,6 +619,7 @@
   const dbPhone = document.getElementById("db-phone");
   const dbEmail = document.getElementById("db-email");
   const dbNotes = document.getElementById("db-notes");
+  const dbNotifyLoyalty = document.getElementById("db-notify-loyalty");
   const dbSubmit = document.getElementById("db-submit");
   const dbHint = document.getElementById("db-hint");
 
@@ -673,6 +692,7 @@
           directEntry: true,
           totalAmount: dbAmount.value,
           durationMinutes: dbDuration.value,
+          notifyLoyalty: dbNotifyLoyalty.checked,
         }),
       });
       const body = await res.json();
