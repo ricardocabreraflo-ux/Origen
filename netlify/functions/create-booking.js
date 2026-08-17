@@ -1,6 +1,7 @@
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
-const { slotsForDate, isTodayOrFuture, isWithinBookingWindow } = require("./_lib/slots");
+const { slotsForDate, isTodayOrFuture, isWithinBookingWindow, rangesOverlap, toMinutes } = require("./_lib/slots");
+const { getBlocksForDate } = require("./_lib/scheduleBlocks");
 const { generateReservationCode } = require("./_lib/reservationCode");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
 const { getLoyaltyStatus } = require("./_lib/loyalty");
@@ -58,6 +59,15 @@ exports.handler = async (event) => {
     if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
 
     const supabase = getServiceClient();
+
+    const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);
+    if (fullDayBlock) return badRequest("Ese día no está disponible para citas.");
+    const slotStart = toMinutes(slot.startTime);
+    const slotEnd = toMinutes(slot.endTime);
+    const blockedByRange = partialBlocks.some((b) =>
+      rangesOverlap(slotStart, slotEnd, toMinutes(b.start_time.slice(0, 5)), toMinutes(b.end_time.slice(0, 5)))
+    );
+    if (blockedByRange) return badRequest("Ese horario no está disponible.");
 
     // Libera pendientes vencidos de ese día antes de intentar reservar.
     await supabase

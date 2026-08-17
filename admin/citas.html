@@ -58,6 +58,19 @@
   .manual-payment-options { display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; font-weight: 400; }
   .manual-payment-options label { display: flex; align-items: flex-start; gap: 8px; font-weight: 400; }
   .manual-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+  .field-row { display: flex; gap: 12px; }
+  .field-row > div { flex: 1; }
+  .form-hint-note { font-size: 0.8rem; color: var(--color-muted); margin: -8px 0 0; }
+
+  .blocks-list { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+  .blocks-list li {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px; background: var(--color-cream-soft);
+    border: 1.5px solid rgba(33,29,25,0.1); font-size: 0.85rem;
+  }
+  .blocks-list li button { flex-shrink: 0; padding: 4px 10px; font-size: 0.75rem; }
+  .blocks-empty { color: var(--color-muted); font-size: 0.85rem; margin: 0 0 20px; }
 </style>
 </head>
 <body>
@@ -86,6 +99,8 @@
     <h1>Citas</h1>
     <div class="row-actions">
       <button class="btn btn-primary btn-sm" id="manual-open-btn">+ Agendar manualmente</button>
+      <button class="btn btn-outline btn-sm" id="direct-open-btn">🕓 Registrar cita directa</button>
+      <button class="btn btn-outline btn-sm" id="blocks-open-btn">🚫 Bloqueos de horario</button>
       <button class="btn btn-outline btn-sm" id="export-btn">Exportar clientas (CSV)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
@@ -175,6 +190,107 @@
         <button type="button" class="btn btn-outline" id="manual-cancel-btn">Cancelar</button>
       </div>
       <p class="form-hint" id="mb-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="direct-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Registrar cita directa</h2>
+    <p class="section-note">Para anotar una cita que ya se hizo (aunque no se haya agendado en el sistema) o llevar el control con fecha, hora, monto y duración libres. No se le manda ningún WhatsApp a la clienta.</p>
+    <form class="manual-form" id="direct-form">
+      <div>
+        <label for="db-service">Servicio</label>
+        <select id="db-service" required></select>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="db-date">Fecha (puede ser pasada)</label>
+          <input type="date" id="db-date" required />
+        </div>
+        <div>
+          <label for="db-time">Hora</label>
+          <input type="time" id="db-time" required />
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="db-duration">Duración (minutos)</label>
+          <input type="number" id="db-duration" min="5" step="5" required />
+        </div>
+        <div>
+          <label for="db-amount">Monto cobrado (MXN)</label>
+          <input type="number" id="db-amount" min="0" step="1" required />
+        </div>
+      </div>
+      <p class="form-hint-note">Ambos vienen prellenados según el servicio — cámbialos si hubo descuento o si duró distinto (útil para el Servicio Especial).</p>
+      <div>
+        <label for="db-name">Nombre de la clienta</label>
+        <input type="text" id="db-name" required />
+      </div>
+      <div>
+        <label for="db-phone">Teléfono</label>
+        <input type="tel" id="db-phone" required placeholder="Ej. 55 1234 5678" />
+      </div>
+      <div>
+        <label for="db-email">Correo (opcional)</label>
+        <input type="email" id="db-email" placeholder="tu@correo.com" />
+      </div>
+      <div>
+        <label for="db-notes">Notas (opcional)</label>
+        <textarea id="db-notes" rows="2"></textarea>
+      </div>
+      <div>
+        <label>Forma de pago</label>
+        <div class="manual-payment-options">
+          <label><input type="radio" name="db-payment" value="cash" checked /> Efectivo</label>
+          <label><input type="radio" name="db-payment" value="transfer" /> Transferencia</label>
+        </div>
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="db-submit">Registrar cita</button>
+        <button type="button" class="btn btn-outline" id="direct-cancel-btn">Cancelar</button>
+      </div>
+      <p class="form-hint" id="db-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="blocks-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Bloqueos de horario</h2>
+    <p class="section-note">Cierra un día completo o solo una parte (ej. "cerrado de 2 a 4pm") para que no se puedan agendar citas ahí.</p>
+    <p class="blocks-empty" id="blocks-empty" hidden>No hay bloqueos guardados.</p>
+    <ul class="blocks-list" id="blocks-list"></ul>
+    <form class="manual-form" id="block-form">
+      <div>
+        <label for="bl-date">Fecha</label>
+        <input type="date" id="bl-date" required />
+      </div>
+      <div>
+        <label style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="bl-full-day" checked style="width:auto;margin:0;" /> Bloquear el día completo
+        </label>
+      </div>
+      <div class="field-row" id="bl-range-fields" hidden>
+        <div>
+          <label for="bl-start">Desde</label>
+          <input type="time" id="bl-start" />
+        </div>
+        <div>
+          <label for="bl-end">Hasta</label>
+          <input type="time" id="bl-end" />
+        </div>
+      </div>
+      <div>
+        <label for="bl-label">Motivo (opcional)</label>
+        <input type="text" id="bl-label" placeholder="Ej. Cita médica, día festivo…" />
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="bl-submit">Agregar bloqueo</button>
+        <button type="button" class="btn btn-outline" id="blocks-close-btn">Cerrar</button>
+      </div>
+      <p class="form-hint" id="bl-hint"></p>
     </form>
   </div>
 </div>
@@ -467,6 +583,229 @@
     } finally {
       mbSubmit.disabled = false;
       mbSubmit.textContent = "Crear cita";
+    }
+  });
+
+  /* ---------------------------------------------------------
+     Registrar cita directa (fecha libre, incl. pasada; hora,
+     monto y duración editables a mano)
+  --------------------------------------------------------- */
+  const directOverlay = document.getElementById("direct-overlay");
+  const directForm = document.getElementById("direct-form");
+  const dbService = document.getElementById("db-service");
+  const dbDate = document.getElementById("db-date");
+  const dbTime = document.getElementById("db-time");
+  const dbDuration = document.getElementById("db-duration");
+  const dbAmount = document.getElementById("db-amount");
+  const dbName = document.getElementById("db-name");
+  const dbPhone = document.getElementById("db-phone");
+  const dbEmail = document.getElementById("db-email");
+  const dbNotes = document.getElementById("db-notes");
+  const dbSubmit = document.getElementById("db-submit");
+  const dbHint = document.getElementById("db-hint");
+
+  function parsePriceLabel(priceLabel) {
+    if (!priceLabel) return 0;
+    const match = String(priceLabel).replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function fillDirectDefaultsFromService() {
+    const cfg = siteConfig;
+    if (!cfg) return;
+    const service = (cfg.services || []).find((s) => s.id === dbService.value);
+    if (!service) return;
+    dbDuration.value = service.duration;
+    dbAmount.value = parsePriceLabel(service.price);
+  }
+
+  async function openDirectModal() {
+    dbHint.textContent = "";
+    directForm.reset();
+
+    const cfg = await loadSiteConfig();
+    dbService.innerHTML = (cfg.services || [])
+      .map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`)
+      .join("");
+
+    const maxAdvanceMonths = (cfg.booking && cfg.booking.maxAdvanceMonths) || 2;
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + maxAdvanceMonths);
+    dbDate.setAttribute("max", maxDate.toISOString().split("T")[0]);
+    dbDate.value = new Date().toISOString().split("T")[0];
+
+    fillDirectDefaultsFromService();
+    directOverlay.hidden = false;
+  }
+
+  function closeDirectModal() {
+    directOverlay.hidden = true;
+  }
+
+  document.getElementById("direct-open-btn").addEventListener("click", openDirectModal);
+  document.getElementById("direct-cancel-btn").addEventListener("click", closeDirectModal);
+  dbService.addEventListener("change", fillDirectDefaultsFromService);
+
+  directForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    dbHint.textContent = "";
+    dbHint.classList.remove("is-error");
+
+    const paymentMethod = directForm.querySelector('input[name="db-payment"]:checked').value;
+
+    dbSubmit.disabled = true;
+    dbSubmit.textContent = "Registrando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/admin-create-booking", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          serviceId: dbService.value,
+          date: dbDate.value,
+          startTime: dbTime.value,
+          customerName: dbName.value.trim(),
+          customerPhone: dbPhone.value.trim(),
+          customerEmail: dbEmail.value.trim(),
+          notes: dbNotes.value.trim(),
+          paymentMethod,
+          directEntry: true,
+          totalAmount: dbAmount.value,
+          durationMinutes: dbDuration.value,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo registrar la cita.");
+
+      closeDirectModal();
+      loadBookings();
+    } catch (err) {
+      dbHint.textContent = err.message || "No se pudo registrar la cita. Intenta de nuevo.";
+      dbHint.classList.add("is-error");
+    } finally {
+      dbSubmit.disabled = false;
+      dbSubmit.textContent = "Registrar cita";
+    }
+  });
+
+  /* ---------------------------------------------------------
+     Bloqueos de horario
+  --------------------------------------------------------- */
+  const blocksOverlay = document.getElementById("blocks-overlay");
+  const blocksList = document.getElementById("blocks-list");
+  const blocksEmpty = document.getElementById("blocks-empty");
+  const blockForm = document.getElementById("block-form");
+  const blDate = document.getElementById("bl-date");
+  const blFullDay = document.getElementById("bl-full-day");
+  const blRangeFields = document.getElementById("bl-range-fields");
+  const blStart = document.getElementById("bl-start");
+  const blEnd = document.getElementById("bl-end");
+  const blLabel = document.getElementById("bl-label");
+  const blSubmit = document.getElementById("bl-submit");
+  const blHint = document.getElementById("bl-hint");
+
+  function formatBlockDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  }
+
+  async function loadBlocks() {
+    blocksList.innerHTML = "";
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-blocks", { headers });
+    const body = await res.json();
+    if (!res.ok) {
+      blocksEmpty.textContent = "No se pudieron cargar los bloqueos.";
+      blocksEmpty.hidden = false;
+      return;
+    }
+    const blocks = body.blocks || [];
+    if (blocks.length === 0) {
+      blocksEmpty.textContent = "No hay bloqueos guardados.";
+      blocksEmpty.hidden = false;
+      return;
+    }
+    blocksEmpty.hidden = true;
+    blocksList.innerHTML = blocks
+      .map((b) => {
+        const range = b.start_time && b.end_time ? `${b.start_time.slice(0, 5)} – ${b.end_time.slice(0, 5)}` : "Día completo";
+        return `<li data-id="${b.id}">
+          <span><strong>${formatBlockDate(b.block_date)}</strong> · ${range}${b.label ? ` · ${b.label}` : ""}</span>
+          <button type="button" class="btn btn-outline btn-sm" data-block-delete="${b.id}">Eliminar</button>
+        </li>`;
+      })
+      .join("");
+  }
+
+  blocksList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-block-delete]");
+    if (!btn) return;
+    if (!window.confirm("¿Eliminar este bloqueo? El horario vuelve a quedar disponible.")) return;
+    btn.disabled = true;
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/delete-block", { method: "POST", headers, body: JSON.stringify({ id: btn.getAttribute("data-block-delete") }) });
+    loadBlocks();
+  });
+
+  function openBlocksModal() {
+    blHint.textContent = "";
+    blockForm.reset();
+    blFullDay.checked = true;
+    blRangeFields.hidden = true;
+    blocksOverlay.hidden = false;
+    loadBlocks();
+  }
+
+  function closeBlocksModal() {
+    blocksOverlay.hidden = true;
+  }
+
+  document.getElementById("blocks-open-btn").addEventListener("click", openBlocksModal);
+  document.getElementById("blocks-close-btn").addEventListener("click", closeBlocksModal);
+  blFullDay.addEventListener("change", () => {
+    blRangeFields.hidden = blFullDay.checked;
+  });
+
+  blockForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    blHint.textContent = "";
+    blHint.classList.remove("is-error");
+
+    if (!blFullDay.checked && (!blStart.value || !blEnd.value)) {
+      blHint.textContent = "Indica la hora de inicio y fin, o marca 'Bloquear el día completo'.";
+      blHint.classList.add("is-error");
+      return;
+    }
+
+    blSubmit.disabled = true;
+    blSubmit.textContent = "Guardando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/save-block", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          date: blDate.value,
+          startTime: blFullDay.checked ? null : blStart.value,
+          endTime: blFullDay.checked ? null : blEnd.value,
+          label: blLabel.value.trim(),
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar el bloqueo.");
+
+      blockForm.reset();
+      blFullDay.checked = true;
+      blRangeFields.hidden = true;
+      loadBlocks();
+    } catch (err) {
+      blHint.textContent = err.message || "No se pudo guardar el bloqueo. Intenta de nuevo.";
+      blHint.classList.add("is-error");
+    } finally {
+      blSubmit.disabled = false;
+      blSubmit.textContent = "Agregar bloqueo";
     }
   });
 

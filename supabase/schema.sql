@@ -260,3 +260,22 @@ create trigger manual_clients_set_updated_at
   execute function set_updated_at();
 
 alter table manual_clients enable row level security;
+
+-- Bloqueos de calendario que la dueña arma desde el panel de Citas: un día
+-- completo (start_time/end_time en null) o solo un rango de horas dentro
+-- de un día que por lo demás está abierto (ej. "cerrado de 2 a 4pm").
+create table if not exists schedule_blocks (
+  id uuid primary key default gen_random_uuid(),
+  block_date date not null,
+  start_time time,
+  end_time time,
+  label text,
+  created_at timestamptz not null default now(),
+  constraint schedule_blocks_range_check check (
+    (start_time is null and end_time is null) or (start_time is not null and end_time is not null and start_time < end_time)
+  )
+);
+
+create index if not exists schedule_blocks_date_idx on schedule_blocks (block_date);
+
+alter table schedule_blocks enable row level security;

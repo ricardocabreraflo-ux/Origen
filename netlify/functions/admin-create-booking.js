@@ -10,12 +10,13 @@
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
 const { requireAdmin } = require("./_lib/requireAdmin");
-const { slotsForDate, isTodayOrFuture, isWithinBookingWindow } = require("./_lib/slots");
+const { slotsForDate, isTodayOrFuture, isWithinBookingWindow, toMinutes, toHHMM, rangesOverlap } = require("./_lib/slots");
 const { generateReservationCode } = require("./_lib/reservationCode");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
 const { getLoyaltyStatus } = require("./_lib/loyalty");
 const { runPostConfirmSideEffects } = require("./_lib/confirmBooking");
 const { parsePriceAmount } = require("./_lib/money");
+const { getBlocksForDate } = require("./_lib/scheduleBlocks");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UNIQUE_VIOLATION = "23505";
@@ -43,16 +44,38 @@ exports.handler = async (event, context) => {
     return badRequest("JSON inválido.");
   }
 
-  const { serviceId, date, startTime, customerName, customerPhone, customerEmail, notes, paymentMethod } = payload;
+  const {
+    serviceId,
+    date,
+    startTime,
+    customerName,
+    customerPhone,
+    customerEmail,
+    notes,
+    paymentMethod,
+    directEntry,
+    totalAmount,
+    durationMinutes,
+  } = payload;
 
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
   if (!date || !DATE_RE.test(date)) return badRequest("Fecha inválida.");
   if (!startTime || !/^\d{2}:\d{2}$/.test(startTime)) return badRequest("Horario inválido.");
   if (!customerName || !customerName.trim()) return badRequest("Falta el nombre.");
   if (!customerPhone || !customerPhone.trim()) return badRequest("Falta el teléfono.");
-  if (!isTodayOrFuture(date)) return badRequest("La fecha debe ser hoy o una fecha futura.");
+  const isPast = !isTodayOrFuture(date);
+  // Solo el registro de "cita directa" puede llevar fecha pasada — es
+  // para anotar citas que ya pasaron y no se habían capturado, no para
+  // crear reservas nuevas con hold/depósito pendiente en el pasado.
+  if (isPast && !directEntry) return badRequest("La fecha debe ser hoy o una fecha futura.");
   if (paymentMethod !== "cash" && paymentMethod !== "transfer") {
     return badRequest("La forma de pago debe ser 'cash' o 'transfer'.");
+  }
+  if (directEntry && totalAmount !== undefined && (!Number.isFinite(Number(totalAmount)) || Number(totalAmount) < 0)) {
+    return badRequest("El monto debe ser un número mayor o igual a 0.");
+  }
+  if (directEntry && durationMinutes !== undefined && (!Number.isInteger(Number(durationMinutes)) || Number(durationMinutes) <= 0)) {
+    return badRequest("La duración debe ser un número de minutos mayor a 0.");
   }
 
   try {
@@ -64,15 +87,38 @@ exports.handler = async (event, context) => {
     const holdMinutes = (config.booking && config.booking.holdMinutes) || 30;
     const maxAdvanceMonths = (config.booking && config.booking.maxAdvanceMonths) || 2;
 
-    if (!isWithinBookingWindow(date, maxAdvanceMonths)) {
+    if (!isPast && !isWithinBookingWindow(date, maxAdvanceMonths)) {
       return badRequest(`Solo se puede reservar con hasta ${maxAdvanceMonths} meses de anticipación.`);
     }
 
-    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates);
-    const slot = grid.find((s) => s.startTime === startTime);
-    if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
+    const effectiveDuration = directEntry && durationMinutes ? Number(durationMinutes) : service.duration;
+
+    let slot;
+    if (directEntry) {
+      // Registro directo: la hora la escribe la dueña a mano (no viene de
+      // la cuadrícula de horarios), así que solo calculamos la hora de
+      // fin según la duración — sin exigir que calce con un slot de 30 min.
+      slot = { startTime, endTime: toHHMM(toMinutes(startTime) + effectiveDuration) };
+    } else {
+      const grid = slotsForDate(date, config.businessHours, effectiveDuration, config.closedDates);
+      slot = grid.find((s) => s.startTime === startTime);
+      if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
+    }
 
     const supabase = getServiceClient();
+
+    // El registro directo puede saltarse un bloqueo a propósito (es una
+    // anotación de algo que ya pasó); el flujo normal de cita manual no.
+    if (!directEntry) {
+      const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);
+      if (fullDayBlock) return badRequest("Ese día no está disponible para citas.");
+      const slotStart = toMinutes(slot.startTime);
+      const slotEnd = toMinutes(slot.endTime);
+      const blockedByRange = partialBlocks.some((b) =>
+        rangesOverlap(slotStart, slotEnd, toMinutes(b.start_time.slice(0, 5)), toMinutes(b.end_time.slice(0, 5)))
+      );
+      if (blockedByRange) return badRequest("Ese horario no está disponible.");
+    }
 
     await supabase
       .from("bookings")
@@ -81,9 +127,13 @@ exports.handler = async (event, context) => {
       .eq("status", "pending")
       .lt("expires_at", new Date().toISOString());
 
-    const isCash = paymentMethod === "cash";
+    // Una cita con fecha pasada ya sucedió — no tiene sentido dejarla
+    // "pendiente" esperando un depósito que ya se resolvió en su momento.
+    const isCash = paymentMethod === "cash" || isPast;
     const now = new Date();
     const loyaltyStatus = await getLoyaltyStatus(supabase, config.loyalty, customerPhone);
+    const effectiveTotalAmount =
+      directEntry && totalAmount !== undefined ? Number(totalAmount) : parsePriceAmount(service.price);
 
     const row = {
       reservation_code: generateReservationCode(date),
@@ -91,7 +141,7 @@ exports.handler = async (event, context) => {
       service_name: service.name,
       price_label: service.price,
       deposit_amount: service.depositAmount,
-      total_amount: parsePriceAmount(service.price),
+      total_amount: effectiveTotalAmount,
       customer_name: customerName.trim(),
       customer_phone: customerPhone.trim(),
       customer_email: (customerEmail || "").trim() || null,
@@ -119,8 +169,10 @@ exports.handler = async (event, context) => {
     }
 
     // Si ya se cobró en efectivo, corre lo mismo que cualquier
-    // confirmación (Google Calendar + avisos de lealtad).
-    if (isCash) {
+    // confirmación (Google Calendar + avisos de lealtad) — salvo que sea
+    // un registro retroactivo (fecha pasada), donde no tiene sentido crear
+    // un evento de Calendar ni avisos de lealtad para algo que ya pasó.
+    if (isCash && !isPast) {
       try {
         await runPostConfirmSideEffects(supabase, data);
       } catch (sideEffectErr) {
@@ -131,8 +183,12 @@ exports.handler = async (event, context) => {
     // Mejor esfuerzo: avisarle a la CLIENTA por WhatsApp. Requiere Meta
     // configurado y la plantilla correspondiente aprobada — si aún no
     // está listo, la cita de todas formas ya quedó creada en el sistema.
+    // Tampoco aplica a registros retroactivos: no se le avisa a la clienta
+    // de una cita que ya sucedió.
     try {
-      if (isCash) {
+      if (isPast) {
+        // no notificar
+      } else if (isCash) {
         await sendWhatsAppTemplate(data.customer_phone, "confirmacion_cita_pagada_origen", "es_MX", [
           {
             type: "body",

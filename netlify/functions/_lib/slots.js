@@ -78,12 +78,22 @@ function rangesOverlap(aStart, aEnd, bStart, bEnd) {
  * su fin + el colchón de limpieza, para que la siguiente cita no pueda
  * empezar pegada a la anterior. El margen solo aplica DESPUÉS de cada
  * cita, no antes.
+ *
+ * `blocks` son bloqueos de horario que la dueña armó a mano (ej. "cerrado
+ * de 2 a 4pm") — ocupan exactamente su rango, sin colchón extra.
  */
-function markAvailability(candidateSlots, existingBookings, bufferMinutes) {
-  const occupied = existingBookings.map((b) => ({
-    start: toMinutes(b.start_time.slice(0, 5)),
-    end: toMinutes(b.end_time.slice(0, 5)) + bufferMinutes,
-  }));
+function markAvailability(candidateSlots, existingBookings, bufferMinutes, blocks = []) {
+  const occupied = existingBookings
+    .map((b) => ({
+      start: toMinutes(b.start_time.slice(0, 5)),
+      end: toMinutes(b.end_time.slice(0, 5)) + bufferMinutes,
+    }))
+    .concat(
+      (blocks || []).map((b) => ({
+        start: toMinutes(b.start_time.slice(0, 5)),
+        end: toMinutes(b.end_time.slice(0, 5)),
+      }))
+    );
 
   return candidateSlots.map((slot) => {
     const start = toMinutes(slot.startTime);

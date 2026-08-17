@@ -1,6 +1,7 @@
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
 const { slotsForDate, markAvailability, isWithinBookingWindow, findClosedDate } = require("./_lib/slots");
+const { getBlocksForDate } = require("./_lib/scheduleBlocks");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -45,22 +46,23 @@ exports.handler = async (event) => {
       };
     }
 
+    const supabase = getServiceClient();
+    const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);
+
     const closed = findClosedDate(date, config.closedDates);
     const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates);
 
-    if (grid.length === 0) {
+    if (grid.length === 0 || fullDayBlock) {
       return {
         statusCode: 200,
         body: JSON.stringify({
           date,
           serviceId,
           slots: [],
-          closedReason: closed ? closed.label || "Cerrado por día festivo." : undefined,
+          closedReason: closed ? closed.label || "Cerrado por día festivo." : fullDayBlock ? fullDayBlock.label || "Día bloqueado." : undefined,
         }),
       };
     }
-
-    const supabase = getServiceClient();
 
     // Libera horarios cuyo plazo de 30 minutos para confirmar el depósito
     // ya venció, antes de calcular qué está disponible.
@@ -79,7 +81,7 @@ exports.handler = async (event) => {
 
     if (error) throw error;
 
-    const slots = markAvailability(grid, existing || [], bufferMinutes);
+    const slots = markAvailability(grid, existing || [], bufferMinutes, partialBlocks);
 
     return {
       statusCode: 200,
