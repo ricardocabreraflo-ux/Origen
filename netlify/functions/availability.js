@@ -50,7 +50,7 @@ exports.handler = async (event) => {
     const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);
 
     const closed = findClosedDate(date, config.closedDates);
-    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates);
+    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots);
 
     if (grid.length === 0 || fullDayBlock) {
       return {

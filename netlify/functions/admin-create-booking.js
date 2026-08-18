@@ -101,7 +101,7 @@ exports.handler = async (event, context) => {
       // fin según la duración — sin exigir que calce con un slot de 30 min.
       slot = { startTime, endTime: toHHMM(toMinutes(startTime) + effectiveDuration) };
     } else {
-      const grid = slotsForDate(date, config.businessHours, effectiveDuration, config.closedDates);
+      const grid = slotsForDate(date, config.businessHours, effectiveDuration, config.closedDates, service.fixedSlots);
       slot = grid.find((s) => s.startTime === startTime);
       if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
     }

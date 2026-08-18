@@ -154,16 +154,18 @@
       "name": "Botox Capilar",
       "description": "Tratamiento capilar restaurador. Precio sujeto a valoración previa.",
       "price": "Valoración previa",
-      "duration": 120,
-      "depositAmount": 300
+      "duration": 180,
+      "depositAmount": 300,
+      "fixedSlots": { "weekday": ["10:00", "15:00"], "saturday": ["09:00", "14:00"] }
     },
     {
       "id": "keratina-alisante",
       "name": "Keratina Alisante",
       "description": "Keratina premium alisante. Precio sujeto a valoración previa.",
       "price": "Valoración previa",
-      "duration": 150,
-      "depositAmount": 300
+      "duration": 180,
+      "depositAmount": 300,
+      "fixedSlots": { "weekday": ["10:00", "15:00"], "saturday": ["09:00", "14:00"] }
     },
     {
       "id": "servicio-especial",

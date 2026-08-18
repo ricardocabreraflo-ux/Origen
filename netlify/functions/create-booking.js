@@ -54,7 +54,7 @@ exports.handler = async (event) => {
       return badRequest(`Solo se puede reservar con hasta ${maxAdvanceMonths} meses de anticipación.`);
     }
 
-    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates);
+    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots);
     const slot = grid.find((s) => s.startTime === startTime);
     if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
 
