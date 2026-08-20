@@ -23,6 +23,17 @@ exports.handler = async (event, context) => {
     return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message: "Falta el id de la cita." }) };
   }
 
+  const requiredPin = process.env.DELETE_PIN;
+  if (!requiredPin) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "server_error", message: "Falta configurar DELETE_PIN en Netlify para poder cancelar citas." }),
+    };
+  }
+  if (payload.pin !== requiredPin) {
+    return { statusCode: 403, body: JSON.stringify({ error: "invalid_pin", message: "PIN incorrecto. No se canceló la cita." }) };
+  }
+
   try {
     const supabase = getServiceClient();
     const { data: updated, error } = await supabase

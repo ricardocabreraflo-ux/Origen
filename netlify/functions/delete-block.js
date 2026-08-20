@@ -1,5 +1,6 @@
 const { getServiceClient } = require("./_lib/supabase");
 const { requireAdmin } = require("./_lib/requireAdmin");
+const { deleteCalendarEvent } = require("./_lib/googleCalendar");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -28,6 +29,14 @@ exports.handler = async (event, context) => {
 
     if (error || !deleted) {
       return { statusCode: 404, body: JSON.stringify({ error: "not_found" }) };
+    }
+
+    if (deleted.calendar_event_id) {
+      try {
+        await deleteCalendarEvent(deleted.calendar_event_id);
+      } catch (calendarErr) {
+        console.error("No se pudo borrar el evento de Google Calendar del bloqueo", calendarErr);
+      }
     }
 
     return { statusCode: 200, body: JSON.stringify({ deleted: true }) };

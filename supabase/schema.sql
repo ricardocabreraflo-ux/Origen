@@ -271,10 +271,15 @@ create table if not exists schedule_blocks (
   end_time time,
   label text,
   created_at timestamptz not null default now(),
+  -- id del evento en Google Calendar, para poder borrarlo si se elimina el bloqueo
+  calendar_event_id text,
   constraint schedule_blocks_range_check check (
     (start_time is null and end_time is null) or (start_time is not null and end_time is not null and start_time < end_time)
   )
 );
+
+-- Por si la tabla ya existía sin esta columna (migración incremental).
+alter table schedule_blocks add column if not exists calendar_event_id text;
 
 create index if not exists schedule_blocks_date_idx on schedule_blocks (block_date);
 

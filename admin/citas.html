@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="../assets/icon-admin-192.png" />
 <link rel="stylesheet" href="../css/style.css" />
 <style>
+  [hidden] { display: none !important; }
   body { background: var(--color-cream-soft); }
   .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 100px; }
   .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
@@ -32,6 +33,7 @@
   .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
   #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
   .table-scroll { overflow-x: auto; }
+  .bookings-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 18px; font-size: 0.88rem; color: var(--color-dark); }
 
   .manual-overlay {
     position: fixed; inset: 0; background: rgba(20, 17, 14, 0.55);
@@ -91,6 +93,27 @@
   }
   .blocks-list li button { flex-shrink: 0; padding: 4px 10px; font-size: 0.75rem; }
   .blocks-empty { color: var(--color-muted); font-size: 0.85rem; margin: 0 0 20px; }
+
+  .blocks-modal { max-width: 640px; }
+  .blocks-calendar { margin-bottom: 18px; }
+  .blocks-calendar-header { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
+  .blocks-calendar-header strong { min-width: 160px; text-align: center; }
+  .blocks-calendar-weekdays, .blocks-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .blocks-calendar-weekdays span { text-align: center; font-size: 0.72rem; color: var(--color-muted); font-weight: 600; }
+  .blocks-calendar-grid button {
+    aspect-ratio: 1; border-radius: 8px; border: 1.5px solid rgba(33,29,25,0.1);
+    background: var(--color-white); font-size: 0.82rem; cursor: pointer; color: var(--color-dark);
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .blocks-calendar-grid button:disabled { visibility: hidden; }
+  .blocks-calendar-grid button.is-selected { border-color: var(--color-primary); border-width: 2px; }
+  .blocks-calendar-grid button.is-full { background: #e6c9c0; color: #6b2f22; font-weight: 600; }
+  .blocks-calendar-grid button.is-partial { background: #f0dcc0; color: #7a4a12; font-weight: 600; }
+  .blocks-calendar-grid button.is-today { text-decoration: underline; }
+  .blocks-calendar-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 0.75rem; color: var(--color-muted); }
+  .blocks-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
+  .blocks-dot.is-full { background: #e6c9c0; }
+  .blocks-dot.is-partial { background: #f0dcc0; }
 </style>
 </head>
 <body>
@@ -281,28 +304,54 @@
 </div>
 
 <div class="manual-overlay" id="blocks-overlay" hidden>
-  <div class="manual-modal">
+  <div class="manual-modal blocks-modal">
     <h2>Bloqueos de horario</h2>
-    <p class="section-note">Cierra un día completo o solo una parte (ej. "cerrado de 2 a 4pm") para que no se puedan agendar citas ahí.</p>
-    <p class="blocks-empty" id="blocks-empty" hidden>No hay bloqueos guardados.</p>
-    <ul class="blocks-list" id="blocks-list"></ul>
+    <p class="section-note">Cierra un día completo o solo una parte (ej. "cerrado de 2 a 4pm") para que no se puedan agendar citas ahí. Los días bloqueados se muestran resaltados y también se sincronizan con Google Calendar.</p>
+
+    <div class="blocks-calendar">
+      <div class="blocks-calendar-header">
+        <button type="button" class="btn btn-outline btn-sm" id="bc-prev">←</button>
+        <strong id="bc-month-label"></strong>
+        <button type="button" class="btn btn-outline btn-sm" id="bc-next">→</button>
+      </div>
+      <div class="blocks-calendar-weekdays">
+        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div class="blocks-calendar-grid" id="bc-grid"></div>
+      <div class="blocks-calendar-legend">
+        <span><i class="blocks-dot is-full"></i> Día completo</span>
+        <span><i class="blocks-dot is-partial"></i> Solo un horario</span>
+      </div>
+    </div>
+
+    <div id="bc-day-detail">
+      <p class="blocks-empty" id="blocks-empty">Selecciona un día del calendario para ver o quitar sus bloqueos.</p>
+      <ul class="blocks-list" id="blocks-list"></ul>
+    </div>
+
     <form class="manual-form" id="block-form">
-      <div>
-        <label for="bl-date">Fecha</label>
-        <input type="date" id="bl-date" required />
+      <div class="field-row">
+        <div>
+          <label for="bl-date">Desde</label>
+          <input type="date" id="bl-date" required />
+        </div>
+        <div>
+          <label for="bl-end-date">Hasta (opcional, para varios días)</label>
+          <input type="date" id="bl-end-date" />
+        </div>
       </div>
       <div>
         <label style="display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="bl-full-day" checked style="width:auto;margin:0;" /> Bloquear el día completo
+          <input type="checkbox" id="bl-full-day" checked style="width:auto;margin:0;" /> Bloquear el/los día(s) completo(s)
         </label>
       </div>
       <div class="field-row" id="bl-range-fields" hidden>
         <div>
-          <label for="bl-start">Desde</label>
+          <label for="bl-start">Desde (hora)</label>
           <input type="time" id="bl-start" />
         </div>
         <div>
-          <label for="bl-end">Hasta</label>
+          <label for="bl-end">Hasta (hora)</label>
           <input type="time" id="bl-end" />
         </div>
       </div>
@@ -315,6 +364,64 @@
         <button type="button" class="btn btn-outline" id="blocks-close-btn">Cerrar</button>
       </div>
       <p class="form-hint" id="bl-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="edit-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Editar cita</h2>
+    <p class="section-note">Corrige servicio, fecha, hora, datos de la clienta o el monto. No se le manda ningún WhatsApp por estos cambios.</p>
+    <form class="manual-form" id="edit-form">
+      <div>
+        <label for="eb-service">Servicio</label>
+        <select id="eb-service" required></select>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="eb-date">Fecha</label>
+          <input type="date" id="eb-date" required />
+        </div>
+        <div>
+          <label for="eb-time">Hora</label>
+          <input type="time" id="eb-time" required />
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="eb-duration">Duración (minutos)</label>
+          <input type="number" id="eb-duration" min="5" step="5" required />
+        </div>
+        <div>
+          <label for="eb-amount">Monto cobrado (MXN)</label>
+          <input type="number" id="eb-amount" min="0" step="1" required />
+        </div>
+      </div>
+      <div>
+        <label for="eb-discount">% de descuento (opcional)</label>
+        <input type="number" id="eb-discount" min="0" max="100" step="1" placeholder="Ej. 15 — recalcula el monto según el precio de lista" />
+      </div>
+      <div>
+        <label for="eb-name">Nombre de la clienta</label>
+        <input type="text" id="eb-name" required />
+      </div>
+      <div>
+        <label for="eb-phone">Teléfono</label>
+        <input type="tel" id="eb-phone" required />
+      </div>
+      <div>
+        <label for="eb-email">Correo (opcional)</label>
+        <input type="email" id="eb-email" />
+      </div>
+      <div>
+        <label for="eb-notes">Notas (opcional)</label>
+        <textarea id="eb-notes" rows="2"></textarea>
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="eb-submit">Guardar cambios</button>
+        <button type="button" class="btn btn-outline" id="edit-cancel-btn">Cancelar</button>
+      </div>
+      <p class="form-hint" id="eb-hint"></p>
     </form>
   </div>
 </div>
@@ -351,6 +458,8 @@
   }
 
   let lastLoadedBookings = [];
+  let currentPage = 1;
+  const PAGE_SIZE = 10;
 
   async function loadBookings() {
     loadingState.hidden = false;
@@ -375,12 +484,54 @@
 
     const bookings = body.bookings || [];
     lastLoadedBookings = bookings;
+    currentPage = 1;
     if (bookings.length === 0) {
       emptyState.textContent = "No hay citas con esos filtros.";
       emptyState.hidden = false;
       return;
     }
 
+    renderPage();
+    table.hidden = false;
+  }
+
+  function renderPage() {
+    const totalPages = Math.max(1, Math.ceil(lastLoadedBookings.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageBookings = lastLoadedBookings.slice(start, start + PAGE_SIZE);
+    renderTable(pageBookings);
+    renderPager(totalPages);
+  }
+
+  function renderPager(totalPages) {
+    let pager = document.getElementById("bookings-pager");
+    if (!pager) {
+      pager = document.createElement("div");
+      pager.id = "bookings-pager";
+      pager.className = "bookings-pager";
+      table.insertAdjacentElement("afterend", pager);
+    }
+    if (totalPages <= 1) {
+      pager.innerHTML = "";
+      return;
+    }
+    pager.innerHTML = `
+      <button type="button" class="btn btn-outline btn-sm" id="pager-prev" ${currentPage === 1 ? "disabled" : ""}>← Anterior</button>
+      <span>Página ${currentPage} de ${totalPages}</span>
+      <button type="button" class="btn btn-outline btn-sm" id="pager-next" ${currentPage === totalPages ? "disabled" : ""}>Siguiente →</button>
+    `;
+    document.getElementById("pager-prev").addEventListener("click", () => {
+      currentPage -= 1;
+      renderPage();
+    });
+    document.getElementById("pager-next").addEventListener("click", () => {
+      currentPage += 1;
+      renderPage();
+    });
+  }
+
+  function renderTable(bookings) {
     tbody.innerHTML = bookings
       .map(
         (b) => `
@@ -390,7 +541,7 @@
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
           <td>$${b.deposit_amount} MXN</td>
-          <td>${b.total_amount !== null && b.total_amount !== undefined ? `$${b.total_amount} MXN` : '<span style="color:var(--color-muted)">Sin capturar</span>'}<br/><button class="btn btn-outline btn-sm" data-action="edit-amount" style="margin-top:4px;padding:2px 8px;font-size:0.72rem;">Editar monto</button></td>
+          <td>${b.total_amount !== null && b.total_amount !== undefined ? `$${b.total_amount} MXN` : '<span style="color:var(--color-muted)">Sin capturar</span>'}</td>
           <td><span class="status-pill status-${b.status}">${STATUS_LABEL[b.status] || b.status}</span></td>
           <td>
             <div class="row-actions">
@@ -404,6 +555,8 @@
                       ? `<button class="btn btn-primary btn-sm" data-action="reactivate">Reactivar (ya llegó el depósito)</button>`
                       : ""
               }
+              <button class="btn btn-outline btn-sm" data-action="edit-booking">✏️ Editar</button>
+              <button class="btn btn-outline btn-sm" data-action="thank-you">🙏 Agradecer visita</button>
               <button class="btn btn-outline btn-sm" data-action="toggle-revenue" data-revenue-exempt="${b.revenue_exempt}">${b.revenue_exempt ? "Quitar marca de sin ingreso" : "Marcar sin ingreso"}</button>
               <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
             </div>
@@ -421,7 +574,6 @@
     reactivate: "/api/reactivate-booking",
     "toggle-revenue": "/api/mark-no-revenue",
     delete: "/api/delete-booking",
-    "edit-amount": "/api/set-total-amount",
   };
 
   tbody.addEventListener("click", async (e) => {
@@ -430,8 +582,30 @@
     const row = btn.closest("tr");
     const id = row.getAttribute("data-id");
     const action = btn.getAttribute("data-action");
-    const endpoint = ACTION_ENDPOINT[action];
 
+    if (action === "edit-booking") {
+      const booking = lastLoadedBookings.find((b) => b.id === id);
+      if (booking) openEditModal(booking);
+      return;
+    }
+    if (action === "thank-you") {
+      const booking = lastLoadedBookings.find((b) => b.id === id);
+      if (!booking) return;
+      if (!window.confirm(`¿Enviar mensaje de agradecimiento por WhatsApp a ${booking.customer_name}?`)) return;
+      btn.disabled = true;
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/send-thank-you", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ phone: booking.customer_phone, name: booking.customer_name }),
+      });
+      const body = await res.json();
+      btn.disabled = false;
+      alert(res.ok ? "Mensaje enviado." : body.message || "No se pudo enviar el mensaje.");
+      return;
+    }
+
+    const endpoint = ACTION_ENDPOINT[action];
     let extraPayload = {};
     if (action === "delete") {
       const code = row.querySelector("td")?.textContent.trim().split("\n")[0] || "";
@@ -440,6 +614,14 @@
       );
       if (!confirmed) return;
       const pin = window.prompt("Escribe el PIN de seguridad para eliminar esta cita:");
+      if (pin === null) return; // canceló el prompt
+      extraPayload = { pin };
+    }
+    if (action === "cancel") {
+      const code = row.querySelector("td")?.textContent.trim().split("\n")[0] || "";
+      const confirmed = window.confirm(`¿Cancelar la cita ${code}?`);
+      if (!confirmed) return;
+      const pin = window.prompt("Escribe el PIN de seguridad para cancelar esta cita:");
       if (pin === null) return; // canceló el prompt
       extraPayload = { pin };
     }
@@ -452,12 +634,6 @@
       } else {
         extraPayload = { revenueExempt: false };
       }
-    }
-    if (action === "edit-amount") {
-      const current = btn.parentElement.textContent.match(/[\d.]+/);
-      const input = window.prompt("¿Cuánto se cobró en total por esta cita? (deja vacío para borrar el monto)", current ? current[0] : "");
-      if (input === null) return; // canceló el prompt
-      extraPayload = { totalAmount: input.trim() === "" ? null : input.trim() };
     }
 
     btn.disabled = true;
@@ -716,13 +892,14 @@
   });
 
   /* ---------------------------------------------------------
-     Bloqueos de horario
+     Bloqueos de horario — vista de calendario
   --------------------------------------------------------- */
   const blocksOverlay = document.getElementById("blocks-overlay");
   const blocksList = document.getElementById("blocks-list");
   const blocksEmpty = document.getElementById("blocks-empty");
   const blockForm = document.getElementById("block-form");
   const blDate = document.getElementById("bl-date");
+  const blEndDate = document.getElementById("bl-end-date");
   const blFullDay = document.getElementById("bl-full-day");
   const blRangeFields = document.getElementById("bl-range-fields");
   const blStart = document.getElementById("bl-start");
@@ -730,6 +907,18 @@
   const blLabel = document.getElementById("bl-label");
   const blSubmit = document.getElementById("bl-submit");
   const blHint = document.getElementById("bl-hint");
+  const bcGrid = document.getElementById("bc-grid");
+  const bcMonthLabel = document.getElementById("bc-month-label");
+
+  let allBlocks = [];
+  let calendarMonth = new Date();
+  calendarMonth.setDate(1);
+  let selectedDate = null;
+
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
 
   function formatBlockDate(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
@@ -737,23 +926,68 @@
   }
 
   async function loadBlocks() {
-    blocksList.innerHTML = "";
     const headers = await authHeaders();
     const res = await fetch("/api/list-blocks", { headers });
     const body = await res.json();
-    if (!res.ok) {
-      blocksEmpty.textContent = "No se pudieron cargar los bloqueos.";
+    allBlocks = res.ok ? body.blocks || [] : [];
+    renderCalendar();
+    renderDayDetail();
+  }
+
+  function renderCalendar() {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const monthLabel = calendarMonth.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+    bcMonthLabel.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+    const firstDay = new Date(year, month, 1);
+    // lunes=0 ... domingo=6, para que la rejilla empiece en lunes.
+    const startOffset = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = todayISO();
+
+    const blocksByDate = {};
+    allBlocks.forEach((b) => {
+      (blocksByDate[b.block_date] = blocksByDate[b.block_date] || []).push(b);
+    });
+
+    let cells = "";
+    for (let i = 0; i < startOffset; i++) cells += `<button type="button" disabled></button>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const dayBlocks = blocksByDate[dateStr] || [];
+      const hasFullDay = dayBlocks.some((b) => !b.start_time);
+      const classes = [
+        dateStr === selectedDate ? "is-selected" : "",
+        hasFullDay ? "is-full" : dayBlocks.length > 0 ? "is-partial" : "",
+        dateStr === today ? "is-today" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const title = dayBlocks.length
+        ? dayBlocks.map((b) => (b.start_time ? `${b.start_time.slice(0, 5)}-${b.end_time.slice(0, 5)}` : "Día completo") + (b.label ? ` (${b.label})` : "")).join(" · ")
+        : "";
+      cells += `<button type="button" class="${classes}" data-date="${dateStr}" title="${title}">${day}</button>`;
+    }
+    bcGrid.innerHTML = cells;
+  }
+
+  function renderDayDetail() {
+    if (!selectedDate) {
+      blocksEmpty.textContent = "Selecciona un día del calendario para ver o quitar sus bloqueos.";
       blocksEmpty.hidden = false;
+      blocksList.innerHTML = "";
       return;
     }
-    const blocks = body.blocks || [];
-    if (blocks.length === 0) {
-      blocksEmpty.textContent = "No hay bloqueos guardados.";
+    const dayBlocks = allBlocks.filter((b) => b.block_date === selectedDate);
+    if (dayBlocks.length === 0) {
+      blocksEmpty.textContent = `Sin bloqueos el ${formatBlockDate(selectedDate)}.`;
       blocksEmpty.hidden = false;
+      blocksList.innerHTML = "";
       return;
     }
     blocksEmpty.hidden = true;
-    blocksList.innerHTML = blocks
+    blocksList.innerHTML = dayBlocks
       .map((b) => {
         const range = b.start_time && b.end_time ? `${b.start_time.slice(0, 5)} – ${b.end_time.slice(0, 5)}` : "Día completo";
         return `<li data-id="${b.id}">
@@ -763,6 +997,24 @@
       })
       .join("");
   }
+
+  bcGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-date]");
+    if (!btn) return;
+    selectedDate = btn.getAttribute("data-date");
+    blDate.value = selectedDate;
+    renderCalendar();
+    renderDayDetail();
+  });
+
+  document.getElementById("bc-prev").addEventListener("click", () => {
+    calendarMonth.setMonth(calendarMonth.getMonth() - 1);
+    renderCalendar();
+  });
+  document.getElementById("bc-next").addEventListener("click", () => {
+    calendarMonth.setMonth(calendarMonth.getMonth() + 1);
+    renderCalendar();
+  });
 
   blocksList.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-block-delete]");
@@ -779,6 +1031,9 @@
     blockForm.reset();
     blFullDay.checked = true;
     blRangeFields.hidden = true;
+    calendarMonth = new Date();
+    calendarMonth.setDate(1);
+    selectedDate = null;
     blocksOverlay.hidden = false;
     loadBlocks();
   }
@@ -799,7 +1054,12 @@
     blHint.classList.remove("is-error");
 
     if (!blFullDay.checked && (!blStart.value || !blEnd.value)) {
-      blHint.textContent = "Indica la hora de inicio y fin, o marca 'Bloquear el día completo'.";
+      blHint.textContent = "Indica la hora de inicio y fin, o marca 'Bloquear el/los día(s) completo(s)'.";
+      blHint.classList.add("is-error");
+      return;
+    }
+    if (blEndDate.value && blEndDate.value < blDate.value) {
+      blHint.textContent = "La fecha 'Hasta' debe ser igual o posterior a 'Desde'.";
       blHint.classList.add("is-error");
       return;
     }
@@ -814,6 +1074,7 @@
         headers,
         body: JSON.stringify({
           date: blDate.value,
+          endDate: blEndDate.value || undefined,
           startTime: blFullDay.checked ? null : blStart.value,
           endTime: blFullDay.checked ? null : blEnd.value,
           label: blLabel.value.trim(),
@@ -822,6 +1083,7 @@
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || "No se pudo guardar el bloqueo.");
 
+      selectedDate = blDate.value;
       blockForm.reset();
       blFullDay.checked = true;
       blRangeFields.hidden = true;
@@ -832,6 +1094,115 @@
     } finally {
       blSubmit.disabled = false;
       blSubmit.textContent = "Agregar bloqueo";
+    }
+  });
+
+  /* ---------------------------------------------------------
+     Editar cita
+  --------------------------------------------------------- */
+  const editOverlay = document.getElementById("edit-overlay");
+  const editForm = document.getElementById("edit-form");
+  const ebService = document.getElementById("eb-service");
+  const ebDate = document.getElementById("eb-date");
+  const ebTime = document.getElementById("eb-time");
+  const ebDuration = document.getElementById("eb-duration");
+  const ebAmount = document.getElementById("eb-amount");
+  const ebDiscount = document.getElementById("eb-discount");
+  const ebName = document.getElementById("eb-name");
+  const ebPhone = document.getElementById("eb-phone");
+  const ebEmail = document.getElementById("eb-email");
+  const ebNotes = document.getElementById("eb-notes");
+  const ebSubmit = document.getElementById("eb-submit");
+  const ebHint = document.getElementById("eb-hint");
+  let editingBookingId = null;
+
+  async function openEditModal(booking) {
+    ebHint.textContent = "";
+    const cfg = await loadSiteConfig();
+    ebService.innerHTML = (cfg.services || [])
+      .map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`)
+      .join("");
+
+    editingBookingId = booking.id;
+    ebService.value = booking.service_id;
+    ebDate.value = booking.booking_date;
+    ebTime.value = booking.start_time.slice(0, 5);
+    const startMin = toMinutesLocal(booking.start_time.slice(0, 5));
+    const endMin = toMinutesLocal(booking.end_time.slice(0, 5));
+    ebDuration.value = endMin - startMin;
+    ebAmount.value = booking.total_amount !== null && booking.total_amount !== undefined ? booking.total_amount : "";
+    ebDiscount.value = "";
+    ebName.value = booking.customer_name || "";
+    ebPhone.value = booking.customer_phone || "";
+    ebEmail.value = booking.customer_email || "";
+    ebNotes.value = booking.notes || "";
+
+    editOverlay.hidden = false;
+  }
+
+  function toMinutesLocal(hhmm) {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
+  }
+
+  function closeEditModal() {
+    editOverlay.hidden = true;
+    editingBookingId = null;
+  }
+
+  document.getElementById("edit-cancel-btn").addEventListener("click", closeEditModal);
+
+  // Al escribir un % de descuento, recalcula el monto según el precio de
+  // lista del servicio elegido — pero si el monto se edita a mano después,
+  // ya no se vuelve a tocar solo.
+  ebDiscount.addEventListener("input", () => {
+    const cfg = siteConfig;
+    if (!cfg) return;
+    const service = (cfg.services || []).find((s) => s.id === ebService.value);
+    if (!service) return;
+    const pct = Number(ebDiscount.value);
+    if (!Number.isFinite(pct) || pct < 0 || pct > 100) return;
+    const listPrice = parsePriceLabel(service.price);
+    ebAmount.value = Math.round(listPrice * (1 - pct / 100));
+  });
+
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    ebHint.textContent = "";
+    ebHint.classList.remove("is-error");
+
+    ebSubmit.disabled = true;
+    ebSubmit.textContent = "Guardando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/edit-booking", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          id: editingBookingId,
+          serviceId: ebService.value,
+          date: ebDate.value,
+          startTime: ebTime.value,
+          customerName: ebName.value.trim(),
+          customerPhone: ebPhone.value.trim(),
+          customerEmail: ebEmail.value.trim(),
+          notes: ebNotes.value.trim(),
+          totalAmount: ebAmount.value,
+          durationMinutes: ebDuration.value,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar la cita.");
+
+      closeEditModal();
+      loadBookings();
+    } catch (err) {
+      ebHint.textContent = err.message || "No se pudo guardar la cita. Intenta de nuevo.";
+      ebHint.classList.add("is-error");
+    } finally {
+      ebSubmit.disabled = false;
+      ebSubmit.textContent = "Guardar cambios";
     }
   });
 
