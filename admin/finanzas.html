@@ -57,11 +57,14 @@
   .expense-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .expense-form .full { grid-column: 1 / -1; }
   .expense-form label { font-size: 0.85rem; font-weight: 600; color: var(--color-dark); display: block; margin-bottom: 4px; }
-  .expense-form select, .expense-form input, .expense-form textarea {
+  .expense-form select, .expense-form input:not([type="radio"]):not([type="checkbox"]), .expense-form textarea {
     width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.15);
     font-family: var(--font-body); background: var(--color-cream-soft);
   }
-  .kind-toggle { display: flex; gap: 16px; font-weight: 400; font-size: 0.9rem; }
+  .expense-form input[type="radio"], .expense-form input[type="checkbox"] {
+    width: 18px; height: 18px; flex-shrink: 0; margin: 0; padding: 0;
+  }
+  .kind-toggle { display: flex; flex-wrap: wrap; gap: 14px 20px; font-weight: 400; font-size: 0.9rem; }
   .kind-toggle label { display: flex; align-items: center; gap: 6px; font-weight: 400; margin: 0; }
 
   table.expense-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
