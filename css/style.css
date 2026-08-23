@@ -1094,12 +1094,30 @@ img { max-width: 100%; display: block; }
     height: auto;
     position: static;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 6px;
-    padding: 14px 16px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .admin-sidebar::-webkit-scrollbar { display: none; }
   .sidebar-brand { display: none; }
-  .sidebar-link { width: auto; padding: 8px 12px; font-size: 0.85rem; }
-  .sidebar-logout { margin-top: 0; border-top: none; margin-left: auto; }
+  .sidebar-link {
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+  }
+  .sidebar-user { display: none; }
+  .sidebar-logout {
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin-top: 0;
+    margin-left: 4px;
+    border-top: none;
+    padding-top: 9px;
+  }
 }
