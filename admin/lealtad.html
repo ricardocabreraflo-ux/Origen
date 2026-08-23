@@ -29,6 +29,11 @@
     }
     .row-actions::-webkit-scrollbar { display: none; }
     .row-actions .btn { flex-shrink: 0; white-space: nowrap; }
+    .admin-header .row-actions .btn {
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 0.85rem;
+    }
   }
   #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
   #login-gate .btn { margin-top: 16px; }
@@ -54,12 +59,12 @@
 <div class="admin-shell" id="admin-shell" hidden>
   <nav class="admin-sidebar">
     <div class="sidebar-brand">Origen · Panel</div>
-    <a class="sidebar-link" href="citas.html">📅 Citas</a>
-    <a class="sidebar-link" href="clientas.html">👥 Clientas</a>
-    <a class="sidebar-link is-active" href="lealtad.html">🎁 Lealtad</a>
-    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
-    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
-    <a class="sidebar-link" href="index.html">✏️ Contenido</a>
+    <a class="sidebar-link" href="citas.html"><span class="sidebar-icon">📅</span><span class="sidebar-label">Citas</span></a>
+    <a class="sidebar-link" href="clientas.html"><span class="sidebar-icon">👥</span><span class="sidebar-label">Clientas</span></a>
+    <a class="sidebar-link is-active" href="lealtad.html"><span class="sidebar-icon">🎁</span><span class="sidebar-label">Lealtad</span></a>
+    <a class="sidebar-link" href="reportes.html"><span class="sidebar-icon">📊</span><span class="sidebar-label">Reportes</span></a>
+    <a class="sidebar-link" href="finanzas.html"><span class="sidebar-icon">💰</span><span class="sidebar-label">Finanzas</span></a>
+    <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
     <div class="sidebar-user" id="sidebar-user"></div>
     <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
   </nav>

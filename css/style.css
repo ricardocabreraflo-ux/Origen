@@ -1095,9 +1095,9 @@ img { max-width: 100%; display: block; }
     position: static;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 12px;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -1107,10 +1107,18 @@ img { max-width: 100%; display: block; }
   .sidebar-link {
     width: auto;
     flex-shrink: 0;
+    flex-direction: column;
+    justify-content: center;
     white-space: nowrap;
-    padding: 9px 14px;
-    font-size: 0.85rem;
+    gap: 4px;
+    padding: 14px 18px;
+    min-width: 86px;
+    font-size: 0.78rem;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.06);
   }
+  .sidebar-icon { font-size: 1.5rem; line-height: 1; }
+  .sidebar-label { line-height: 1; }
   .sidebar-user { display: none; }
   .admin-shell .admin-wrap { width: 100%; margin: 0; }
   .sidebar-logout {
