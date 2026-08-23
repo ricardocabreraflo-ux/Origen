@@ -103,6 +103,35 @@
   }
   .editing-banner button { background: none; border: none; color: var(--color-accent-dark); font-weight: 600; cursor: pointer; }
 
+  .manual-overlay {
+    position: fixed; inset: 0; background: rgba(20, 17, 14, 0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; z-index: 50;
+  }
+  .manual-overlay[hidden] { display: none; }
+  .manual-modal {
+    background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow);
+    max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px 28px 32px;
+  }
+  .actions-modal { position: relative; }
+  .actions-close {
+    position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
+    border-radius: 50%; border: none; background: var(--color-cream); color: var(--color-dark);
+    font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .action-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .action-item {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    background: var(--color-cream-soft); border: 1.5px solid rgba(33,29,25,0.1); border-radius: 14px;
+    padding: 14px 16px; font-family: var(--font-body); font-size: 0.95rem; font-weight: 600;
+    color: var(--color-dark); cursor: pointer; transition: background 140ms ease;
+  }
+  .action-item:active { background: var(--color-cream); }
+  .action-item .action-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .action-item.is-danger { color: #a13a2f; border-color: rgba(161,58,47,0.35); }
+  .expense-row { cursor: pointer; transition: background 120ms ease; }
+  .expense-row:hover, .expense-row:active { background: var(--color-cream-soft); }
+
   #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
 
   .tab-switch { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid rgba(33,29,25,0.1); }
@@ -181,71 +210,91 @@
       <div class="ideas-list" id="ideas-list"></div>
     </div>
 
-    <div class="card">
-      <h2 id="expense-form-title">Agregar gasto</h2>
-      <p class="section-note">Fijo: se captura una vez y se cuenta solo cada mes. Variable: un pago puntual, con su fecha exacta. Inversión: un gasto grande (ej. remodelación) que se reparte entre los meses que decidas.</p>
-      <div class="editing-banner" id="editing-banner" hidden>
-        <span>Editando un gasto existente.</span>
-        <button type="button" id="cancel-edit-btn">Cancelar edición</button>
+    <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div>
+        <h2 style="margin-bottom:2px;">Gastos</h2>
+        <p class="section-note" style="margin:0;">Agrega, edita o elimina los gastos del negocio.</p>
       </div>
-      <form class="expense-form" id="expense-form">
-        <div class="full">
-          <label>Tipo de gasto</label>
-          <div class="kind-toggle">
-            <label><input type="radio" name="kind" value="fixed" checked /> Fijo (mensual, se repite)</label>
-            <label><input type="radio" name="kind" value="variable" /> Variable (un pago puntual)</label>
-            <label><input type="radio" name="kind" value="investment" /> Inversión (prorratear)</label>
+      <button type="button" class="btn btn-primary" id="add-expense-btn">+ Agregar gasto</button>
+    </div>
+
+    <div class="manual-overlay" id="expense-overlay" hidden>
+      <div class="manual-modal">
+        <h2 id="expense-form-title">Agregar gasto</h2>
+        <p class="section-note">Fijo: se captura una vez y se cuenta solo cada mes. Variable: un pago puntual, con su fecha exacta. Inversión: un gasto grande (ej. remodelación) que se reparte entre los meses que decidas.</p>
+        <div class="editing-banner" id="editing-banner" hidden>
+          <span>Editando un gasto existente.</span>
+          <button type="button" id="cancel-edit-btn">Cancelar edición</button>
+        </div>
+        <form class="expense-form" id="expense-form">
+          <div class="full">
+            <label>Tipo de gasto</label>
+            <div class="kind-toggle">
+              <label><input type="radio" name="kind" value="fixed" checked /> Fijo (mensual, se repite)</label>
+              <label><input type="radio" name="kind" value="variable" /> Variable (un pago puntual)</label>
+              <label><input type="radio" name="kind" value="investment" /> Inversión (prorratear)</label>
+            </div>
           </div>
-        </div>
-        <div>
-          <label for="exp-description">Descripción</label>
-          <input type="text" id="exp-description" required placeholder="Ej. Renta del local" />
-        </div>
-        <div>
-          <label for="exp-category">Categoría</label>
-          <select id="exp-category">
-            <option value="renta">Renta</option>
-            <option value="insumos">Insumos</option>
-            <option value="servicios">Servicios (luz, agua, internet)</option>
-            <option value="sueldo">Sueldo</option>
-            <option value="marketing">Marketing</option>
-            <option value="mantenimiento">Mantenimiento</option>
-            <option value="inversion">Inversión</option>
-            <option value="otro">Otro</option>
-          </select>
-        </div>
-        <div>
-          <label for="exp-amount" id="exp-amount-label">Monto (MXN)</label>
-          <input type="number" id="exp-amount" min="0" step="0.01" required />
-        </div>
-        <div id="exp-variable-date-field">
-          <label for="exp-date">Fecha del gasto</label>
-          <input type="date" id="exp-date" />
-        </div>
-        <div id="exp-fixed-start-field" hidden>
-          <label for="exp-start" id="exp-start-label">Desde cuándo aplica</label>
-          <input type="date" id="exp-start" />
-        </div>
-        <div id="exp-months-field" hidden>
-          <label for="exp-months">Repartir en cuántos meses</label>
-          <input type="number" id="exp-months" min="1" step="1" placeholder="Ej. 6" />
-        </div>
-        <div class="full">
-          <label for="exp-notes">Notas (opcional)</label>
-          <textarea id="exp-notes" rows="2"></textarea>
-        </div>
-        <div class="full">
-          <button type="submit" class="btn btn-primary" id="exp-submit">Guardar gasto</button>
-          <p class="form-hint" id="exp-hint"></p>
-        </div>
-      </form>
+          <div>
+            <label for="exp-description">Descripción</label>
+            <input type="text" id="exp-description" required placeholder="Ej. Renta del local" />
+          </div>
+          <div>
+            <label for="exp-category">Categoría</label>
+            <select id="exp-category">
+              <option value="renta">Renta</option>
+              <option value="insumos">Insumos</option>
+              <option value="servicios">Servicios (luz, agua, internet)</option>
+              <option value="sueldo">Sueldo</option>
+              <option value="marketing">Marketing</option>
+              <option value="mantenimiento">Mantenimiento</option>
+              <option value="inversion">Inversión</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label for="exp-amount" id="exp-amount-label">Monto (MXN)</label>
+            <input type="number" id="exp-amount" min="0" step="0.01" required />
+          </div>
+          <div id="exp-variable-date-field">
+            <label for="exp-date">Fecha del gasto</label>
+            <input type="date" id="exp-date" />
+          </div>
+          <div id="exp-fixed-start-field" hidden>
+            <label for="exp-start" id="exp-start-label">Desde cuándo aplica</label>
+            <input type="date" id="exp-start" />
+          </div>
+          <div id="exp-months-field" hidden>
+            <label for="exp-months">Repartir en cuántos meses</label>
+            <input type="number" id="exp-months" min="1" step="1" placeholder="Ej. 6" />
+          </div>
+          <div class="full">
+            <label for="exp-notes">Notas (opcional)</label>
+            <textarea id="exp-notes" rows="2"></textarea>
+          </div>
+          <div class="full">
+            <button type="submit" class="btn btn-primary" id="exp-submit">Guardar gasto</button>
+            <button type="button" class="btn btn-outline" id="expense-close-btn">Cerrar</button>
+            <p class="form-hint" id="exp-hint"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="manual-overlay" id="expense-actions-overlay" hidden>
+      <div class="manual-modal actions-modal">
+        <button type="button" class="actions-close" id="expense-actions-close-btn" aria-label="Cerrar">✕</button>
+        <h2 id="expense-actions-title">Gasto</h2>
+        <p class="section-note" id="expense-actions-subtitle">Selecciona una acción.</p>
+        <div class="action-list" id="expense-actions-list"></div>
+      </div>
     </div>
 
     <div class="card">
       <h2>Gastos fijos</h2>
       <div class="table-scroll">
         <table class="expense-table" id="fixed-table">
-          <thead><tr><th>Descripción</th><th>Categoría</th><th class="numeric">Monto/mes</th><th>Desde</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Descripción</th><th>Categoría</th><th class="numeric">Monto/mes</th><th>Desde</th><th>Estado</th></tr></thead>
           <tbody id="fixed-tbody"></tbody>
         </table>
       </div>
@@ -257,7 +306,7 @@
       <p class="section-note">Ej. remodelación del estudio — el monto total se reparte entre los meses que elegiste.</p>
       <div class="table-scroll">
         <table class="expense-table" id="investment-table">
-          <thead><tr><th>Descripción</th><th class="numeric">Monto total</th><th class="numeric">Monto/mes</th><th>Periodo</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Descripción</th><th class="numeric">Monto total</th><th class="numeric">Monto/mes</th><th>Periodo</th></tr></thead>
           <tbody id="investment-tbody"></tbody>
         </table>
       </div>
@@ -268,7 +317,7 @@
       <h2>Gastos variables</h2>
       <div class="table-scroll">
         <table class="expense-table" id="variable-table">
-          <thead><tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th class="numeric">Monto</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th class="numeric">Monto</th></tr></thead>
           <tbody id="variable-tbody"></tbody>
         </table>
       </div>
@@ -321,6 +370,7 @@
   const loadingState = document.getElementById("loading-state");
   const financeContent = document.getElementById("finanzas-content");
 
+  const expenseOverlay = document.getElementById("expense-overlay");
   const expenseForm = document.getElementById("expense-form");
   const expFormTitle = document.getElementById("expense-form-title");
   const expDescription = document.getElementById("exp-description");
@@ -374,6 +424,14 @@
     updateFormFieldsForKind();
   }
   document.getElementById("cancel-edit-btn").addEventListener("click", resetEditingState);
+  document.getElementById("add-expense-btn").addEventListener("click", () => {
+    resetEditingState();
+    expenseOverlay.hidden = false;
+  });
+  document.getElementById("expense-close-btn").addEventListener("click", () => {
+    expenseOverlay.hidden = true;
+    resetEditingState();
+  });
 
   function startEditingExpense(expense) {
     editingId = expense.id;
@@ -393,7 +451,7 @@
       if (expense.kind === "investment") expMonths.value = expense.amortize_months;
     }
     updateFormFieldsForKind();
-    expenseForm.scrollIntoView({ behavior: "smooth", block: "start" });
+    expenseOverlay.hidden = false;
   }
 
   let expensesCache = [];
@@ -416,19 +474,12 @@
     document.getElementById("fixed-tbody").innerHTML = fixed
       .map(
         (e) => `
-        <tr data-id="${e.id}" class="${e.active ? "" : "is-inactive"}">
+        <tr data-id="${e.id}" class="expense-row ${e.active ? "" : "is-inactive"}">
           <td>${e.description}</td>
           <td>${CATEGORY_LABEL[e.category] || e.category}</td>
           <td class="numeric">${fmtMoney(e.amount)}</td>
           <td>${e.start_date}</td>
           <td>${e.active ? "Activo" : `<span class="pill-inactive">Inactivo desde ${e.end_date || ""}</span>`}</td>
-          <td>
-            <div class="row-actions">
-              <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
-              ${e.active ? '<button class="btn btn-outline btn-sm" data-action="deactivate">Desactivar</button>' : ""}
-              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
-            </div>
-          </td>
         </tr>`
       )
       .join("");
@@ -437,17 +488,11 @@
     document.getElementById("investment-tbody").innerHTML = investment
       .map(
         (e) => `
-        <tr data-id="${e.id}">
+        <tr data-id="${e.id}" class="expense-row">
           <td>${e.description}</td>
           <td class="numeric">${fmtMoney(e.amount)}</td>
           <td class="numeric">${fmtMoney(e.amount / e.amortize_months)}</td>
           <td>${e.start_date} → ${e.end_date}</td>
-          <td>
-            <div class="row-actions">
-              <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
-              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
-            </div>
-          </td>
         </tr>`
       )
       .join("");
@@ -456,36 +501,75 @@
     document.getElementById("variable-tbody").innerHTML = variable
       .map(
         (e) => `
-        <tr data-id="${e.id}">
+        <tr data-id="${e.id}" class="expense-row">
           <td>${e.expense_date}</td>
           <td>${e.description}</td>
           <td>${CATEGORY_LABEL[e.category] || e.category}</td>
           <td class="numeric">${fmtMoney(e.amount)}</td>
-          <td>
-            <div class="row-actions">
-              <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
-              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
-            </div>
-          </td>
         </tr>`
       )
       .join("");
   }
 
-  document.getElementById("fixed-tbody").addEventListener("click", (e) => handleExpenseAction(e));
-  document.getElementById("variable-tbody").addEventListener("click", (e) => handleExpenseAction(e));
-  document.getElementById("investment-tbody").addEventListener("click", (e) => handleExpenseAction(e));
+  /* ---------------------------------------------------------
+     Modal de acciones por gasto (se abre al dar clic en una fila)
+  --------------------------------------------------------- */
+  const expenseActionsOverlay = document.getElementById("expense-actions-overlay");
+  const expenseActionsTitle = document.getElementById("expense-actions-title");
+  const expenseActionsSubtitle = document.getElementById("expense-actions-subtitle");
+  const expenseActionsList = document.getElementById("expense-actions-list");
+  let currentActionsExpense = null;
 
-  async function handleExpenseAction(e) {
+  function expenseActionItemHtml(action, icon, label, extraClass) {
+    return `<button type="button" class="action-item${extraClass ? " " + extraClass : ""}" data-action="${action}">
+      <span class="action-icon">${icon}</span><span>${label}</span>
+    </button>`;
+  }
+
+  function openExpenseActionsModal(expense) {
+    currentActionsExpense = expense;
+    expenseActionsTitle.textContent = expense.description;
+    expenseActionsSubtitle.textContent = `${CATEGORY_LABEL[expense.category] || expense.category} · ${fmtMoney(expense.amount)}`;
+
+    let items = expenseActionItemHtml("edit", "✏️", "Editar gasto");
+    if (expense.kind === "fixed" && expense.active) {
+      items += expenseActionItemHtml("deactivate", "⏸️", "Desactivar gasto");
+    }
+    items += expenseActionItemHtml("delete", "🗑️", "Eliminar gasto", "is-danger");
+
+    expenseActionsList.innerHTML = items;
+    expenseActionsOverlay.hidden = false;
+  }
+
+  function closeExpenseActionsModal() {
+    expenseActionsOverlay.hidden = true;
+    currentActionsExpense = null;
+  }
+
+  document.getElementById("expense-actions-close-btn").addEventListener("click", closeExpenseActionsModal);
+
+  function wireExpenseRowClicks(tbodyId) {
+    document.getElementById(tbodyId).addEventListener("click", (e) => {
+      const row = e.target.closest("tr[data-id]");
+      if (!row) return;
+      const expense = expensesCache.find((x) => x.id === row.getAttribute("data-id"));
+      if (expense) openExpenseActionsModal(expense);
+    });
+  }
+  wireExpenseRowClicks("fixed-tbody");
+  wireExpenseRowClicks("variable-tbody");
+  wireExpenseRowClicks("investment-tbody");
+
+  expenseActionsList.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-action]");
-    if (!btn) return;
-    const row = btn.closest("tr");
-    const id = row.getAttribute("data-id");
+    if (!btn || !currentActionsExpense) return;
+    const expense = currentActionsExpense;
+    const id = expense.id;
     const action = btn.getAttribute("data-action");
 
     if (action === "edit") {
-      const expense = expensesCache.find((x) => x.id === id);
-      if (expense) startEditingExpense(expense);
+      closeExpenseActionsModal();
+      startEditingExpense(expense);
       return;
     }
 
@@ -494,7 +578,6 @@
       const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
       await fetch("/api/delete-expense", { method: "POST", headers, body: JSON.stringify({ id }) });
     } else if (action === "deactivate") {
-      const expense = expensesCache.find((x) => x.id === id);
       const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
       await fetch("/api/save-expense", {
         method: "POST",
@@ -512,8 +595,9 @@
         }),
       });
     }
+    closeExpenseActionsModal();
     await refreshAll();
-  }
+  });
 
   expenseForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -545,6 +629,7 @@
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || "No se pudo guardar el gasto.");
       resetEditingState();
+      expenseOverlay.hidden = true;
       await refreshAll();
     } catch (err) {
       expHint.textContent = err.message;
