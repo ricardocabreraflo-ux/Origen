@@ -215,7 +215,10 @@
         <h2 style="margin-bottom:2px;">Gastos</h2>
         <p class="section-note" style="margin:0;">Agrega, edita o elimina los gastos del negocio.</p>
       </div>
-      <button type="button" class="btn btn-primary" id="add-expense-btn">+ Agregar gasto</button>
+      <div class="row-actions">
+        <button type="button" class="btn btn-primary" id="add-expense-btn">+ Agregar gasto</button>
+        <button type="button" class="btn btn-outline" id="refresh-finanzas-btn">Actualizar</button>
+      </div>
     </div>
 
     <div class="manual-overlay" id="expense-overlay" hidden>
@@ -432,6 +435,7 @@
     expenseOverlay.hidden = true;
     resetEditingState();
   });
+  document.getElementById("refresh-finanzas-btn").addEventListener("click", () => refreshAll());
 
   function startEditingExpense(expense) {
     editingId = expense.id;

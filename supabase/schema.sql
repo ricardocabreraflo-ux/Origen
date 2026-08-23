@@ -284,3 +284,23 @@ alter table schedule_blocks add column if not exists calendar_event_id text;
 create index if not exists schedule_blocks_date_idx on schedule_blocks (block_date);
 
 alter table schedule_blocks enable row level security;
+
+-- Aperturas especiales de horario que la dueña arma desde el panel de
+-- Citas: permite abrir un día que normalmente está cerrado (ej. domingo, o
+-- un feriado) o cambiar el horario de un día ya abierto, para un rango de
+-- horas específico fuera de lo normal. Es lo contrario de schedule_blocks.
+-- Solo puede haber una apertura especial por fecha (si ya existe, se
+-- reemplaza al guardar una nueva para la misma fecha).
+create table if not exists schedule_openings (
+  id uuid primary key default gen_random_uuid(),
+  opening_date date not null unique,
+  start_time time not null,
+  end_time time not null,
+  label text,
+  created_at timestamptz not null default now(),
+  constraint schedule_openings_range_check check (start_time < end_time)
+);
+
+create index if not exists schedule_openings_date_idx on schedule_openings (opening_date);
+
+alter table schedule_openings enable row level security;

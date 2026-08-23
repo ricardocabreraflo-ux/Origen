@@ -181,6 +181,7 @@
       <button class="btn btn-primary btn-sm" id="manual-open-btn">+ Agendar manualmente</button>
       <button class="btn btn-outline btn-sm" id="direct-open-btn">🕓 Registrar cita directa</button>
       <button class="btn btn-outline btn-sm" id="blocks-open-btn">🚫 Bloqueos de horario</button>
+      <button class="btn btn-outline btn-sm" id="openings-open-btn">🔓 Abrir horario especial</button>
       <button class="btn btn-outline btn-sm" id="export-btn">Exportar clientas (CSV)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
@@ -400,6 +401,44 @@
         <button type="button" class="btn btn-outline" id="blocks-close-btn">Cerrar</button>
       </div>
       <p class="form-hint" id="bl-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="openings-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Abrir horario especial</h2>
+    <p class="section-note">Abre un hueco para que te puedan agendar en un día que normalmente está cerrado (ej. domingo), o fuera de tu horario fijo. Solo aplica ese día, para el rango de horas que elijas — el resto de tu horario normal no cambia.</p>
+
+    <div id="op-list-wrap">
+      <p class="blocks-empty" id="openings-empty">No tienes horarios especiales abiertos.</p>
+      <ul class="blocks-list" id="openings-list"></ul>
+    </div>
+
+    <form class="manual-form" id="opening-form">
+      <div>
+        <label for="op-date">Fecha</label>
+        <input type="date" id="op-date" required />
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="op-start">Desde (hora)</label>
+          <input type="time" id="op-start" required />
+        </div>
+        <div>
+          <label for="op-end">Hasta (hora)</label>
+          <input type="time" id="op-end" required />
+        </div>
+      </div>
+      <div>
+        <label for="op-label">Nota (opcional)</label>
+        <input type="text" id="op-label" placeholder="Ej. Cita especial para Fulanita" />
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="op-submit">Abrir horario</button>
+        <button type="button" class="btn btn-outline" id="openings-close-btn">Cerrar</button>
+      </div>
+      <p class="form-hint" id="op-hint"></p>
     </form>
   </div>
 </div>
@@ -1176,6 +1215,111 @@
     } finally {
       blSubmit.disabled = false;
       blSubmit.textContent = "Agregar bloqueo";
+    }
+  });
+
+  /* ---------------------------------------------------------
+     Abrir horario especial (lo contrario de un bloqueo)
+  --------------------------------------------------------- */
+  const openingsOverlay = document.getElementById("openings-overlay");
+  const openingsList = document.getElementById("openings-list");
+  const openingsEmpty = document.getElementById("openings-empty");
+  const openingForm = document.getElementById("opening-form");
+  const opDate = document.getElementById("op-date");
+  const opStart = document.getElementById("op-start");
+  const opEnd = document.getElementById("op-end");
+  const opLabel = document.getElementById("op-label");
+  const opSubmit = document.getElementById("op-submit");
+  const opHint = document.getElementById("op-hint");
+
+  function formatOpeningDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  }
+
+  async function loadOpenings() {
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-openings", { headers });
+    const body = await res.json();
+    const openings = res.ok ? body.openings || [] : [];
+
+    if (openings.length === 0) {
+      openingsEmpty.hidden = false;
+      openingsList.innerHTML = "";
+      return;
+    }
+    openingsEmpty.hidden = true;
+    openingsList.innerHTML = openings
+      .map(
+        (o) => `<li data-id="${o.id}">
+          <span><strong>${formatOpeningDate(o.opening_date)}</strong> · ${o.start_time.slice(0, 5)} – ${o.end_time.slice(0, 5)}${o.label ? ` · ${o.label}` : ""}</span>
+          <button type="button" class="btn btn-outline btn-sm" data-opening-delete="${o.id}">Eliminar</button>
+        </li>`
+      )
+      .join("");
+  }
+
+  openingsList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-opening-delete]");
+    if (!btn) return;
+    if (!window.confirm("¿Cerrar este horario especial? Ese día/hora deja de poder agendarse.")) return;
+    btn.disabled = true;
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/delete-opening", { method: "POST", headers, body: JSON.stringify({ id: btn.getAttribute("data-opening-delete") }) });
+    loadOpenings();
+  });
+
+  function openOpeningsModal() {
+    opHint.textContent = "";
+    openingForm.reset();
+    openingsOverlay.hidden = false;
+    loadOpenings();
+  }
+
+  function closeOpeningsModal() {
+    openingsOverlay.hidden = true;
+  }
+
+  document.getElementById("openings-open-btn").addEventListener("click", openOpeningsModal);
+  document.getElementById("openings-close-btn").addEventListener("click", closeOpeningsModal);
+
+  openingForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    opHint.textContent = "";
+    opHint.classList.remove("is-error");
+
+    if (opStart.value >= opEnd.value) {
+      opHint.textContent = "La hora de inicio debe ser antes que la hora de fin.";
+      opHint.classList.add("is-error");
+      return;
+    }
+
+    opSubmit.disabled = true;
+    opSubmit.textContent = "Guardando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/save-opening", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          date: opDate.value,
+          startTime: opStart.value,
+          endTime: opEnd.value,
+          label: opLabel.value.trim(),
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar el horario especial.");
+
+      openingForm.reset();
+      loadOpenings();
+    } catch (err) {
+      opHint.textContent = err.message || "No se pudo guardar el horario especial. Intenta de nuevo.";
+      opHint.classList.add("is-error");
+    } finally {
+      opSubmit.disabled = false;
+      opSubmit.textContent = "Abrir horario";
     }
   });
 

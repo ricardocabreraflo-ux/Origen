@@ -56,17 +56,29 @@ function isWithinBookingWindow(dateStr, maxAdvanceMonths) {
  * [...] }`), para no dejar el día casi bloqueado con un solo servicio de
  * varias horas. Igual se filtran por horario de negocio como candidatos
  * normales, y luego `markAvailability` los cruza contra citas ya existentes.
+ *
+ * `opening` es opcional — una apertura especial (tabla schedule_openings)
+ * que la dueña armó a mano para esta fecha exacta. Si viene, define el
+ * horario efectivo del día (start_time–end_time) por completo, sin
+ * importar si el día está cerrado por `businessHours`/`closedDates` — es
+ * lo contrario de un bloqueo: abre un hueco donde normalmente no se podría
+ * reservar.
  */
-function slotsForDate(dateStr, businessHours, durationMinutes, closedDates, fixedSlots) {
-  if (findClosedDate(dateStr, closedDates)) return [];
-
+function slotsForDate(dateStr, businessHours, durationMinutes, closedDates, fixedSlots, opening) {
   const date = parseLocalDate(dateStr);
   const dayKey = WEEKDAY_KEYS[date.getDay()];
-  const dayHours = businessHours[dayKey];
-  if (!dayHours || !dayHours.open || !dayHours.close) return [];
 
-  const open = toMinutes(dayHours.open);
-  const close = toMinutes(dayHours.close);
+  let open, close;
+  if (opening) {
+    open = toMinutes(opening.start_time.slice(0, 5));
+    close = toMinutes(opening.end_time.slice(0, 5));
+  } else {
+    if (findClosedDate(dateStr, closedDates)) return [];
+    const dayHours = businessHours[dayKey];
+    if (!dayHours || !dayHours.open || !dayHours.close) return [];
+    open = toMinutes(dayHours.open);
+    close = toMinutes(dayHours.close);
+  }
 
   if (fixedSlots) {
     const times = (dayKey === "sat" ? fixedSlots.saturday : fixedSlots.weekday) || [];

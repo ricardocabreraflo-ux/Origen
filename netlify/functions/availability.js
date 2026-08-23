@@ -2,6 +2,7 @@ const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
 const { slotsForDate, markAvailability, isWithinBookingWindow, findClosedDate } = require("./_lib/slots");
 const { getBlocksForDate } = require("./_lib/scheduleBlocks");
+const { getOpeningForDate } = require("./_lib/scheduleOpenings");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -48,9 +49,10 @@ exports.handler = async (event) => {
 
     const supabase = getServiceClient();
     const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);
+    const opening = await getOpeningForDate(supabase, date);
 
     const closed = findClosedDate(date, config.closedDates);
-    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots);
+    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots, opening);
 
     if (grid.length === 0 || fullDayBlock) {
       return {
@@ -59,7 +61,13 @@ exports.handler = async (event) => {
           date,
           serviceId,
           slots: [],
-          closedReason: closed ? closed.label || "Cerrado por día festivo." : fullDayBlock ? fullDayBlock.label || "Día bloqueado." : undefined,
+          closedReason: fullDayBlock
+            ? fullDayBlock.label || "Día bloqueado."
+            : opening
+              ? "El servicio elegido no cabe en el horario especial de este día."
+              : closed
+                ? closed.label || "Cerrado por día festivo."
+                : undefined,
         }),
       };
     }

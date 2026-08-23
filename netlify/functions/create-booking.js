@@ -2,6 +2,7 @@ const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
 const { slotsForDate, isTodayOrFuture, isWithinBookingWindow, rangesOverlap, toMinutes } = require("./_lib/slots");
 const { getBlocksForDate } = require("./_lib/scheduleBlocks");
+const { getOpeningForDate } = require("./_lib/scheduleOpenings");
 const { generateReservationCode } = require("./_lib/reservationCode");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
 const { getLoyaltyStatus } = require("./_lib/loyalty");
@@ -54,11 +55,12 @@ exports.handler = async (event) => {
       return badRequest(`Solo se puede reservar con hasta ${maxAdvanceMonths} meses de anticipación.`);
     }
 
-    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots);
+    const supabase = getServiceClient();
+    const opening = await getOpeningForDate(supabase, date);
+
+    const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots, opening);
     const slot = grid.find((s) => s.startTime === startTime);
     if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
-
-    const supabase = getServiceClient();
 
     const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);
     if (fullDayBlock) return badRequest("Ese día no está disponible para citas.");

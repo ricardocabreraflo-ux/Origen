@@ -17,6 +17,7 @@ const { getLoyaltyStatus } = require("./_lib/loyalty");
 const { runPostConfirmSideEffects } = require("./_lib/confirmBooking");
 const { parsePriceAmount } = require("./_lib/money");
 const { getBlocksForDate } = require("./_lib/scheduleBlocks");
+const { getOpeningForDate } = require("./_lib/scheduleOpenings");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UNIQUE_VIOLATION = "23505";
@@ -94,6 +95,8 @@ exports.handler = async (event, context) => {
 
     const effectiveDuration = directEntry && durationMinutes ? Number(durationMinutes) : service.duration;
 
+    const supabase = getServiceClient();
+
     let slot;
     if (directEntry) {
       // Registro directo: la hora la escribe la dueña a mano (no viene de
@@ -101,12 +104,11 @@ exports.handler = async (event, context) => {
       // fin según la duración — sin exigir que calce con un slot de 30 min.
       slot = { startTime, endTime: toHHMM(toMinutes(startTime) + effectiveDuration) };
     } else {
-      const grid = slotsForDate(date, config.businessHours, effectiveDuration, config.closedDates, service.fixedSlots);
+      const opening = await getOpeningForDate(supabase, date);
+      const grid = slotsForDate(date, config.businessHours, effectiveDuration, config.closedDates, service.fixedSlots, opening);
       slot = grid.find((s) => s.startTime === startTime);
       if (!slot) return badRequest("Ese horario no está dentro del horario de atención.");
     }
-
-    const supabase = getServiceClient();
 
     // El registro directo puede saltarse un bloqueo a propósito (es una
     // anotación de algo que ya pasó); el flujo normal de cita manual no.
