@@ -1492,6 +1492,17 @@
     adminShell.hidden = true;
   }
 
+  // Cuando la app vuelve a primer plano (regresas de otra app, o el
+  // celular la "despertó" en vez de recargarla desde cero), se vuelve a
+  // cargar la información para no quedarse con datos viejos sin tener que
+  // cerrar y volver a abrir la app a mano.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !adminShell.hidden) loadBookings();
+  });
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted && !adminShell.hidden) loadBookings();
+  });
+
   if (!window.netlifyIdentity) {
     document.getElementById("login-btn").hidden = true;
     const notice = document.createElement("p");

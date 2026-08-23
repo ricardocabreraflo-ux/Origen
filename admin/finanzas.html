@@ -215,10 +215,7 @@
         <h2 style="margin-bottom:2px;">Gastos</h2>
         <p class="section-note" style="margin:0;">Agrega, edita o elimina los gastos del negocio.</p>
       </div>
-      <div class="row-actions">
-        <button type="button" class="btn btn-primary" id="add-expense-btn">+ Agregar gasto</button>
-        <button type="button" class="btn btn-outline" id="refresh-finanzas-btn">Actualizar</button>
-      </div>
+      <button type="button" class="btn btn-primary" id="add-expense-btn">+ Agregar gasto</button>
     </div>
 
     <div class="manual-overlay" id="expense-overlay" hidden>
@@ -435,7 +432,6 @@
     expenseOverlay.hidden = true;
     resetEditingState();
   });
-  document.getElementById("refresh-finanzas-btn").addEventListener("click", () => refreshAll());
 
   function startEditingExpense(expense) {
     editingId = expense.id;
@@ -970,6 +966,17 @@
     loginGate.hidden = false;
     adminShell.hidden = true;
   }
+
+  // Cuando la app vuelve a primer plano (regresas de otra app, o el
+  // celular la "despertó" en vez de recargarla desde cero), se vuelve a
+  // cargar la información para no quedarse con datos viejos sin tener que
+  // cerrar y volver a abrir la app a mano.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !adminShell.hidden) refreshAll();
+  });
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted && !adminShell.hidden) refreshAll();
+  });
 
   if (!window.netlifyIdentity) {
     document.getElementById("login-btn").hidden = true;
