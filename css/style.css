@@ -1112,6 +1112,7 @@ img { max-width: 100%; display: block; }
     font-size: 0.85rem;
   }
   .sidebar-user { display: none; }
+  .admin-shell .admin-wrap { width: 100%; margin: 0; }
   .sidebar-logout {
     flex-shrink: 0;
     white-space: nowrap;

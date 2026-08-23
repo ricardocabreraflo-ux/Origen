@@ -31,6 +31,19 @@
   .status-cancelled, .status-expired { background: #eee; color: #777; }
   .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+
+  @media (max-width: 640px) {
+    .row-actions {
+      width: 100%;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .row-actions::-webkit-scrollbar { display: none; }
+    .row-actions .btn { flex-shrink: 0; white-space: nowrap; }
+  }
   #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
   .table-scroll { overflow-x: auto; }
   .bookings-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 18px; font-size: 0.88rem; color: var(--color-dark); }
