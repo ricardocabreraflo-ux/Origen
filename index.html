@@ -182,6 +182,11 @@
             <label for="b-notes">Notas adicionales</label>
             <textarea id="b-notes" name="notes" rows="3" placeholder="Cuéntanos algo más (opcional)"></textarea>
           </div>
+          <div class="form-row form-row-full">
+            <label for="b-promo-code">Código de promoción o de referido (opcional)</label>
+            <input type="text" id="b-promo-code" name="promoCode" placeholder="Ej. VERANO15" autocomplete="off" />
+            <p class="form-hint" id="promo-code-hint"></p>
+          </div>
           <div class="form-row form-row-full form-actions">
             <button type="submit" class="btn btn-primary" id="booking-submit">Apartar horario</button>
           </div>
@@ -195,6 +200,7 @@
         <p class="confirmation-code" id="confirmation-code"></p>
         <p id="confirmation-summary"></p>
         <p class="section-note" id="confirmation-loyalty-note" hidden></p>
+        <p class="section-note" id="confirmation-promo-note" hidden></p>
 
         <div class="confirmation-timer" id="confirmation-timer"></div>
 
@@ -260,6 +266,23 @@
     <p class="section-eyebrow">Testimonios</p>
     <h2 class="section-title">Lo que dicen nuestras clientas</h2>
     <div class="testimonial-grid reveal-stagger" id="testimonial-grid"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<!-- PRUEBA SOCIAL -->
+<section class="section" id="resultados">
+  <div class="container">
+    <p class="section-eyebrow">Resultados reales</p>
+    <h2 class="section-title">Antes y después</h2>
+    <div class="before-after-grid reveal-stagger" id="before-after-grid"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<section class="section section-alt" id="instagram-destacado">
+  <div class="container">
+    <p class="section-eyebrow">En redes</p>
+    <h2 class="section-title">Síguenos en Instagram</h2>
+    <div class="instagram-grid reveal-stagger" id="instagram-grid"><!-- generado por script.js --></div>
   </div>
 </section>
 

@@ -3,7 +3,7 @@ const { getServiceClient } = require("./_lib/supabase");
 const { slotsForDate, isTodayOrFuture, isWithinBookingWindow } = require("./_lib/slots");
 const { generateReservationCode } = require("./_lib/reservationCode");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
-const { getLoyaltyStatus } = require("./_lib/loyalty");
+const { getLoyaltyStatus, last10 } = require("./_lib/loyalty");
 const { parsePriceAmount } = require("./_lib/money");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -12,6 +12,70 @@ const EXCLUSION_VIOLATION = "23P01"; // traslape detectado por la restricción d
 
 function badRequest(message) {
   return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message }) };
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+class CodeError extends Error {}
+
+// Resuelve el código de descuento/referido que la clienta escribió al
+// agendar. Nunca confía en lo que ya validó check-promo-code.js del lado
+// del cliente — vuelve a checar todo aquí, que es lo único que de verdad
+// aplica el descuento y cuenta el uso.
+async function resolvePromoOrReferralCode(supabase, rawCode, customerPhone) {
+  const code = (rawCode || "").trim().toUpperCase();
+  if (!code) return { kind: "none" };
+
+  const today = todayStr();
+
+  const { data: promo, error: promoError } = await supabase
+    .from("promotions")
+    .select("*")
+    .eq("code", code)
+    .eq("kind", "campaign")
+    .maybeSingle();
+  if (promoError) throw promoError;
+
+  if (promo) {
+    if (!promo.active) throw new CodeError("Ese código ya no está activo.");
+    if (promo.starts_at && promo.starts_at > today) throw new CodeError("Ese código todavía no empieza a aplicar.");
+    if (promo.ends_at && promo.ends_at < today) throw new CodeError("Ese código ya venció.");
+    if (promo.max_redemptions != null && promo.redemptions_count >= promo.max_redemptions) {
+      throw new CodeError("Ese código ya alcanzó su límite de usos.");
+    }
+    return { kind: "promotion", promotion: promo };
+  }
+
+  const { data: referral, error: referralError } = await supabase
+    .from("referral_codes")
+    .select("*")
+    .eq("code", code)
+    .maybeSingle();
+  if (referralError) throw referralError;
+
+  if (referral) {
+    const targetPhone = last10(customerPhone);
+    if (referral.owner_phone === targetPhone) {
+      throw new CodeError("No puedes usar tu propio código de referido.");
+    }
+
+    // El código de referido solo aplica en la primera cita de la
+    // clienta referida — se revisa contra TODAS sus citas anteriores,
+    // sin importar el estado, para que no se pueda reintentar con una
+    // cita cancelada o vencida de por medio.
+    const { data: priorBookings, error: priorError } = await supabase.from("bookings").select("customer_phone");
+    if (priorError) throw priorError;
+    const hasPriorBooking = (priorBookings || []).some((b) => last10(b.customer_phone) === targetPhone);
+    if (hasPriorBooking) {
+      throw new CodeError("El código de referido solo aplica en tu primera cita en Origen.");
+    }
+
+    return { kind: "referral", referral };
+  }
+
+  throw new CodeError("No encontramos ese código.");
 }
 
 exports.handler = async (event) => {
@@ -26,7 +90,7 @@ exports.handler = async (event) => {
     return badRequest("JSON inválido.");
   }
 
-  const { serviceId, date, startTime, customerName, customerPhone, customerEmail, notes } = payload;
+  const { serviceId, date, startTime, customerName, customerPhone, customerEmail, notes, promoCode } = payload;
 
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
   if (!date || !DATE_RE.test(date)) return badRequest("Fecha inválida.");
@@ -75,6 +139,17 @@ exports.handler = async (event) => {
     // revise antes de confirmar el depósito.
     const loyaltyStatus = await getLoyaltyStatus(supabase, config.loyalty, customerPhone);
 
+    // Código de descuento o de referido, si la clienta escribió uno. Se
+    // valida aquí de verdad (nunca se confía en lo que ya haya validado
+    // check-promo-code.js del lado del cliente).
+    let codeResult;
+    try {
+      codeResult = await resolvePromoOrReferralCode(supabase, promoCode, customerPhone);
+    } catch (err) {
+      if (err instanceof CodeError) return badRequest(err.message);
+      throw err;
+    }
+
     const row = {
       reservation_code: generateReservationCode(date),
       service_id: service.id,
@@ -86,6 +161,9 @@ exports.handler = async (event) => {
       customer_phone: customerPhone.trim(),
       customer_email: (customerEmail || "").trim() || null,
       notes: (notes || "").trim() || null,
+      promo_code: codeResult.kind !== "none" ? (codeResult.promotion || codeResult.referral).code : null,
+      discount_type: codeResult.kind === "promotion" ? codeResult.promotion.discount_type : null,
+      discount_value: codeResult.kind === "promotion" ? codeResult.promotion.discount_value : null,
       booking_date: date,
       start_time: `${slot.startTime}:00`,
       end_time: `${slot.endTime}:00`,
@@ -112,6 +190,25 @@ exports.handler = async (event) => {
         };
       }
       throw error;
+    }
+
+    // La reserva ya quedó hecha — ahora se registra el uso del código.
+    // Si esto llegara a fallar, la cita ya existe de todas formas; el
+    // conteo de usos es secundario frente a la reserva en sí.
+    try {
+      if (codeResult.kind === "promotion") {
+        await supabase.from("promo_redemptions").insert({ promotion_id: codeResult.promotion.id, booking_id: data.id });
+        await supabase
+          .from("promotions")
+          .update({ redemptions_count: codeResult.promotion.redemptions_count + 1 })
+          .eq("id", codeResult.promotion.id);
+      } else if (codeResult.kind === "referral") {
+        await supabase
+          .from("referral_redemptions")
+          .insert({ referral_code_id: codeResult.referral.id, referred_booking_id: data.id });
+      }
+    } catch (codeTrackingErr) {
+      console.error("No se pudo registrar el uso del código", codeTrackingErr);
     }
 
     // Mejor esfuerzo: la reserva ya quedó hecha en la base de datos, así
@@ -173,6 +270,9 @@ exports.handler = async (event) => {
         whatsappNumber: config.whatsappNumber,
         rewardRedemption: data.reward_redemption,
         loyaltyDiscountPercent: loyaltyStatus.discountPercent,
+        promoCode: data.promo_code,
+        discountType: data.discount_type,
+        discountValue: data.discount_value,
       }),
     };
   } catch (err) {

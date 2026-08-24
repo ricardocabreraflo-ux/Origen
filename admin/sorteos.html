@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sorteos · Origen Brows &amp; Hair Studio</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .admin-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 100px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .admin-header h1 { font-size: 1.8rem; margin: 0; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+  .row-actions select {
+    font-family: var(--font-body);
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(33, 29, 25, 0.15);
+    font-size: 0.82rem;
+    background: var(--color-white);
+    color: var(--color-dark);
+  }
+  #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
+  #login-gate .btn { margin-top: 16px; }
+  table.giveaway-table { width: 100%; border-collapse: collapse; background: var(--color-white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .giveaway-table th, .giveaway-table td { padding: 14px 16px; text-align: left; font-size: 0.88rem; border-bottom: 1px solid rgba(33,29,25,0.08); }
+  .giveaway-table th { background: var(--color-cream); font-weight: 600; color: var(--color-dark); }
+  #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<div id="login-gate">
+  <p class="section-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Participantes de sorteo</h1>
+  <p class="section-note">Inicia sesión para ver quién se ha registrado.</p>
+  <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
+</div>
+
+<div class="admin-shell" id="admin-shell" hidden>
+  <nav class="admin-sidebar">
+    <div class="sidebar-brand">Origen · Panel</div>
+    <a class="sidebar-link" href="citas.html">📅 Citas</a>
+    <a class="sidebar-link" href="clientas.html">👥 Clientas</a>
+    <a class="sidebar-link" href="lealtad.html">🎁 Lealtad</a>
+    <a class="sidebar-link" href="promos.html">🏷️ Promos</a>
+    <a class="sidebar-link is-active" href="sorteos.html">🎉 Sorteos</a>
+    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
+    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
+    <a class="sidebar-link" href="index.html">✏️ Contenido</a>
+    <div class="sidebar-user" id="sidebar-user"></div>
+    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+  </nav>
+  <div class="admin-wrap" id="admin-wrap">
+  <div class="admin-header">
+    <h1>Participantes de sorteo</h1>
+    <div class="row-actions">
+      <select id="slug-filter">
+        <option value="">Todos los sorteos</option>
+      </select>
+      <button class="btn btn-outline btn-sm" id="export-btn">Exportar CSV</button>
+      <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
+    </div>
+  </div>
+
+  <div id="loading-state">Cargando…</div>
+  <div id="empty-state" hidden>Todavía no hay participaciones.</div>
+
+  <div class="table-scroll">
+    <table class="giveaway-table" id="giveaway-table" hidden>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Instagram</th>
+          <th>WhatsApp</th>
+          <th>Sorteo</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="giveaway-tbody"></tbody>
+    </table>
+  </div>
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const loginGate = document.getElementById("login-gate");
+  const adminShell = document.getElementById("admin-shell");
+  const loadingState = document.getElementById("loading-state");
+  const emptyState = document.getElementById("empty-state");
+  const table = document.getElementById("giveaway-table");
+  const tbody = document.getElementById("giveaway-tbody");
+  const slugFilter = document.getElementById("slug-filter");
+
+  let entriesCache = [];
+
+  async function authHeaders() {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return {};
+    const token = await user.jwt();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  function renderRows(entries) {
+    if (entries.length === 0) {
+      table.hidden = true;
+      emptyState.hidden = false;
+      return;
+    }
+    tbody.innerHTML = entries
+      .map(
+        (e) => `
+        <tr>
+          <td>${e.name}</td>
+          <td>${e.instagram_handle ? `@${e.instagram_handle}` : "—"}</td>
+          <td>${e.whatsapp_phone}</td>
+          <td>${e.giveaway_slug}</td>
+          <td>${new Date(e.created_at).toLocaleString("es-MX")}</td>
+        </tr>`
+      )
+      .join("");
+    table.hidden = false;
+    emptyState.hidden = true;
+  }
+
+  function populateSlugFilter(entries) {
+    const slugs = [...new Set(entries.map((e) => e.giveaway_slug))];
+    const current = slugFilter.value;
+    slugFilter.innerHTML =
+      `<option value="">Todos los sorteos</option>` + slugs.map((s) => `<option value="${s}">${s}</option>`).join("");
+    slugFilter.value = slugs.includes(current) ? current : "";
+  }
+
+  async function loadEntries() {
+    loadingState.hidden = false;
+    table.hidden = true;
+    emptyState.hidden = true;
+
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-giveaway-entries", { headers });
+    const body = await res.json();
+    loadingState.hidden = true;
+
+    if (!res.ok) {
+      emptyState.textContent = "No se pudo cargar la lista.";
+      emptyState.hidden = false;
+      return;
+    }
+
+    entriesCache = body.entries || [];
+    populateSlugFilter(entriesCache);
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const slug = slugFilter.value;
+    const filtered = slug ? entriesCache.filter((e) => e.giveaway_slug === slug) : entriesCache;
+    renderRows(filtered);
+  }
+
+  slugFilter.addEventListener("change", applyFilter);
+
+  document.getElementById("export-btn").addEventListener("click", () => {
+    const slug = slugFilter.value;
+    const filtered = slug ? entriesCache.filter((e) => e.giveaway_slug === slug) : entriesCache;
+    if (filtered.length === 0) {
+      alert("No hay participaciones para exportar.");
+      return;
+    }
+    const rows = [["Nombre", "Instagram", "WhatsApp", "Sorteo", "Fecha"]];
+    filtered.forEach((e) => {
+      rows.push([e.name, e.instagram_handle ? `@${e.instagram_handle}` : "", e.whatsapp_phone, e.giveaway_slug, e.created_at]);
+    });
+    const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sorteo-origen-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("refresh-btn").addEventListener("click", loadEntries);
+  document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
+  document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  function renderSidebarUser() {
+    const el = document.getElementById("sidebar-user");
+    const user = window.netlifyIdentity.currentUser();
+    if (el && user) el.innerHTML = `Sesión activa<span>${user.email}</span>`;
+  }
+
+  function showAdmin() {
+    loginGate.hidden = true;
+    adminShell.hidden = false;
+    renderSidebarUser();
+    loadEntries();
+  }
+  function showLogin() {
+    loginGate.hidden = false;
+    adminShell.hidden = true;
+  }
+
+  if (!window.netlifyIdentity) {
+    document.getElementById("login-btn").hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "form-hint is-error";
+    notice.textContent = "No se pudo cargar el inicio de sesión. Revisa tu conexión y recarga la página.";
+    loginGate.appendChild(notice);
+    return;
+  }
+
+  window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
+  window.netlifyIdentity.on("login", () => {
+    window.netlifyIdentity.close();
+    showAdmin();
+  });
+  window.netlifyIdentity.on("logout", showLogin);
+  window.netlifyIdentity.init();
+})();
+</script>
+</body>
+</html>

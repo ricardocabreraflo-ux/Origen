@@ -17,6 +17,48 @@
     return `https://wa.me/${phone}${text ? `?text=${text}` : ""}`;
   }
 
+  /* ---------------------------------------------------------
+     Medición: Meta Pixel + eventos propios (marketing_events).
+     Todo es "mejor esfuerzo" — si algo falla aquí, nunca debe
+     interrumpir la experiencia real de la clienta.
+  --------------------------------------------------------- */
+  function initMetaPixel(pixelId) {
+    if (!pixelId || window.fbq) return;
+    /* eslint-disable */
+    !(function (f, b, e, v, n, t, s) {
+      if (f.fbq) return;
+      n = f.fbq = function () {
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      if (!f._fbq) f._fbq = n;
+      n.push = n;
+      n.loaded = !0;
+      n.version = "2.0";
+      n.queue = [];
+      t = b.createElement(e);
+      t.async = !0;
+      t.src = v;
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+    })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    /* eslint-enable */
+    window.fbq("init", pixelId);
+    window.fbq("track", "PageView");
+  }
+
+  function logMarketingEvent(eventType, campaign, metadata) {
+    fetch("/api/log-marketing-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventType, campaign, metadata }),
+    }).catch(() => {});
+  }
+
+  function trackWhatsappClick(campaign) {
+    if (window.fbq) window.fbq("track", "Contact");
+    logMarketingEvent("whatsapp_click", campaign || "general");
+  }
+
   function serviceById(id) {
     return cfg.services.find((s) => s.id === id);
   }
@@ -213,8 +255,69 @@
   function renderWhatsappButtons() {
     const greeting = `Hola ${getShortName()}, me gustaría más información. 😊`;
     const link = whatsappLink(greeting);
-    document.getElementById("hero-whatsapp").href = link;
-    document.getElementById("floating-whatsapp").href = link;
+    const hero = document.getElementById("hero-whatsapp");
+    const floating = document.getElementById("floating-whatsapp");
+    hero.href = link;
+    floating.href = link;
+    hero.addEventListener("click", () => trackWhatsappClick("hero"));
+    floating.addEventListener("click", () => trackWhatsappClick("floating"));
+  }
+
+  function renderSocialProof() {
+    const proof = cfg.socialProof || {};
+
+    const baGrid = document.getElementById("before-after-grid");
+    const beforeAfter = proof.beforeAfter || [];
+    if (beforeAfter.length === 0) {
+      baGrid.outerHTML = `
+        <div class="testimonial-empty" id="before-after-grid">
+          <strong>Muy pronto, aquí</strong>
+          En cuanto tengamos tus primeros resultados reales, los mostraremos en esta sección.
+        </div>`;
+    } else {
+      baGrid.innerHTML = beforeAfter
+        .map(
+          (item) => `
+          <div class="before-after-card">
+            <div class="before-after-images">
+              <figure><img src="${item.beforeImage}" alt="Antes — ${item.label || ""}" loading="lazy" /><figcaption>Antes</figcaption></figure>
+              <figure><img src="${item.afterImage}" alt="Después — ${item.label || ""}" loading="lazy" /><figcaption>Después</figcaption></figure>
+            </div>
+            ${item.label ? `<p class="before-after-label">${item.label}</p>` : ""}
+          </div>`
+        )
+        .join("");
+    }
+
+    const igGrid = document.getElementById("instagram-grid");
+    const posts = (proof.instagramPosts || []).filter((p) => p && p.permalink);
+    if (posts.length === 0) {
+      igGrid.outerHTML = `
+        <div class="testimonial-empty" id="instagram-grid">
+          <strong>Síguenos en Instagram</strong>
+          Muy pronto destacaremos aquí las publicaciones de nuestras clientas.
+        </div>`;
+      return;
+    }
+
+    igGrid.innerHTML = posts
+      .map(
+        (p) => `
+        <blockquote class="instagram-media" data-instgrm-permalink="${p.permalink}" data-instgrm-version="14"></blockquote>`
+      )
+      .join("");
+
+    // El script oficial de Instagram procesa los <blockquote> y los
+    // convierte en el embed real — se carga una sola vez y, si ya estaba
+    // cargado, solo se le pide reprocesar los nuevos.
+    if (window.instgrm) {
+      window.instgrm.Embeds.process();
+    } else {
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "https://www.instagram.com/embed.js";
+      document.body.appendChild(script);
+    }
   }
 
   function renderServices() {
@@ -375,7 +478,10 @@
         confirmationCode: document.getElementById("confirmation-code"),
         confirmationSummary: document.getElementById("confirmation-summary"),
         confirmationLoyaltyNote: document.getElementById("confirmation-loyalty-note"),
+        confirmationPromoNote: document.getElementById("confirmation-promo-note"),
         confirmationTimer: document.getElementById("confirmation-timer"),
+        promoCodeInput: document.getElementById("b-promo-code"),
+        promoCodeHint: document.getElementById("promo-code-hint"),
         transferAmount: document.getElementById("transfer-amount"),
         transferBank: document.getElementById("transfer-bank"),
         transferHolder: document.getElementById("transfer-holder"),
@@ -511,6 +617,7 @@
           customerPhone: form.phone.value.trim(),
           customerEmail: form.email.value.trim(),
           notes: form.notes.value.trim(),
+          promoCode: form.promoCode.value.trim(),
         }),
       })
         .then((res) => res.json().then((body) => ({ status: res.status, body })))
@@ -548,6 +655,17 @@
         els.confirmationLoyaltyNote.hidden = false;
       } else {
         els.confirmationLoyaltyNote.hidden = true;
+      }
+
+      if (data.discountType) {
+        const discountText =
+          data.discountType === "percent" ? `${data.discountValue}% de descuento` : `${formatMoney(data.discountValue)} de descuento`;
+        els.confirmationPromoNote.textContent = `🏷️ Código ${data.promoCode} aplicado — ${discountText} en tu servicio, se ajusta al liquidar en el estudio.`;
+        els.confirmationPromoNote.hidden = false;
+        if (window.fbq) window.fbq("trackCustom", "PromoCodeUsed", { code: data.promoCode });
+        logMarketingEvent("promo_code_used", data.promoCode);
+      } else {
+        els.confirmationPromoNote.hidden = true;
       }
 
       els.transferAmount.textContent = formatMoney(data.depositAmount);
@@ -660,6 +778,22 @@
       countdownInterval = setInterval(tick, 1000);
     }
 
+    function checkPromoCode() {
+      const code = els.promoCodeInput.value.trim();
+      if (!code) return;
+      els.promoCodeHint.textContent = "Validando…";
+      els.promoCodeHint.classList.remove("is-error");
+      fetch(`/api/check-promo-code?code=${encodeURIComponent(code)}`)
+        .then((res) => res.json())
+        .then((body) => {
+          els.promoCodeHint.textContent = body.message || "";
+          els.promoCodeHint.classList.toggle("is-error", !body.valid);
+        })
+        .catch(() => {
+          els.promoCodeHint.textContent = "";
+        });
+    }
+
     function resetFlow() {
       state.service = null;
       state.date = null;
@@ -698,6 +832,24 @@
 
       els.form.addEventListener("submit", submitBooking);
       els.payOnlineBtn.addEventListener("click", payOnline);
+      els.confirmationWhatsapp.addEventListener("click", () => trackWhatsappClick("confirmacion"));
+
+      // Si llegó desde una landing de campaña o un link de referido
+      // (?promo=CODIGO), se precarga el campo — la clienta puede seguir
+      // editándolo o borrarlo antes de agendar.
+      const promoFromUrl = new URLSearchParams(window.location.search).get("promo");
+      if (promoFromUrl) {
+        els.promoCodeInput.value = promoFromUrl.trim().toUpperCase();
+        checkPromoCode();
+      }
+      let promoCheckTimer;
+      els.promoCodeInput.addEventListener("input", () => {
+        clearTimeout(promoCheckTimer);
+        els.promoCodeHint.textContent = "";
+        els.promoCodeHint.classList.remove("is-error");
+        if (!els.promoCodeInput.value.trim()) return;
+        promoCheckTimer = setTimeout(checkPromoCode, 500);
+      });
 
       els.copyClabe.addEventListener("click", () => {
         const clabe = els.transferClabe.textContent;
@@ -724,6 +876,7 @@
   --------------------------------------------------------- */
   function init(data) {
     cfg = data;
+    initMetaPixel(cfg.metaPixelId);
     renderBrand();
     renderAnnouncement();
     initPromoPopup();
@@ -736,6 +889,7 @@
     renderServices();
     renderPolicies();
     renderTestimonials();
+    renderSocialProof();
     renderFAQ();
     initMobileNav();
     BookingFlow.init();

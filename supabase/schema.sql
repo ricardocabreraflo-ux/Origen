@@ -260,3 +260,128 @@ create trigger manual_clients_set_updated_at
   execute function set_updated_at();
 
 alter table manual_clients enable row level security;
+
+-- ============================================================
+-- Marketing y promociones: códigos de descuento, referidos,
+-- sorteos y eventos de medición propios.
+-- ============================================================
+
+-- Campañas de descuento (temporada, combo, primera visita, etc.) y
+-- también las recompensas de referido de un solo uso que se generan
+-- automáticamente cuando el referido de una clienta confirma su primera
+-- cita (ver referral_redemptions y _lib/confirmBooking.js).
+create table if not exists promotions (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  -- para landing pages tipo /promo-:slug — null en recompensas de
+  -- referido, que no tienen página propia
+  slug text unique,
+  campaign_name text not null,
+  description text,
+  discount_type text not null check (discount_type in ('percent', 'fixed')),
+  discount_value numeric not null check (discount_value > 0),
+  kind text not null default 'campaign' check (kind in ('campaign', 'referral_reward')),
+  starts_at date,
+  ends_at date,
+  active boolean not null default true,
+  max_redemptions integer, -- null = sin límite
+  redemptions_count integer not null default 0,
+  -- si esta promoción es la recompensa por un referido, aquí queda a
+  -- quién avisarle cuando se use (no aplica a campañas normales)
+  reward_owner_phone text,
+  reward_owner_name text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists promotions_code_idx on promotions (code);
+create index if not exists promotions_slug_idx on promotions (slug);
+create index if not exists promotions_active_idx on promotions (active);
+
+drop trigger if exists promotions_set_updated_at on promotions;
+create trigger promotions_set_updated_at
+  before update on promotions
+  for each row
+  execute function set_updated_at();
+
+alter table promotions enable row level security;
+
+-- Un renglón por cada vez que un código de promoción se usó de verdad en
+-- una cita (no solo se validó al escribirlo) — permite reportar cuántas
+-- citas trajo cada campaña sin depender de contar bookings a mano.
+create table if not exists promo_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  promotion_id uuid not null references promotions(id) on delete cascade,
+  booking_id uuid not null references bookings(id) on delete cascade,
+  redeemed_at timestamptz not null default now()
+);
+
+create index if not exists promo_redemptions_promotion_idx on promo_redemptions (promotion_id);
+alter table promo_redemptions enable row level security;
+
+-- Código de referido de cada clienta (uno por teléfono). Se crea la
+-- primera vez que lo pide desde /referidos.html — no requiere que ya
+-- tenga citas confirmadas, para que lo pueda compartir desde el día uno.
+create table if not exists referral_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  owner_phone text not null unique, -- últimos 10 dígitos, ver _lib/loyalty.js:last10
+  owner_name text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists referral_codes_code_idx on referral_codes (code);
+alter table referral_codes enable row level security;
+
+-- Se llena cuando alguien agenda usando el código de referido de otra
+-- clienta. reward_status pasa a "granted" en cuanto se genera
+-- automáticamente el código de recompensa de un solo uso para la
+-- referidora (al confirmarse esta primera cita del referido).
+create table if not exists referral_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  referral_code_id uuid not null references referral_codes(id) on delete cascade,
+  referred_booking_id uuid not null unique references bookings(id) on delete cascade,
+  reward_status text not null default 'pending' check (reward_status in ('pending', 'granted')),
+  reward_promotion_id uuid references promotions(id),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists referral_redemptions_code_idx on referral_redemptions (referral_code_id);
+alter table referral_redemptions enable row level security;
+
+-- Participaciones de sorteos/dinámicas. giveaway_slug distingue entre
+-- varios sorteos corriendo o pasados (ej. "sorteo-verano-2026").
+create table if not exists giveaway_entries (
+  id uuid primary key default gen_random_uuid(),
+  giveaway_slug text not null default 'general',
+  name text not null,
+  instagram_handle text,
+  whatsapp_phone text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists giveaway_entries_slug_idx on giveaway_entries (giveaway_slug);
+alter table giveaway_entries enable row level security;
+
+-- Eventos de medición propios (además de lo que registre Meta Pixel), para
+-- saber qué campaña convierte sin depender solo del Ads Manager.
+create table if not exists marketing_events (
+  id uuid primary key default gen_random_uuid(),
+  event_type text not null check (event_type in ('whatsapp_click', 'promo_code_used')),
+  campaign text, -- slug de campaña o código, según el evento
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists marketing_events_type_idx on marketing_events (event_type);
+create index if not exists marketing_events_created_idx on marketing_events (created_at);
+alter table marketing_events enable row level security;
+
+-- Código/descuento aplicado a una cita, si lo hubo. El anticipo se sigue
+-- cobrando completo (ver create-booking.js) — este descuento se aplica a
+-- mano al liquidar el total en el salón, y estas columnas son lo que le
+-- muestra a la administradora en el panel de citas cuánto le corresponde
+-- a esa clienta.
+alter table bookings add column if not exists promo_code text;
+alter table bookings add column if not exists discount_type text check (discount_type in ('percent', 'fixed'));
+alter table bookings add column if not exists discount_value numeric;

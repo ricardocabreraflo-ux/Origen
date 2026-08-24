@@ -157,6 +157,18 @@
     "discountPercent": 20
   },
 
+  "referral": {
+    "rewardDiscountPercent": 15,
+    "rewardValidDays": 60
+  },
+
+  "metaPixelId": "",
+
+  "socialProof": {
+    "beforeAfter": [],
+    "instagramPosts": []
+  },
+
   "bankTransfer": {
     "bankName": "NU",
     "accountHolder": "Areli Serrano",

@@ -151,3 +151,51 @@ netlify/functions/
 supabase/schema.sql             Esquema de base de datos (correr una sola vez)
 netlify.toml                    Configuración de Netlify (rutas /api/*)
 ```
+
+## Marketing y promociones
+
+Este módulo agrega códigos de descuento, referidos, landing de campaña,
+prueba social, sorteo y medición — todo integrado al mismo sitio, panel y
+flujo de reservas de arriba (no es un sistema aparte).
+
+- `admin/promos.html` — crear/editar/activar campañas y ver el reporte de
+  referidos. `admin/sorteos.html` — participantes del sorteo, exportable a
+  CSV.
+- `promo.html` — una sola plantilla para todas las landings de campaña,
+  vía el redirect `/promo-:slug` en `netlify.toml` (ej. `/promo-verano`).
+- `referidos.html` — cada clienta obtiene ahí su link/código de referido.
+- `sorteo.html` — formulario de participación (`?sorteo=slug` para
+  distinguir varias dinámicas).
+- El código de descuento/referido se escribe en el mismo campo al agendar
+  (paso 3 de "Agenda tu cita") y se valida siempre del lado del servidor
+  en `create-booking.js` — nunca se confía en la validación en vivo del
+  navegador (`check-promo-code.js`).
+- El descuento **no** reduce el anticipo (que se sigue cobrando completo);
+  queda registrado en la cita para que se aplique al liquidar el total en
+  el estudio — se ve marcado en `admin/citas.html`.
+- La recompensa de referido (un código de un solo uso para quien refirió)
+  se genera sola en cuanto el referido **confirma** su primera cita, no
+  antes — ver `_lib/confirmBooking.js`.
+
+### Configuración adicional para este módulo
+
+1. **Meta Pixel** (opcional): pega tu ID en el panel de contenido
+   (`/admin/`, campo "ID del Pixel de Meta") — se activa solo, sin tocar
+   código. Mientras esté vacío, no se carga ningún script de Meta.
+2. **Plantilla de WhatsApp nueva**: además de las plantillas que ya tenías
+   que aprobar en Meta Business (`nueva_cita_origen`,
+   `bienvenida_lealtad_origen`, `recompensa_lealtad_origen`,
+   `canje_lealtad_origen`), este módulo necesita una más:
+   `recompensa_referido_origen`, con 3 variables en este orden: nombre de
+   la referidora, porcentaje de descuento, código de recompensa.
+3. **Google Sheets del sorteo** (opcional): crea una Sheet, compártela
+   como Editor con el correo de la cuenta de servicio que ya usas para
+   Google Calendar (`client_email` dentro de `GOOGLE_SERVICE_ACCOUNT_KEY`),
+   y agrega la variable de entorno `GOOGLE_SHEETS_GIVEAWAY_ID` con el ID
+   de esa Sheet (el que aparece en su URL). Si no la configuras, el
+   sorteo sigue funcionando normal — solo con Supabase y el CSV del
+   panel.
+4. **Fotos de prueba social**: se cargan desde el panel de contenido
+   (`/admin/`, sección "Prueba social") — antes/después reales (con
+   permiso de la clienta) y los enlaces de posts de Instagram que quieras
+   destacar.

@@ -12,6 +12,13 @@
   to = "/tarjeta.html"
   status = 200
 
+# Landing de campaña: /promo-verano -> promo.html?slug=verano (una sola
+# plantilla reutilizada por todas las campañas, ver promo.html).
+[[redirects]]
+  from = "/promo-*"
+  to = "/promo.html?slug=:splat"
+  status = 200
+
 [[headers]]
   for = "/admin/*"
   [headers.values]

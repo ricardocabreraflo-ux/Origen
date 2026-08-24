@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Programa de referidos · Origen Brows &amp; Hair Studio</title>
+<meta name="description" content="Comparte tu link de referido de Origen Brows & Hair Studio y gana descuentos por cada amiga que agende." />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .referral-wrap { max-width: 480px; margin: 0 auto; padding: 60px 24px 100px; text-align: center; }
+  .referral-card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px 32px; margin-top: 32px; }
+  .referral-form { display: flex; flex-direction: column; gap: 16px; }
+  .referral-form label { text-align: left; font-size: 0.88rem; font-weight: 600; color: var(--color-dark); }
+  .referral-form input {
+    font-family: var(--font-body);
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(33, 29, 25, 0.15);
+    font-size: 0.95rem;
+    background: var(--color-cream-soft);
+    color: var(--color-dark);
+  }
+  .referral-form input:focus { outline: none; border-color: var(--color-accent-dark); background: var(--color-white); }
+  .referral-result { margin-top: 8px; }
+  .referral-result[hidden] { display: none; }
+
+  .referral-code-badge {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    color: var(--color-primary);
+    background: var(--color-cream);
+    border: 1.5px dashed var(--color-accent);
+    padding: 14px 22px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+    letter-spacing: 0.03em;
+  }
+  .referral-stats { display: flex; justify-content: center; gap: 28px; margin-bottom: 24px; }
+  .referral-stat .n { display: block; font-family: var(--font-heading); font-size: 1.6rem; color: var(--color-dark); }
+  .referral-stat .l { font-size: 0.76rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .referral-share { display: flex; flex-direction: column; gap: 10px; }
+  .referral-share .btn { width: 100%; justify-content: center; }
+  .referral-link-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--color-cream-soft);
+    border: 1px solid rgba(33,29,25,0.12);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+  }
+  .referral-link-box span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+  .referral-link-box button { background: none; border: none; color: var(--color-accent-dark); font-weight: 600; cursor: pointer; font-size: 0.8rem; padding: 0; }
+
+  .referral-hint { font-size: 0.85rem; color: var(--color-muted); min-height: 1.2em; margin-top: 12px; }
+  .referral-hint.is-error { color: #a13a2f; }
+</style>
+</head>
+<body>
+
+<div class="referral-wrap">
+  <p class="section-eyebrow" id="referral-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Refiere a una amiga</h1>
+  <p class="section-note" id="referral-explainer">
+    Comparte tu link con tus amigas. Cuando una de ellas agende y confirme su primera cita,
+    ganas un código de descuento para tu próxima visita.
+  </p>
+
+  <div class="referral-card">
+    <form class="referral-form" id="referral-form">
+      <label for="referral-name">Tu nombre</label>
+      <input type="text" id="referral-name" name="name" required placeholder="Tu nombre" />
+      <label for="referral-phone">Tu teléfono</label>
+      <input type="tel" id="referral-phone" name="phone" required placeholder="Ej. 55 1234 5678" />
+      <button type="submit" class="btn btn-primary" id="referral-submit">Obtener mi link</button>
+      <p class="referral-hint" id="referral-hint"></p>
+    </form>
+
+    <div class="referral-result" id="referral-result" hidden>
+      <div class="referral-code-badge" id="referral-code-badge"></div>
+
+      <div class="referral-stats">
+        <div class="referral-stat"><span class="n" id="referral-referred-count">0</span><span class="l">Citas generadas</span></div>
+        <div class="referral-stat"><span class="n" id="referral-confirmed-count">0</span><span class="l">Confirmadas</span></div>
+      </div>
+
+      <div class="referral-share">
+        <div class="referral-link-box">
+          <span id="referral-link-text"></span>
+          <button type="button" id="referral-copy">Copiar</button>
+        </div>
+        <a href="#" id="referral-whatsapp-share" class="btn btn-primary" target="_blank" rel="noopener">Compartir por WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  let cfg = {};
+
+  fetch("data/config.json")
+    .then((res) => res.json())
+    .then((data) => {
+      cfg = data;
+      if (cfg.name) document.getElementById("referral-eyebrow").textContent = cfg.name;
+      if (cfg.referral) {
+        document.getElementById("referral-explainer").textContent =
+          `Comparte tu link con tus amigas. Cuando una de ellas agende y confirme su primera cita, ` +
+          `ganas ${cfg.referral.rewardDiscountPercent}% de descuento para tu próxima visita.`;
+      }
+    })
+    .catch(() => {});
+
+  const form = document.getElementById("referral-form");
+  const nameInput = document.getElementById("referral-name");
+  const phoneInput = document.getElementById("referral-phone");
+  const submitBtn = document.getElementById("referral-submit");
+  const hint = document.getElementById("referral-hint");
+  const result = document.getElementById("referral-result");
+
+  function referralLink(code) {
+    return `${window.location.origin}/?promo=${encodeURIComponent(code)}#agenda`;
+  }
+
+  function renderResult(data) {
+    document.getElementById("referral-code-badge").textContent = data.code;
+    document.getElementById("referral-referred-count").textContent = data.referredCount;
+    document.getElementById("referral-confirmed-count").textContent = data.confirmedCount;
+
+    const link = referralLink(data.code);
+    document.getElementById("referral-link-text").textContent = link;
+
+    const shortName = cfg.shortName || cfg.name || "Origen";
+    const message = encodeURIComponent(
+      `¡Hola! Te comparto mi link de Origen Brows para que agendes tu primera cita con un descuento especial: ${link}`
+    );
+    document.getElementById("referral-whatsapp-share").href = `https://wa.me/?text=${message}`;
+
+    result.hidden = false;
+  }
+
+  document.getElementById("referral-copy").addEventListener("click", () => {
+    const text = document.getElementById("referral-link-text").textContent;
+    navigator.clipboard
+      ?.writeText(text)
+      .then(() => {
+        const btn = document.getElementById("referral-copy");
+        const original = btn.textContent;
+        btn.textContent = "¡Copiado!";
+        setTimeout(() => (btn.textContent = original), 1600);
+      })
+      .catch(() => {});
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    hint.textContent = "";
+    hint.classList.remove("is-error");
+    result.hidden = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Buscando…";
+
+    fetch(`/api/get-referral?phone=${encodeURIComponent(phoneInput.value)}`)
+      .then((res) => {
+        if (res.status === 404) {
+          // Todavía no tiene código — se crea con su nombre.
+          return fetch("/api/get-referral", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: nameInput.value.trim(), phone: phoneInput.value }),
+          }).then((r) => r.json().then((body) => ({ ok: r.ok, body })));
+        }
+        return res.json().then((body) => ({ ok: res.ok, body }));
+      })
+      .then(({ ok, body }) => {
+        if (!ok) throw new Error(body.message || "No se pudo obtener tu código.");
+        renderResult(body);
+      })
+      .catch((err) => {
+        hint.textContent = err.message || "No se pudo obtener tu código. Intenta de nuevo.";
+        hint.classList.add("is-error");
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Obtener mi link";
+      });
+  });
+})();
+</script>
+</body>
+</html>

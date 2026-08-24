@@ -175,6 +175,37 @@ collections:
               - { label: "Cada cuántas visitas confirmadas se gana la recompensa", name: "cycleSize", widget: "number", value_type: "int" }
               - { label: "Porcentaje de descuento al completar el ciclo", name: "discountPercent", widget: "number", value_type: "int" }
 
+          - label: "Programa de referidos"
+            name: "referral"
+            widget: "object"
+            hint: "El código de descuento en sí se genera solo cuando el referido confirma su primera cita — aquí solo se define cuánto y por cuánto tiempo."
+            fields:
+              - { label: "Porcentaje de descuento de la recompensa", name: "rewardDiscountPercent", widget: "number", value_type: "int" }
+              - { label: "Días de vigencia del código de recompensa", name: "rewardValidDays", widget: "number", value_type: "int" }
+
+          - { label: "ID del Pixel de Meta (Facebook/Instagram Ads)", name: "metaPixelId", widget: "string", required: false, hint: "Se saca en Meta Business → Administrador de eventos. Déjalo vacío si todavía no mides anuncios." }
+
+          - label: "Prueba social"
+            name: "socialProof"
+            widget: "object"
+            fields:
+              - label: "Antes / después (deja vacío hasta tener fotos reales, con permiso de la clienta)"
+                name: "beforeAfter"
+                widget: "list"
+                allow_add: true
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: "Foto antes", name: "beforeImage", widget: "image" }
+                  - { label: "Foto después", name: "afterImage", widget: "image" }
+                  - { label: "Servicio", name: "label", widget: "string" }
+              - label: "Posts de Instagram destacados"
+                name: "instagramPosts"
+                widget: "list"
+                allow_add: true
+                summary: "{{fields.permalink}}"
+                fields:
+                  - { label: "Enlace del post (Instagram → ⋯ → Copiar enlace)", name: "permalink", widget: "string" }
+
           - label: "Datos para transferencia (anticipo)"
             name: "bankTransfer"
             widget: "object"
