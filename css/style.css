@@ -1033,11 +1033,11 @@ img { max-width: 100%; display: block; }
 .admin-shell[hidden] { display: none; }
 
 .admin-sidebar {
-  width: 220px;
+  width: 76px;
   flex-shrink: 0;
   background: var(--color-primary);
   color: var(--color-white);
-  padding: 28px 16px;
+  padding: 28px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1045,6 +1045,34 @@ img { max-width: 100%; display: block; }
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 240ms cubic-bezier(.4,0,.2,1);
+}
+.admin-sidebar:hover,
+.admin-sidebar:focus-within,
+.admin-sidebar.is-pinned {
+  width: 226px;
+}
+.sidebar-pin {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 22px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: var(--color-white);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.admin-sidebar:hover .sidebar-pin,
+.admin-sidebar:focus-within .sidebar-pin,
+.admin-sidebar.is-pinned .sidebar-pin {
+  display: flex;
 }
 .sidebar-brand {
   font-family: var(--font-heading);
@@ -1054,6 +1082,14 @@ img { max-width: 100%; display: block; }
   padding: 0 12px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.14);
   margin-bottom: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.admin-sidebar:hover .sidebar-brand,
+.admin-sidebar:focus-within .sidebar-brand,
+.admin-sidebar.is-pinned .sidebar-brand {
+  opacity: 1;
 }
 .sidebar-link {
   display: flex;
@@ -1070,20 +1106,95 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
   text-align: left;
   width: 100%;
+  min-width: 0;
   transition: background 140ms ease, color 140ms ease;
 }
 .sidebar-link:hover { background: rgba(255,255,255,0.08); color: var(--color-white); }
 .sidebar-link.is-active { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 600; }
+.sidebar-icon { flex-shrink: 0; width: 20px; text-align: center; font-size: 1.05rem; }
+.sidebar-label {
+  white-space: nowrap;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.admin-sidebar:hover .sidebar-label,
+.admin-sidebar:focus-within .sidebar-label,
+.admin-sidebar.is-pinned .sidebar-label {
+  opacity: 1;
+  position: static;
+  pointer-events: auto;
+}
 .sidebar-logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.14); padding-top: 16px; }
 .sidebar-user {
   margin-top: auto;
   padding: 0 12px 10px;
   font-size: 0.72rem;
   color: rgba(255,255,255,0.5);
-  word-break: break-all;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.admin-sidebar:hover .sidebar-user,
+.admin-sidebar:focus-within .sidebar-user,
+.admin-sidebar.is-pinned .sidebar-user {
+  opacity: 1;
 }
 .sidebar-user span { display: block; color: rgba(255,255,255,0.85); font-weight: 600; }
 .sidebar-user + .sidebar-logout { margin-top: 0; }
+
+/* Submenús (Citas → Bloqueos/Horario especial, Finanzas → Gastos/Inversiones/Contabilidad) */
+.sidebar-group-head { display: flex; align-items: center; gap: 2px; }
+.sidebar-group-head .sidebar-link { flex: 1; }
+.sidebar-chev-btn {
+  flex-shrink: 0;
+  width: 0;
+  height: 26px;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: opacity 120ms ease;
+}
+.sidebar-chev-btn:hover { color: var(--color-white); }
+.admin-sidebar:hover .sidebar-chev-btn,
+.admin-sidebar:focus-within .sidebar-chev-btn,
+.admin-sidebar.is-pinned .sidebar-chev-btn {
+  width: 26px;
+  opacity: 1;
+  pointer-events: auto;
+}
+.sidebar-chev-btn .sidebar-chev { transition: transform 200ms ease; display: inline-block; }
+.sidebar-group.is-open .sidebar-chev-btn .sidebar-chev { transform: rotate(90deg); }
+.sidebar-sub {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 200ms cubic-bezier(.4,0,.2,1);
+}
+.sidebar-sub > div { overflow: hidden; }
+.sidebar-group.is-open .sidebar-sub { grid-template-rows: 1fr; }
+.admin-sidebar:not(:hover):not(:focus-within):not(.is-pinned) .sidebar-sub { grid-template-rows: 0fr !important; }
+.sidebar-sublink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 38px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.68);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sidebar-sublink:hover { color: var(--color-white); }
 
 .admin-shell .admin-wrap { flex: 1; min-width: 0; }
 
@@ -1099,10 +1210,13 @@ img { max-width: 100%; display: block; }
     gap: 10px;
     padding: 12px;
     overflow-x: auto;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
   .admin-sidebar::-webkit-scrollbar { display: none; }
+  .admin-sidebar:hover, .admin-sidebar:focus-within, .admin-sidebar.is-pinned { width: 100%; }
+  .sidebar-pin { display: none !important; }
   .sidebar-brand { display: none; }
   .sidebar-link {
     width: auto;
@@ -1118,7 +1232,12 @@ img { max-width: 100%; display: block; }
     background: rgba(255,255,255,0.06);
   }
   .sidebar-icon { font-size: 1.5rem; line-height: 1; }
-  .sidebar-label { line-height: 1; }
+  .sidebar-label, .admin-sidebar:hover .sidebar-label, .admin-sidebar.is-pinned .sidebar-label {
+    line-height: 1;
+    opacity: 1;
+    position: static;
+    pointer-events: auto;
+  }
   .sidebar-user { display: none; }
   .admin-shell .admin-wrap { width: 100%; margin: 0; }
   .sidebar-logout {
@@ -1129,4 +1248,9 @@ img { max-width: 100%; display: block; }
     border-top: none;
     padding-top: 9px;
   }
+  /* En celular el submenú se queda oculto: Bloqueos y Horario especial ya
+     tienen su propio botón grande en la barra de acciones de Citas, y
+     Contabilidad su propia pestaña en Finanzas. */
+  .sidebar-group-head .sidebar-chev-btn { display: none; }
+  .sidebar-sub { display: none; }
 }

@@ -59,11 +59,31 @@
 <div class="admin-shell" id="admin-shell" hidden>
   <nav class="admin-sidebar">
     <div class="sidebar-brand">Origen · Panel</div>
-    <a class="sidebar-link" href="citas.html"><span class="sidebar-icon">📅</span><span class="sidebar-label">Citas</span></a>
+    <button type="button" class="sidebar-pin" title="Fijar menú abierto">📌</button>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link" href="citas.html"><span class="sidebar-icon">📅</span><span class="sidebar-label">Citas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Citas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="citas.html#bloqueos">🚫 Bloqueos de horario</a>
+        <a class="sidebar-sublink" href="citas.html#horario-especial">🔓 Horario especial</a>
+      </div></div>
+    </div>
     <a class="sidebar-link" href="clientas.html"><span class="sidebar-icon">👥</span><span class="sidebar-label">Clientas</span></a>
     <a class="sidebar-link is-active" href="lealtad.html"><span class="sidebar-icon">🎁</span><span class="sidebar-label">Lealtad</span></a>
     <a class="sidebar-link" href="reportes.html"><span class="sidebar-icon">📊</span><span class="sidebar-label">Reportes</span></a>
-    <a class="sidebar-link" href="finanzas.html"><span class="sidebar-icon">💰</span><span class="sidebar-label">Finanzas</span></a>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link" href="finanzas.html"><span class="sidebar-icon">💰</span><span class="sidebar-label">Finanzas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Finanzas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="finanzas.html#gastos-fijos">Gastos fijos</a>
+        <a class="sidebar-sublink" href="finanzas.html#inversiones">Inversiones</a>
+        <a class="sidebar-sublink" href="finanzas.html#contabilidad">Contabilidad</a>
+      </div></div>
+    </div>
     <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
     <div class="sidebar-user" id="sidebar-user"></div>
     <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
@@ -323,6 +343,22 @@
   document.getElementById("refresh-btn").addEventListener("click", loadClients);
   document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
   document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  // Riel del menú: fijarlo abierto con el pin, y desplegar/cerrar los
+  // submenús de Citas y Finanzas con el botón de flecha.
+  document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
+    sidebar.addEventListener("click", (e) => {
+      const pinBtn = e.target.closest(".sidebar-pin");
+      if (pinBtn) {
+        sidebar.classList.toggle("is-pinned");
+        return;
+      }
+      const chevBtn = e.target.closest(".sidebar-chev-btn");
+      if (chevBtn) {
+        chevBtn.closest("[data-group]").classList.toggle("is-open");
+      }
+    });
+  });
 
   function renderSidebarUser() {
     const el = document.getElementById("sidebar-user");
