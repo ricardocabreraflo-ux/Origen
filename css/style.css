@@ -1216,106 +1216,18 @@ img { max-width: 100%; display: block; }
 .admin-shell .admin-wrap { flex: 1; min-width: 0; }
 
 @media (max-width: 720px) {
-  .admin-shell { flex-direction: column; }
-  .admin-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    overflow: visible;
-  }
-  .admin-sidebar:hover, .admin-sidebar:focus-within, .admin-sidebar.is-pinned { width: 100%; }
+  /* La columna lateral se queda igual que en computadora: angosta, pegada
+     a la izquierda, de arriba a abajo. Como no hay cursor para pasar por
+     encima, tocar el logo abre/cierra el menú (el pin de arriba no cabe
+     bien junto al logo en un espacio tan angosto, así que se oculta y el
+     logo hace su trabajo). */
+  .admin-shell { overflow-x: hidden; }
+  .admin-sidebar { width: 60px; padding: 20px 6px; }
+  .admin-sidebar.is-pinned { width: 172px; }
   .sidebar-pin { display: none !important; }
+  .sidebar-brand { padding-right: 0; cursor: pointer; }
+  .sidebar-link { padding: 10px 6px; }
+  .sidebar-sublink { padding: 8px 8px 8px 26px; gap: 6px; font-size: 0.76rem; }
 
-  .sidebar-brand {
-    flex-shrink: 0;
-    padding: 0;
-    border-bottom: none;
-    margin-bottom: 0;
-  }
-  .sidebar-brand-text { display: none; }
-
-  .sidebar-nav {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    flex: 1;
-    min-width: 0;
-    gap: 10px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .sidebar-nav::-webkit-scrollbar { display: none; }
-
-  .sidebar-link {
-    width: auto;
-    flex-shrink: 0;
-    flex-direction: column;
-    justify-content: center;
-    white-space: nowrap;
-    gap: 4px;
-    padding: 14px 18px;
-    min-width: 86px;
-    font-size: 0.78rem;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.06);
-  }
-  .sidebar-icon { font-size: 1.5rem; line-height: 1; }
-  .sidebar-label, .admin-sidebar:hover .sidebar-label, .admin-sidebar.is-pinned .sidebar-label {
-    line-height: 1;
-    width: auto;
-    opacity: 1;
-    position: static;
-    pointer-events: auto;
-  }
-  .sidebar-user { display: none; }
-  .admin-shell .admin-wrap { width: 100%; margin: 0; }
-  .sidebar-logout {
-    flex-shrink: 0;
-    white-space: nowrap;
-    margin-top: 0;
-    border-top: none;
-    padding-top: 9px;
-  }
-
-  /* Submenús en celular: una pastillita ⌄ en la esquina de la tarjeta abre
-     un panel debajo de todo el menú (no adentro de la fila que se
-     desliza), con las opciones relacionadas. */
-  .sidebar-group { position: static; flex-shrink: 0; }
-  .sidebar-group-head { position: relative; }
-  .sidebar-group-head .sidebar-chev-btn {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.16);
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .sidebar-group-head .sidebar-chev-btn .sidebar-chev { transform: rotate(90deg); font-size: 0.68rem; }
-  .sidebar-group.is-open .sidebar-group-head .sidebar-chev-btn .sidebar-chev { transform: rotate(270deg); }
-
-  .sidebar-sub {
-    display: none;
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    top: 100%;
-    margin-top: 6px;
-    grid-template-rows: none;
-    background: var(--color-primary-dark);
-    border-radius: 12px;
-    box-shadow: 0 16px 32px rgba(20,17,14,0.35);
-    z-index: 30;
-  }
-  .sidebar-group.is-open .sidebar-sub { display: block; }
-  .sidebar-sub > div { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
-  .sidebar-sublink { padding: 10px 12px; border-radius: 8px; }
-  .sidebar-sublink:hover { background: rgba(255,255,255,0.08); }
+  .admin-shell .admin-wrap { min-width: 0; width: 100%; margin: 0; }
 }

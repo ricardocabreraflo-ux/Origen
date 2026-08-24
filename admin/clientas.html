@@ -50,7 +50,7 @@
     font-family: var(--font-body); background: var(--color-cream-soft);
   }
 
-  .filters-bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .filters-bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; max-width: 100%; overflow-x: auto; }
   .filters-bar select, .filters-bar input[type="search"] {
     padding: 8px 12px; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.15);
     font-family: var(--font-body); background: var(--color-white);
@@ -380,7 +380,8 @@
   document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
     sidebar.addEventListener("click", (e) => {
       const pinBtn = e.target.closest(".sidebar-pin");
-      if (pinBtn) {
+      const brandBtn = e.target.closest(".sidebar-brand");
+      if (pinBtn || brandBtn) {
         sidebar.classList.toggle("is-pinned");
         return;
       }

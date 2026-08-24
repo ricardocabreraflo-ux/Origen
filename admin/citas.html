@@ -17,7 +17,7 @@
   .admin-header h1 { font-size: 1.8rem; margin: 0; }
   #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
   #login-gate .btn { margin-top: 16px; }
-  .admin-filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; max-width: 100%; overflow-x: auto; }
   .admin-filters select, .admin-filters input {
     padding: 10px 14px; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.15);
     font-family: var(--font-body); background: var(--color-white);
@@ -1505,7 +1505,8 @@
   document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
     sidebar.addEventListener("click", (e) => {
       const pinBtn = e.target.closest(".sidebar-pin");
-      if (pinBtn) {
+      const brandBtn = e.target.closest(".sidebar-brand");
+      if (pinBtn || brandBtn) {
         sidebar.classList.toggle("is-pinned");
         return;
       }
