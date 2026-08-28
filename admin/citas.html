@@ -51,6 +51,33 @@
       font-size: 0.85rem;
     }
   }
+  /* Calendario de mes arriba de la lista: panorama de citas por día,
+     independiente de los filtros de la tabla hasta que se toca un día. */
+  .citas-calendar { margin-bottom: 22px; }
+  .citas-calendar-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .citas-calendar-header strong { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 600; flex: 1; text-align: center; min-width: 140px; }
+  .citas-calendar-weekdays, .citas-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .citas-calendar-weekdays span { text-align: center; font-size: 0.68rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .citas-calendar-grid button {
+    aspect-ratio: 1 / 0.86; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.1);
+    background: var(--color-white); cursor: pointer; color: var(--color-dark); padding: 6px;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+    font-family: var(--font-body); font-size: 0.78rem; min-width: 0;
+  }
+  .citas-calendar-grid button:disabled { visibility: hidden; }
+  .citas-calendar-grid button.is-closed { background: repeating-linear-gradient(135deg, var(--color-cream), var(--color-cream) 6px, #f1ebdf 6px, #f1ebdf 12px); color: var(--color-muted); }
+  .citas-calendar-grid button.is-selected { border-color: var(--color-primary); border-width: 2px; }
+  .citas-calendar-grid button.is-today .cc-daynum { text-decoration: underline; }
+  .cc-daynum { font-family: var(--font-heading); font-weight: 600; font-size: 0.95rem; }
+  .cc-dots { display: flex; gap: 3px; flex-wrap: wrap; }
+  .cc-dot { width: 6px; height: 6px; border-radius: 50%; background: #1f6b34; }
+  .cc-dot.pending { background: #7a5b12; }
+  .cc-rev { font-size: 0.64rem; color: var(--color-accent-dark); font-weight: 700; }
+  @media (max-width: 640px) {
+    .citas-calendar-grid button { font-size: 0.68rem; padding: 4px; }
+    .cc-rev { display: none; }
+  }
+
   #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
   .table-scroll { overflow-x: auto; }
   .bookings-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 18px; font-size: 0.88rem; color: var(--color-dark); }
@@ -211,6 +238,19 @@
       <button class="btn btn-outline btn-sm" id="export-btn">Exportar clientas (CSV)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
+  </div>
+
+  <div class="citas-calendar">
+    <div class="citas-calendar-header">
+      <button type="button" class="btn btn-outline btn-sm" id="cc-prev">‹</button>
+      <strong id="cc-month-label"></strong>
+      <button type="button" class="btn btn-outline btn-sm" id="cc-next">›</button>
+      <button type="button" class="btn btn-outline btn-sm" id="cc-clear-btn">Ver todo el mes</button>
+    </div>
+    <div class="citas-calendar-weekdays">
+      <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+    </div>
+    <div class="citas-calendar-grid" id="cc-grid"></div>
   </div>
 
   <div class="admin-filters">
@@ -571,6 +611,116 @@
   let currentPage = 1;
   const PAGE_SIZE = 10;
 
+  // Calendario de mes arriba de la tabla: panorama de citas por día,
+  // independiente de los filtros de la tabla hasta que se toca un día
+  // (entonces sí filtra la tabla, igual que si se hubiera elegido la fecha
+  // a mano en el filtro de siempre).
+  const ccGrid = document.getElementById("cc-grid");
+  const ccMonthLabel = document.getElementById("cc-month-label");
+  let citasCalendarMonth = new Date();
+  citasCalendarMonth.setDate(1);
+  const citasCalendarCache = {};
+
+  function citasCalendarMonthStr() {
+    return `${citasCalendarMonth.getFullYear()}-${String(citasCalendarMonth.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  async function fetchMonthBookingsForCalendar(monthStr) {
+    if (citasCalendarCache[monthStr]) return citasCalendarCache[monthStr];
+    const headers = await authHeaders();
+    const res = await fetch(`/api/list-bookings?month=${monthStr}`, { headers });
+    const body = await res.json();
+    const bookings = res.ok ? body.bookings || [] : [];
+    citasCalendarCache[monthStr] = bookings;
+    return bookings;
+  }
+
+  function isClosedWeekday(dateObj, businessHours) {
+    const map = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    const hours = businessHours && businessHours[map[dateObj.getDay()]];
+    return !hours || !hours.open || !hours.close;
+  }
+
+  async function renderCitasCalendar() {
+    const config = await loadSiteConfig();
+    const businessHours = config.businessHours || {};
+    const year = citasCalendarMonth.getFullYear();
+    const month = citasCalendarMonth.getMonth();
+    const monthStr = citasCalendarMonthStr();
+    const monthLabel = citasCalendarMonth.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+    ccMonthLabel.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+    const bookings = await fetchMonthBookingsForCalendar(monthStr);
+    const byDate = {};
+    bookings.forEach((b) => {
+      if (b.status === "cancelled" || b.status === "expired") return;
+      (byDate[b.booking_date] = byDate[b.booking_date] || []).push(b);
+    });
+
+    const firstDay = new Date(year, month, 1);
+    const startOffset = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = todayISO();
+
+    let cells = "";
+    for (let i = 0; i < startOffset; i++) cells += `<button type="button" disabled></button>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const closed = isClosedWeekday(new Date(year, month, day), businessHours);
+      const dayBookings = byDate[dateStr] || [];
+      const classes = [
+        closed ? "is-closed" : "",
+        dateStr === filterDate.value ? "is-selected" : "",
+        dateStr === today ? "is-today" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      let inner = `<span class="cc-daynum">${day}</span>`;
+      if (dayBookings.length) {
+        const dots = dayBookings
+          .slice(0, 8)
+          .map((b) => `<span class="cc-dot${b.status === "pending" ? " pending" : ""}"></span>`)
+          .join("");
+        const revenue = dayBookings.reduce((sum, b) => {
+          if (b.status === "confirmed" && !b.revenue_exempt && b.total_amount !== null && b.total_amount !== undefined) {
+            return sum + Number(b.total_amount);
+          }
+          return sum;
+        }, 0);
+        inner += `<span class="cc-dots">${dots}</span>`;
+        if (revenue > 0) inner += `<span class="cc-rev">$${revenue.toLocaleString("es-MX")}</span>`;
+      }
+      cells += `<button type="button" class="${classes}" data-date="${dateStr}">${inner}</button>`;
+    }
+    ccGrid.innerHTML = cells;
+  }
+
+  function refreshCitasCalendar() {
+    delete citasCalendarCache[citasCalendarMonthStr()];
+    renderCitasCalendar();
+  }
+
+  ccGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-date]");
+    if (!btn) return;
+    filterDate.value = btn.getAttribute("data-date");
+    filterMonth.value = "";
+    loadBookings();
+  });
+  document.getElementById("cc-prev").addEventListener("click", () => {
+    citasCalendarMonth.setMonth(citasCalendarMonth.getMonth() - 1);
+    renderCitasCalendar();
+  });
+  document.getElementById("cc-next").addEventListener("click", () => {
+    citasCalendarMonth.setMonth(citasCalendarMonth.getMonth() + 1);
+    renderCitasCalendar();
+  });
+  document.getElementById("cc-clear-btn").addEventListener("click", () => {
+    filterMonth.value = citasCalendarMonthStr();
+    filterDate.value = "";
+    loadBookings();
+  });
+
   async function loadBookings() {
     loadingState.hidden = false;
     table.hidden = true;
@@ -595,6 +745,7 @@
     const bookings = body.bookings || [];
     lastLoadedBookings = bookings;
     currentPage = 1;
+    refreshCitasCalendar();
     if (bookings.length === 0) {
       emptyState.textContent = "No hay citas con esos filtros.";
       emptyState.hidden = false;
@@ -1460,11 +1611,19 @@
 
   filterStatus.addEventListener("change", loadBookings);
   filterDate.addEventListener("change", () => {
-    if (filterDate.value) filterMonth.value = "";
+    if (filterDate.value) {
+      filterMonth.value = "";
+      const [y, m, d] = filterDate.value.split("-").map(Number);
+      citasCalendarMonth = new Date(y, m - 1, 1);
+    }
     loadBookings();
   });
   filterMonth.addEventListener("change", () => {
-    if (filterMonth.value) filterDate.value = "";
+    if (filterMonth.value) {
+      filterDate.value = "";
+      const [y, m] = filterMonth.value.split("-").map(Number);
+      citasCalendarMonth = new Date(y, m - 1, 1);
+    }
     loadBookings();
   });
   document.getElementById("refresh-btn").addEventListener("click", loadBookings);
