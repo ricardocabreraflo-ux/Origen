@@ -1143,23 +1143,65 @@ img { max-width: 100%; display: block; }
   position: static;
   pointer-events: auto;
 }
-.sidebar-logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.14); padding-top: 16px; }
+/* Quién tiene la sesión abierta: las iniciales se ven siempre, aunque el
+   riel esté angosto; el nombre/correo solo aparece al expandirse, igual
+   que las demás etiquetas del menú. */
 .sidebar-user {
   margin-top: auto;
-  padding: 0 12px 10px;
+  padding: 14px 12px 0;
+  border-top: 1px solid rgba(255,255,255,0.14);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.sidebar-avatar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-user .sidebar-label {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: normal;
   color: rgba(255,255,255,0.5);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 140ms ease;
+  min-width: 0;
+  overflow: hidden;
 }
-.admin-sidebar:hover .sidebar-user,
-.admin-sidebar:focus-within .sidebar-user,
-.admin-sidebar.is-pinned .sidebar-user {
-  opacity: 1;
+.sidebar-user .sidebar-label strong { display: block; color: rgba(255,255,255,0.85); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+
+/* Botón de cerrar sesión: color distinto (no el dorado de "activo") para
+   que no se confunda con un enlace más del menú. */
+.sidebar-logout {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(196, 108, 79, 0.16);
+  color: #e8b199;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  transition: background 140ms ease, color 140ms ease;
 }
-.sidebar-user span { display: block; color: rgba(255,255,255,0.85); font-weight: 600; }
-.sidebar-user + .sidebar-logout { margin-top: 0; }
+.sidebar-logout:hover { background: rgba(196, 108, 79, 0.28); color: #f4c3af; }
 
 /* Submenús (Citas → Bloqueos/Horario especial, Finanzas → Gastos/Inversiones/Contabilidad) */
 .sidebar-group-head { display: flex; align-items: center; gap: 2px; }

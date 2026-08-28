@@ -197,7 +197,7 @@
       <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
     </div>
     <div class="sidebar-user" id="sidebar-user"></div>
-    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+    <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
   </nav>
   <div class="sidebar-backdrop"></div>
   <div class="admin-wrap" id="admin-wrap">
@@ -1527,10 +1527,20 @@
     }
   });
 
+  function initialsFromUser(user) {
+    const fullName = (user.user_metadata && user.user_metadata.full_name) || "";
+    if (fullName.trim()) {
+      return fullName.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+    }
+    const local = (user.email || "").split("@")[0];
+    const parts = local.split(/[._-]+/).filter(Boolean);
+    return (parts.length >= 2 ? parts[0][0] + parts[1][0] : local.slice(0, 2)).toUpperCase();
+  }
   function renderSidebarUser() {
     const el = document.getElementById("sidebar-user");
     const user = window.netlifyIdentity.currentUser();
-    if (el && user) el.innerHTML = `Sesión activa<span>${user.email}</span>`;
+    if (!el || !user) return;
+    el.innerHTML = `<span class="sidebar-avatar">${initialsFromUser(user)}</span><span class="sidebar-label">Sesión activa<br><strong>${user.email}</strong></span>`;
   }
 
   function showAdmin() {
