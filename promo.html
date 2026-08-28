@@ -100,13 +100,14 @@
 
     <div class="promo-actions">
       <a href="#" id="promo-whatsapp" class="btn btn-whatsapp" target="_blank" rel="noopener">
-        <svg class="icon" viewBox="0 0 24 24" style="width:19px;height:19px;fill:currentColor;">
+        <svg class="icon" id="promo-whatsapp-icon" viewBox="0 0 24 24" style="width:19px;height:19px;fill:currentColor;">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
           <path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.85.505 3.583 1.383 5.07L2 22l5.06-1.362A9.94 9.94 0 0 0 12.001 22C17.523 22 22 17.522 22 12S17.523 2 12.001 2zm0 18.2a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.003.808.802-2.928-.194-.301A8.15 8.15 0 0 1 3.8 12c0-4.529 3.673-8.2 8.201-8.2S20.2 7.471 20.2 12c0 4.528-3.671 8.2-8.199 8.2z"/>
         </svg>
-        Escríbenos por WhatsApp
+        <span id="promo-whatsapp-label">Escríbenos por WhatsApp</span>
       </a>
       <a href="#" id="promo-book-online" class="btn btn-outline">Agendar en línea con este código</a>
+      <p class="form-hint" id="promo-contact-hint" style="color:rgba(249,245,238,0.6);" hidden></p>
     </div>
   </div>
 </div>
@@ -135,13 +136,28 @@
   let cfg = {};
   let countdownInterval;
 
-  function trackWhatsappClick() {
+  function usesInstagramContact() {
+    return !!(cfg.contactChannel && cfg.contactChannel.channel === "instagram");
+  }
+
+  function instagramUsername() {
+    const configured = cfg.contactChannel && cfg.contactChannel.instagramUsername;
+    if (configured) return configured.trim().replace(/^@/, "");
+    const url = (cfg.social && cfg.social.instagram) || "";
+    const match = url.match(/instagram\.com\/([^/?#]+)/i);
+    return match ? match[1] : "";
+  }
+
+  function handleContactClick(message) {
+    if (usesInstagramContact() && message) {
+      navigator.clipboard?.writeText(message).catch(() => {});
+    }
+    if (window.fbq) window.fbq("track", "Contact");
     fetch("/api/log-marketing-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventType: "whatsapp_click", campaign: slug }),
+      body: JSON.stringify({ eventType: "whatsapp_click", campaign: slug, metadata: { channel: usesInstagramContact() ? "instagram" : "whatsapp" } }),
     }).catch(() => {});
-    if (window.fbq) window.fbq("track", "Contact");
   }
 
   function startCountdown(endsAtStr) {
@@ -197,13 +213,24 @@
 
       startCountdown(body.endsAt);
 
-      const phone = digitsOnly(cfg.whatsappNumber);
-      const message = encodeURIComponent(
-        `Hola ${cfg.shortName || cfg.name}, vi la promoción "${body.campaignName}" (código ${body.code}) y quiero agendar mi cita.`
-      );
+      const rawMessage = `Hola ${cfg.shortName || cfg.name}, vi la promoción "${body.campaignName}" (código ${body.code}) y quiero agendar mi cita.`;
       const waLink = document.getElementById("promo-whatsapp");
-      waLink.href = `https://wa.me/${phone}?text=${message}`;
-      waLink.addEventListener("click", trackWhatsappClick);
+
+      if (usesInstagramContact()) {
+        const username = instagramUsername();
+        waLink.href = username ? `https://ig.me/m/${username}` : (cfg.social && cfg.social.instagram) || "https://instagram.com";
+        document.getElementById("promo-whatsapp-icon").innerHTML =
+          '<path d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.055 1.97.24 2.43.4a4.9 4.9 0 0 1 1.78 1.16 4.9 4.9 0 0 1 1.16 1.78c.17.46.36 1.26.4 2.43.06 1.25.07 1.65.07 4.85s0 3.6-.07 4.85a7.3 7.3 0 0 1-.4 2.43 4.9 4.9 0 0 1-1.16 1.78 4.9 4.9 0 0 1-1.78 1.16c-.46.17-1.26.36-2.43.4-1.25.06-1.65.07-4.85.07s-3.6 0-4.85-.07a7.3 7.3 0 0 1-2.43-.4 4.9 4.9 0 0 1-1.78-1.16 4.9 4.9 0 0 1-1.16-1.78 7.3 7.3 0 0 1-.4-2.43C2.21 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.055-1.17.24-1.97.4-2.43a4.9 4.9 0 0 1 1.16-1.78A4.9 4.9 0 0 1 5.61 1.78c.46-.17 1.26-.36 2.43-.4C9.29 1.32 9.69 1.31 12 1.31zm0 1.98c-3.16 0-3.53 0-4.78.07-.96.045-1.48.2-1.82.34a3.05 3.05 0 0 0-1.13.73 3.05 3.05 0 0 0-.73 1.13c-.14.34-.3.86-.34 1.82-.06 1.25-.07 1.62-.07 4.78s0 3.53.07 4.78c.045.96.2 1.48.34 1.82.15.4.35.73.73 1.13.35.35.68.55 1.13.73.34.14.86.3 1.82.34 1.25.06 1.62.07 4.78.07s3.53 0 4.78-.07c.96-.045 1.48-.2 1.82-.34a3.05 3.05 0 0 0 1.13-.73c.35-.35.55-.68.73-1.13.14-.34.3-.86.34-1.82.06-1.25.07-1.62.07-4.78s0-3.53-.07-4.78c-.045-.96-.2-1.48-.34-1.82a3.05 3.05 0 0 0-.73-1.13 3.05 3.05 0 0 0-1.13-.73c-.34-.14-.86-.3-1.82-.34-1.25-.06-1.62-.07-4.78-.07z"/><path d="M12 6.87A5.13 5.13 0 1 0 12 17.13 5.13 5.13 0 0 0 12 6.87zm0 8.46a3.33 3.33 0 1 1 0-6.66 3.33 3.33 0 0 1 0 6.66z"/><circle cx="17.34" cy="6.66" r="1.2"/>';
+        document.getElementById("promo-whatsapp-label").textContent = "Escríbenos por Instagram";
+        const hint = document.getElementById("promo-contact-hint");
+        hint.textContent = "Te copiamos el mensaje — solo pégalo en el chat de Instagram que se abrió.";
+        hint.hidden = false;
+      } else {
+        const phone = digitsOnly(cfg.whatsappNumber);
+        waLink.href = `https://wa.me/${phone}?text=${encodeURIComponent(rawMessage)}`;
+      }
+
+      waLink.addEventListener("click", () => handleContactClick(rawMessage));
 
       document.getElementById("promo-book-online").href = `/?promo=${encodeURIComponent(body.code)}#agenda`;
 

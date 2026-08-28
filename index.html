@@ -61,12 +61,12 @@
     <div class="container hero-content">
       <p class="eyebrow">Bienvenida / Bienvenido</p>
       <h1 id="hero-title">Belleza, cuidado y bienestar en un solo lugar</h1>
-      <p class="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
+      <p class="hero-subtitle" id="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
       <div class="hero-actions">
         <a href="#agenda" class="btn btn-primary">Agenda tu cita</a>
         <a href="#" id="hero-whatsapp" class="btn btn-outline" target="_blank" rel="noopener">
-          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
-          Escríbenos por WhatsApp
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp" id="hero-whatsapp-icon"/></svg>
+          <span id="hero-whatsapp-label">Escríbenos por WhatsApp</span>
         </a>
       </div>
     </div>
@@ -237,8 +237,8 @@
 
         <div class="confirmation-actions">
           <a href="#" id="confirmation-whatsapp" class="btn btn-primary" target="_blank" rel="noopener">
-            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
-            Enviar comprobante por WhatsApp
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp" id="confirmation-whatsapp-icon"/></svg>
+            <span id="confirmation-whatsapp-label">Enviar comprobante por WhatsApp</span>
           </a>
           <a href="#" id="confirmation-calendar" class="btn btn-outline" target="_blank" rel="noopener">
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
@@ -246,6 +246,7 @@
           </a>
           <button type="button" class="btn btn-outline" id="booking-restart">Agendar otra cita</button>
         </div>
+        <p class="form-hint" id="confirmation-contact-hint" hidden></p>
       </div>
     </div>
   </div>
@@ -358,7 +359,7 @@
 
 <!-- BOTÓN FLOTANTE DE WHATSAPP -->
 <a href="#" id="floating-whatsapp" class="floating-whatsapp" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
-  <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+  <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp" id="floating-whatsapp-icon"/></svg>
 </a>
 
 <!-- SPRITE DE ÍCONOS SVG -->

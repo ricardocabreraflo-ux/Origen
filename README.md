@@ -158,6 +158,20 @@ Este módulo agrega códigos de descuento, referidos, landing de campaña,
 prueba social, sorteo y medición — todo integrado al mismo sitio, panel y
 flujo de reservas de arriba (no es un sistema aparte).
 
+### Canal de contacto (WhatsApp o Instagram)
+
+Todos los botones "Escríbenos" del sitio (hero, botón flotante, envío del
+comprobante de pago, landing de promo) se controlan desde un solo campo:
+`contactChannel` en el panel de contenido (`/admin/`). Mientras tengas
+problemas con tu WhatsApp Business, cambia el canal a **Instagram** y esos
+botones abren tu Instagram Direct en su lugar — como Instagram no permite
+precargar el mensaje (a diferencia de `wa.me`), el texto se copia solo al
+portapapeles para que la clienta lo pegue. En cuanto WhatsApp vuelva a
+funcionar, regrésalo a "WhatsApp" desde el mismo panel, sin tocar código.
+Esto es independiente de las notificaciones automáticas internas (cita
+nueva, lealtad, referido) — esas siguen usando la Cloud API de WhatsApp
+aparte y simplemente no se envían si no está configurada.
+
 - `admin/promos.html` — crear/editar/activar campañas y ver el reporte de
   referidos. `admin/sorteos.html` — participantes del sorteo, exportable a
   CSV.

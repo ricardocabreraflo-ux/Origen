@@ -29,6 +29,11 @@
 
   "testimonials": [],
 
+  "contactChannel": {
+    "channel": "instagram",
+    "instagramUsername": ""
+  },
+
   "whatsappNumber": "525566095405",
   "phoneDisplay": "+52 55 6609 5405",
   "email": "origenbrowsmx@gmail.com",

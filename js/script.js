@@ -18,6 +18,60 @@
   }
 
   /* ---------------------------------------------------------
+     Canal de contacto: WhatsApp o, mientras se resuelve algún
+     problema con el WhatsApp Business, Instagram Direct. Se
+     controla desde el panel de contenido (cfg.contactChannel) sin
+     tocar código.
+  --------------------------------------------------------- */
+  function usesInstagramContact() {
+    return !!(cfg.contactChannel && cfg.contactChannel.channel === "instagram");
+  }
+
+  function instagramUsername() {
+    const configured = cfg.contactChannel && cfg.contactChannel.instagramUsername;
+    if (configured) return configured.trim().replace(/^@/, "");
+    const url = (cfg.social && cfg.social.instagram) || "";
+    const match = url.match(/instagram\.com\/([^/?#]+)/i);
+    return match ? match[1] : "";
+  }
+
+  function instagramDmLink() {
+    const username = instagramUsername();
+    return username ? `https://ig.me/m/${username}` : (cfg.social && cfg.social.instagram) || "https://instagram.com";
+  }
+
+  // Instagram no permite precargar el texto del DM como wa.me sí hace con
+  // WhatsApp — por eso, cuando el canal es Instagram, el mensaje se copia
+  // al portapapeles para que la clienta solo tenga que pegarlo.
+  function contactLink(message) {
+    return usesInstagramContact() ? instagramDmLink() : whatsappLink(message);
+  }
+
+  function handleContactClick(message, campaign) {
+    if (usesInstagramContact() && message) {
+      navigator.clipboard?.writeText(message).catch(() => {});
+    }
+    if (window.fbq) window.fbq("track", "Contact");
+    logMarketingEvent("whatsapp_click", campaign || "general", { channel: usesInstagramContact() ? "instagram" : "whatsapp" });
+  }
+
+  // Actualiza ícono/texto/aviso de un botón "Escríbenos" para que combine
+  // con el canal activo — nunca debe verse un ícono de WhatsApp que en
+  // realidad abre Instagram.
+  function applyContactChannelToButton({ iconId, labelId, hintId }) {
+    if (!usesInstagramContact()) return;
+    const icon = iconId && document.getElementById(iconId);
+    if (icon) icon.setAttribute("href", "#icon-instagram");
+    const label = labelId && document.getElementById(labelId);
+    if (label) label.textContent = label.textContent.replace(/whatsapp/i, "Instagram");
+    const hint = hintId && document.getElementById(hintId);
+    if (hint) {
+      hint.textContent = "Te copiamos el mensaje — solo pégalo en el chat de Instagram que se abrió.";
+      hint.hidden = false;
+    }
+  }
+
+  /* ---------------------------------------------------------
      Medición: Meta Pixel + eventos propios (marketing_events).
      Todo es "mejor esfuerzo" — si algo falla aquí, nunca debe
      interrumpir la experiencia real de la clienta.
@@ -52,11 +106,6 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventType, campaign, metadata }),
     }).catch(() => {});
-  }
-
-  function trackWhatsappClick(campaign) {
-    if (window.fbq) window.fbq("track", "Contact");
-    logMarketingEvent("whatsapp_click", campaign || "general");
   }
 
   function serviceById(id) {
@@ -238,7 +287,9 @@
       { key: "instagram", url: cfg.social.instagram, icon: "icon-instagram", label: "Instagram" },
       { key: "facebook", url: cfg.social.facebook, icon: "icon-facebook", label: "Facebook" },
       { key: "tiktok", url: cfg.social.tiktok, icon: "icon-tiktok", label: "TikTok" },
-      { key: "whatsapp", url: cfg.social.whatsapp || whatsappLink(), icon: "icon-whatsapp", label: "WhatsApp" },
+      // Si el canal de contacto activo es Instagram, no se repite el ícono
+      // — el ícono de Instagram de arriba ya cubre ese contacto.
+      ...(usesInstagramContact() ? [] : [{ key: "whatsapp", url: cfg.social.whatsapp || whatsappLink(), icon: "icon-whatsapp", label: "WhatsApp" }]),
     ].filter((l) => l.url);
 
     const html = links
@@ -254,13 +305,21 @@
 
   function renderWhatsappButtons() {
     const greeting = `Hola ${getShortName()}, me gustaría más información. 😊`;
-    const link = whatsappLink(greeting);
+    const link = contactLink(greeting);
     const hero = document.getElementById("hero-whatsapp");
     const floating = document.getElementById("floating-whatsapp");
     hero.href = link;
     floating.href = link;
-    hero.addEventListener("click", () => trackWhatsappClick("hero"));
-    floating.addEventListener("click", () => trackWhatsappClick("floating"));
+    hero.addEventListener("click", () => handleContactClick(greeting, "hero"));
+    floating.addEventListener("click", () => handleContactClick(greeting, "floating"));
+
+    applyContactChannelToButton({ iconId: "hero-whatsapp-icon", labelId: "hero-whatsapp-label" });
+    if (usesInstagramContact()) {
+      floating.setAttribute("aria-label", "Escríbenos por Instagram");
+      document.getElementById("floating-whatsapp-icon").setAttribute("href", "#icon-instagram");
+      const subtitle = document.getElementById("hero-subtitle");
+      if (subtitle) subtitle.textContent = subtitle.textContent.replace(/whatsapp/i, "Instagram");
+    }
   }
 
   function renderSocialProof() {
@@ -682,7 +741,13 @@
         `Horario: ${data.startTime} – ${data.endTime}`,
         `Anticipo: ${formatMoney(data.depositAmount)}`,
       ].join("\n");
-      els.confirmationWhatsapp.href = whatsappLink(waMessage);
+      els.confirmationWhatsapp.href = contactLink(waMessage);
+      els.confirmationWhatsapp.setAttribute("data-message", waMessage);
+      applyContactChannelToButton({
+        iconId: "confirmation-whatsapp-icon",
+        labelId: "confirmation-whatsapp-label",
+        hintId: "confirmation-contact-hint",
+      });
 
       const start = new Date(`${data.date}T${data.startTime}`);
       const end = new Date(`${data.date}T${data.endTime}`);
@@ -832,7 +897,9 @@
 
       els.form.addEventListener("submit", submitBooking);
       els.payOnlineBtn.addEventListener("click", payOnline);
-      els.confirmationWhatsapp.addEventListener("click", () => trackWhatsappClick("confirmacion"));
+      els.confirmationWhatsapp.addEventListener("click", () => {
+        handleContactClick(els.confirmationWhatsapp.getAttribute("data-message") || "", "confirmacion");
+      });
 
       // Si llegó desde una landing de campaña o un link de referido
       // (?promo=CODIGO), se precarga el campo — la clienta puede seguir

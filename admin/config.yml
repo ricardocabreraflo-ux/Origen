@@ -60,6 +60,17 @@ collections:
               - { label: "Reseña", name: "quote", widget: "text" }
               - { label: "Autora", name: "author", widget: "string" }
 
+          - label: "Canal de contacto principal (botones \"Escríbenos\")"
+            name: "contactChannel"
+            widget: "object"
+            hint: "Mientras tengas problemas con tu WhatsApp Business, cambia el canal a Instagram y todos los botones \"Escríbenos\" del sitio (hero, botón flotante, comprobante de pago, landings de promo) abrirán tu Instagram Direct en su lugar — vuelve a WhatsApp en cuanto lo tengas resuelto. Esto NO afecta los avisos automáticos internos (cita nueva, lealtad, referido), esos siguen intentando WhatsApp aparte y simplemente no se envían si no está configurado."
+            fields:
+              - label: "Canal"
+                name: "channel"
+                widget: "select"
+                options: [{ label: "WhatsApp", value: "whatsapp" }, { label: "Instagram Direct", value: "instagram" }]
+              - { label: "Usuario de Instagram (sin @; déjalo vacío para tomarlo de tu link de Instagram de abajo)", name: "instagramUsername", widget: "string", required: false }
+
           - { label: "WhatsApp (solo números, con código de país, ej. 52...)", name: "whatsappNumber", widget: "string", pattern: ["^[0-9]+$", "Solo números, sin espacios ni símbolos"] }
           - { label: "Teléfono que se muestra en la página", name: "phoneDisplay", widget: "string" }
           - { label: "Correo de contacto", name: "email", widget: "string" }
