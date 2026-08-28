@@ -157,6 +157,11 @@
   }
   .blocks-list li button { flex-shrink: 0; padding: 4px 10px; font-size: 0.75rem; }
   .blocks-empty { color: var(--color-muted); font-size: 0.85rem; margin: 0 0 20px; }
+  .waitlist-entries li { align-items: flex-start; }
+  .waitlist-entries .wl-info { display: flex; flex-direction: column; gap: 2px; }
+  .waitlist-entries .wl-info .wl-date { font-weight: 700; }
+  .waitlist-entries .wl-info .wl-meta { color: var(--color-muted); font-size: 0.78rem; }
+  .waitlist-entries .wl-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
   .blocks-modal { max-width: 640px; }
   .blocks-calendar { margin-bottom: 18px; }
@@ -205,6 +210,7 @@
       <div class="sidebar-sub"><div>
         <a class="sidebar-sublink" href="citas.html#bloqueos">🚫 Bloqueos de horario</a>
         <a class="sidebar-sublink" href="citas.html#horario-especial">🔓 Horario especial</a>
+        <a class="sidebar-sublink" href="citas.html#lista-espera">⏳ Lista de espera</a>
       </div></div>
     </div>
     <a class="sidebar-link" href="clientas.html"><span class="sidebar-icon">👥</span><span class="sidebar-label">Clientas</span></a>
@@ -235,6 +241,7 @@
       <button class="btn btn-outline btn-sm" id="direct-open-btn">🕓 Registrar cita directa</button>
       <button class="btn btn-outline btn-sm" id="blocks-open-btn">🚫 Bloqueos de horario</button>
       <button class="btn btn-outline btn-sm" id="openings-open-btn">🔓 Abrir horario especial</button>
+      <button class="btn btn-outline btn-sm" id="waitlist-open-btn">⏳ Lista de espera</button>
       <button class="btn btn-outline btn-sm" id="export-btn">Exportar clientas (CSV)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
@@ -506,6 +513,23 @@
       </div>
       <p class="form-hint" id="op-hint"></p>
     </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="waitlist-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Lista de espera</h2>
+    <p class="section-note">Clientas que pidieron que se les avise si se libera un espacio en una fecha que les salió llena o cerrada. "Avisar" les manda un WhatsApp — necesitas tener aprobada la plantilla "espacio_liberado_origen" en Meta.</p>
+
+    <div id="wl-list-wrap">
+      <p class="blocks-empty" id="waitlist-empty">Nadie está en la lista de espera por ahora.</p>
+      <ul class="blocks-list waitlist-entries" id="waitlist-entries"></ul>
+    </div>
+
+    <div class="manual-actions">
+      <button type="button" class="btn btn-outline" id="waitlist-close-btn">Cerrar</button>
+    </div>
+    <p class="form-hint" id="waitlist-hint"></p>
   </div>
 </div>
 
@@ -1501,6 +1525,101 @@
   });
 
   /* ---------------------------------------------------------
+     Lista de espera
+  --------------------------------------------------------- */
+  const waitlistOverlay = document.getElementById("waitlist-overlay");
+  const waitlistEntriesList = document.getElementById("waitlist-entries");
+  const waitlistEmpty = document.getElementById("waitlist-empty");
+  const waitlistHint = document.getElementById("waitlist-hint");
+
+  function formatWaitlistDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  }
+
+  async function loadWaitlist() {
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-waitlist", { headers });
+    const body = await res.json();
+    const entries = res.ok ? body.entries || [] : [];
+
+    if (entries.length === 0) {
+      waitlistEmpty.hidden = false;
+      waitlistEntriesList.innerHTML = "";
+      return;
+    }
+    waitlistEmpty.hidden = true;
+    waitlistEntriesList.innerHTML = entries
+      .map((w) => {
+        const metaBits = [w.customer_phone, w.service_name, w.notes].filter(Boolean).join(" · ");
+        const statusBadge =
+          w.status === "notified"
+            ? '<span class="status-pill status-confirmed">Ya se le avisó</span>'
+            : '<span class="status-pill status-pending">En espera</span>';
+        return `<li data-id="${w.id}">
+          <div class="wl-info">
+            <span class="wl-date">${formatWaitlistDate(w.preferred_date)} · ${w.customer_name}</span>
+            <span class="wl-meta">${metaBits}</span>
+            <span>${statusBadge}</span>
+          </div>
+          <div class="wl-actions">
+            ${w.status !== "notified" ? `<button type="button" class="btn btn-outline btn-sm" data-waitlist-notify="${w.id}">Avisar</button>` : ""}
+            <button type="button" class="btn btn-outline btn-sm" data-waitlist-delete="${w.id}">Eliminar</button>
+          </div>
+        </li>`;
+      })
+      .join("");
+  }
+
+  waitlistEntriesList.addEventListener("click", async (e) => {
+    const notifyBtn = e.target.closest("button[data-waitlist-notify]");
+    const deleteBtn = e.target.closest("button[data-waitlist-delete]");
+
+    if (notifyBtn) {
+      const id = notifyBtn.getAttribute("data-waitlist-notify");
+      notifyBtn.disabled = true;
+      notifyBtn.textContent = "Enviando…";
+      waitlistHint.textContent = "";
+      waitlistHint.classList.remove("is-error");
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/notify-waitlist", { method: "POST", headers, body: JSON.stringify({ id }) });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || "No se pudo avisar por WhatsApp.");
+        loadWaitlist();
+      } catch (err) {
+        waitlistHint.textContent = err.message || "No se pudo avisar por WhatsApp.";
+        waitlistHint.classList.add("is-error");
+        notifyBtn.disabled = false;
+        notifyBtn.textContent = "Avisar";
+      }
+      return;
+    }
+
+    if (deleteBtn) {
+      if (!window.confirm("¿Quitar a esta persona de la lista de espera?")) return;
+      const id = deleteBtn.getAttribute("data-waitlist-delete");
+      deleteBtn.disabled = true;
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      await fetch("/api/delete-waitlist", { method: "POST", headers, body: JSON.stringify({ id }) });
+      loadWaitlist();
+    }
+  });
+
+  function openWaitlistModal() {
+    waitlistHint.textContent = "";
+    waitlistOverlay.hidden = false;
+    loadWaitlist();
+  }
+
+  function closeWaitlistModal() {
+    waitlistOverlay.hidden = true;
+  }
+
+  document.getElementById("waitlist-open-btn").addEventListener("click", openWaitlistModal);
+  document.getElementById("waitlist-close-btn").addEventListener("click", closeWaitlistModal);
+
+  /* ---------------------------------------------------------
      Editar cita
   --------------------------------------------------------- */
   const editOverlay = document.getElementById("edit-overlay");
@@ -1709,10 +1828,12 @@
     loadBookings();
 
     // Los submenús del menú lateral (Bloqueos de horario / Horario
-    // especial) llegan aquí como citas.html#bloqueos o
-    // citas.html#horario-especial y abren el modal correspondiente solo.
+    // especial / Lista de espera) llegan aquí como citas.html#bloqueos,
+    // citas.html#horario-especial o citas.html#lista-espera y abren el
+    // modal correspondiente solo.
     if (location.hash === "#bloqueos") openBlocksModal();
     else if (location.hash === "#horario-especial") openOpeningsModal();
+    else if (location.hash === "#lista-espera") openWaitlistModal();
   }
   function showLogin() {
     loginGate.hidden = false;

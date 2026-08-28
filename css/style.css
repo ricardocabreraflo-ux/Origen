@@ -637,6 +637,31 @@ img { max-width: 100%; display: block; }
 .slot-status { font-size: 0.88rem; color: var(--color-muted); min-height: 1.4em; }
 .slot-status.is-error { color: #a13a2f; }
 
+.waitlist-box {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--color-accent);
+  background: var(--color-cream-soft);
+}
+.waitlist-intro { margin: 0 0 12px; font-size: 0.88rem; color: var(--color-dark); }
+.waitlist-form { display: flex; flex-wrap: wrap; gap: 10px; }
+.waitlist-form input {
+  flex: 1 1 180px;
+  font-family: var(--font-body);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(33,29,25,0.15);
+  font-size: 0.9rem;
+  background: var(--color-white);
+  color: var(--color-dark);
+}
+.waitlist-form input:focus { outline: none; border-color: var(--color-accent-dark); }
+.waitlist-form button { flex: 1 1 100%; }
+.waitlist-hint { font-size: 0.85rem; color: var(--color-muted); min-height: 1.2em; margin: 10px 0 0; }
+.waitlist-hint.is-error { color: #a13a2f; }
+.waitlist-hint.is-success { color: #1f6b34; }
+
 /* Paso 3: datos del cliente */
 .booking-summary {
   border-top: 1px solid rgba(33,29,25,0.14);

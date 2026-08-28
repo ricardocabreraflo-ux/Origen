@@ -304,3 +304,26 @@ create table if not exists schedule_openings (
 create index if not exists schedule_openings_date_idx on schedule_openings (opening_date);
 
 alter table schedule_openings enable row level security;
+
+-- Lista de espera: clientas que quieren una fecha que salió sin horarios
+-- (día lleno o cerrado) y piden que se les avise si se libera un espacio.
+-- "waiting" = todavía no se le avisa; "notified" = ya se le mandó WhatsApp
+-- de que hay lugar. La administradora la elimina de la lista una vez que
+-- agenda o decide que ya no aplica.
+create table if not exists waitlist (
+  id uuid primary key default gen_random_uuid(),
+  customer_name text not null,
+  customer_phone text not null,
+  customer_email text,
+  service_id text,
+  service_name text,
+  preferred_date date not null,
+  notes text,
+  status text not null default 'waiting' check (status in ('waiting', 'notified')),
+  notified_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists waitlist_date_idx on waitlist (preferred_date);
+
+alter table waitlist enable row level security;

@@ -172,6 +172,16 @@
         </div>
         <div class="slot-grid" id="slot-grid"></div>
         <p class="slot-status" id="slot-status">Elige una fecha para ver los horarios disponibles.</p>
+
+        <div class="waitlist-box" id="waitlist-box" hidden>
+          <p class="waitlist-intro">¿Esta fecha no tiene horarios? Anótate y te avisamos por WhatsApp si se libera un espacio.</p>
+          <form class="waitlist-form" id="waitlist-form">
+            <input type="text" id="wl-name" placeholder="Tu nombre" required />
+            <input type="tel" id="wl-phone" placeholder="Tu WhatsApp (10 dígitos)" required />
+            <button type="submit" class="btn btn-outline btn-sm" id="wl-submit">Anotarme en la lista de espera</button>
+          </form>
+          <p class="waitlist-hint" id="wl-hint"></p>
+        </div>
       </div>
 
       <!-- Paso 3: datos del cliente -->

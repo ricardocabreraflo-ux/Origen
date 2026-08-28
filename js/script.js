@@ -393,6 +393,12 @@
         payOnlineBtn: document.getElementById("pay-online-btn"),
         payOnlineHint: document.getElementById("pay-online-hint"),
         mpReturnBanner: document.getElementById("mp-return-banner"),
+        waitlistBox: document.getElementById("waitlist-box"),
+        waitlistForm: document.getElementById("waitlist-form"),
+        wlName: document.getElementById("wl-name"),
+        wlPhone: document.getElementById("wl-phone"),
+        wlSubmit: document.getElementById("wl-submit"),
+        wlHint: document.getElementById("wl-hint"),
       };
     }
 
@@ -436,6 +442,10 @@
       els.slotGrid.innerHTML = "";
       els.slotStatus.textContent = "Buscando horarios disponibles…";
       els.slotStatus.classList.remove("is-error");
+      els.waitlistBox.hidden = true;
+      els.waitlistForm.hidden = false;
+      els.wlHint.textContent = "";
+      els.wlHint.classList.remove("is-error", "is-success");
 
       fetch(`/api/availability?date=${encodeURIComponent(date)}&serviceId=${encodeURIComponent(state.service.id)}`)
         .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
@@ -450,6 +460,9 @@
     }
 
     function renderSlotGrid(slots, closedReason) {
+      const hasAvailable = slots.some((s) => s.available);
+      els.waitlistBox.hidden = hasAvailable;
+
       if (slots.length === 0) {
         els.slotGrid.innerHTML = "";
         els.slotStatus.textContent = closedReason
@@ -481,6 +494,55 @@
       state.slot = slot;
       goToStep(3);
       renderBookingSummary();
+    }
+
+    function joinWaitlist(e) {
+      e.preventDefault();
+      els.wlHint.textContent = "";
+      els.wlHint.classList.remove("is-error", "is-success");
+
+      const name = els.wlName.value.trim();
+      const phone = digitsOnly(els.wlPhone.value);
+      if (!name) {
+        els.wlHint.textContent = "Escribe tu nombre.";
+        els.wlHint.classList.add("is-error");
+        return;
+      }
+      if (phone.length < 10) {
+        els.wlHint.textContent = "Escribe un WhatsApp válido (10 dígitos).";
+        els.wlHint.classList.add("is-error");
+        return;
+      }
+
+      els.wlSubmit.disabled = true;
+      els.wlSubmit.textContent = "Anotando…";
+
+      fetch("/api/join-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          phone,
+          date: state.date,
+          serviceId: state.service ? state.service.id : null,
+          serviceName: state.service ? state.service.name : null,
+        }),
+      })
+        .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+        .then(({ ok, body }) => {
+          if (!ok) throw new Error(body.message || "No se pudo guardar tu lugar en la lista de espera.");
+          els.wlHint.textContent = "¡Listo! Te avisamos por WhatsApp si se libera un espacio ese día.";
+          els.wlHint.classList.add("is-success");
+          els.waitlistForm.hidden = true;
+        })
+        .catch((err) => {
+          els.wlHint.textContent = err.message || "No se pudo guardar tu lugar. Intenta de nuevo.";
+          els.wlHint.classList.add("is-error");
+        })
+        .finally(() => {
+          els.wlSubmit.disabled = false;
+          els.wlSubmit.textContent = "Anotarme en la lista de espera";
+        });
     }
 
     function renderBookingSummary() {
@@ -703,6 +765,7 @@
 
       els.form.addEventListener("submit", submitBooking);
       els.payOnlineBtn.addEventListener("click", payOnline);
+      els.waitlistForm.addEventListener("submit", joinWaitlist);
 
       els.copyClabe.addEventListener("click", () => {
         const clabe = els.transferClabe.textContent;
