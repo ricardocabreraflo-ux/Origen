@@ -1223,7 +1223,26 @@ img { max-width: 100%; display: block; }
      logo hace su trabajo). */
   .admin-shell { overflow-x: hidden; }
   .admin-sidebar { width: 60px; padding: 20px 6px; }
-  .admin-sidebar.is-pinned { width: 172px; }
+  /* Al expandirse en celular no hay espacio para "empujar" el contenido sin
+     que se corte, así que el menú abierto flota encima (como un cajón) con
+     un fondo oscuro detrás; tocar ese fondo o el logo lo vuelve a cerrar. */
+  .admin-sidebar.is-pinned {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 172px;
+    z-index: 60;
+    box-shadow: 6px 0 24px rgba(0, 0, 0, 0.35);
+  }
+  .sidebar-backdrop { display: none; }
+  .admin-sidebar.is-pinned + .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 50;
+  }
   .sidebar-pin { display: none !important; }
   .sidebar-brand { padding-right: 0; cursor: pointer; }
   .sidebar-link { padding: 10px 6px; }

@@ -199,6 +199,7 @@
     <div class="sidebar-user" id="sidebar-user"></div>
     <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
   </nav>
+  <div class="sidebar-backdrop"></div>
   <div class="admin-wrap" id="admin-wrap">
   <div class="admin-header">
     <h1>Citas</h1>
@@ -1503,6 +1504,8 @@
   // Riel del menú: fijarlo abierto con el pin, y desplegar/cerrar los
   // submenús de Citas y Finanzas con el botón de flecha.
   document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
+    const backdrop = sidebar.nextElementSibling;
+    const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
     sidebar.addEventListener("click", (e) => {
       const pinBtn = e.target.closest(".sidebar-pin");
       const brandBtn = e.target.closest(".sidebar-brand");
@@ -1513,8 +1516,15 @@
       const chevBtn = e.target.closest(".sidebar-chev-btn");
       if (chevBtn) {
         chevBtn.closest("[data-group]").classList.toggle("is-open");
+        return;
+      }
+      if (isMobile() && e.target.closest(".sidebar-link, .sidebar-sublink")) {
+        sidebar.classList.remove("is-pinned");
       }
     });
+    if (backdrop && backdrop.classList.contains("sidebar-backdrop")) {
+      backdrop.addEventListener("click", () => sidebar.classList.remove("is-pinned"));
+    }
   });
 
   function renderSidebarUser() {
