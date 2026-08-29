@@ -59,7 +59,7 @@
   "email": "origenbrowsmx@gmail.com",
 
   "address": "Ote. 253 299-Loc B, Agrícola Oriental, Iztacalco, 08500 Ciudad de México, CDMX",
-  "mapEmbedUrl": "https://www.google.com/maps?q=Ote.+253+299-Loc+B%2C+Agr%C3%ADcola+Oriental%2C+Iztacalco%2C+08500+Ciudad+de+M%C3%A9xico%2C+CDMX&output=embed",
+  "mapEmbedUrl": "https://www.google.com/maps?q=place_id:ChIJxU4nlAD90YURF83FOaw97Hs&output=embed",
   "mapsUrl": "https://maps.app.goo.gl/qAjp9Hb4xWFJ5anR8",
 
   "hours": [
