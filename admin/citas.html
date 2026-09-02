@@ -286,8 +286,10 @@
           <th>Cliente</th>
           <th>Servicio</th>
           <th>Fecha / horario</th>
+          <th>Precio de lista</th>
           <th>Anticipo</th>
           <th>Monto cobrado</th>
+          <th>Descuento</th>
           <th>Estado</th>
         </tr>
       </thead>
@@ -816,6 +818,21 @@
     });
   }
 
+  // "Precio de lista" y "Descuento" salen de price_label, que guarda el
+  // precio del servicio vigente cuando se creó o se editó por última vez
+  // esta cita — no el precio de hoy — así que el % de descuento mostrado
+  // siempre es el real de ese momento, sin importar si los precios
+  // cambiaron después.
+  function formatDiscountCell(b) {
+    const listPrice = parsePriceLabel(b.price_label);
+    if (!listPrice || b.total_amount === null || b.total_amount === undefined) {
+      return '<span style="color:var(--color-muted)">—</span>';
+    }
+    const pct = Math.round(((listPrice - Number(b.total_amount)) / listPrice) * 100);
+    if (pct <= 0) return '<span style="color:var(--color-muted)">Sin descuento</span>';
+    return `<span class="status-pill" style="background:#f0dcc0;color:#7a4a12;">-${pct}%</span>`;
+  }
+
   function renderTable(bookings) {
     tbody.innerHTML = bookings
       .map(
@@ -825,8 +842,10 @@
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
+          <td>${b.price_label || '<span style="color:var(--color-muted)">—</span>'}</td>
           <td>$${b.deposit_amount} MXN</td>
           <td>${b.total_amount !== null && b.total_amount !== undefined ? `$${b.total_amount} MXN` : '<span style="color:var(--color-muted)">Sin capturar</span>'}</td>
+          <td>${formatDiscountCell(b)}</td>
           <td><span class="status-pill status-${b.status}">${STATUS_LABEL[b.status] || b.status}</span></td>
         </tr>`
       )
