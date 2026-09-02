@@ -104,6 +104,7 @@
     {
       "id": "disenando-tu-origen",
       "name": "Diseñando tu ORIGEN",
+      "badge": "Esencial",
       "description": "Solo diseño con visagismo + epilación con hilo.",
       "price": "$349 MXN",
       "duration": 40,
@@ -120,6 +121,7 @@
     {
       "id": "korean-lash-lifting",
       "name": "Korean Lash Lifting",
+      "badge": "Efecto Top",
       "description": "Levantamiento coreano + tinte negro + botox/keratina.",
       "price": "$750 MXN",
       "duration": 75,
@@ -136,6 +138,7 @@
     {
       "id": "luxury-lamination-tint",
       "name": "Luxury Lamination + Tint",
+      "badge": "Favorito",
       "description": "Laminado completo + tinte híbrido + botox.",
       "price": "$749 MXN",
       "duration": 90,
@@ -144,6 +147,7 @@
     {
       "id": "combo-full-look",
       "name": "Combo Full Look Origen",
+      "badge": "Más recomendado",
       "description": "Luxury Brow Lamination + Korean Lash Lifting.",
       "price": "$1,250 MXN",
       "originalPrice": "$1,399 MXN",
@@ -162,6 +166,7 @@
     {
       "id": "keratina-alisante",
       "name": "Keratina Alisante",
+      "badge": "Glow up",
       "description": "Keratina premium alisante. Precio sujeto a valoración previa.",
       "price": "Valoración previa",
       "duration": 180,

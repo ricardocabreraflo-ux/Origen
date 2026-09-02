@@ -216,7 +216,8 @@
       .map((s) => {
         const savings = s.originalPrice ? moneyDigits(s.originalPrice) - moneyDigits(s.price) : 0;
         return `
-        <div class="service-card">
+        <div class="service-card${s.badge ? " has-badge" : ""}">
+          ${s.badge ? `<span class="service-card-badge">${s.badge}</span>` : ""}
           <h3>${s.name}</h3>
           <p>${s.description}</p>
           <div class="service-meta">

@@ -419,6 +419,19 @@ img { max-width: 100%; display: block; }
 }
 .service-savings s { color: rgba(111, 101, 88, 0.7); }
 .service-savings strong { color: var(--color-accent-dark); font-weight: 700; }
+.service-card.has-badge { position: relative; padding-top: 44px; }
+.service-card-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 7px 16px 7px 18px;
+  border-radius: 0 var(--radius) 0 14px;
+}
 .service-deposit {
   font-size: 0.78rem;
   color: var(--color-muted);
