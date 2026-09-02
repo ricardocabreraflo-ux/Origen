@@ -205,11 +205,17 @@
     document.getElementById("floating-whatsapp").href = link;
   }
 
+  function moneyDigits(str) {
+    const digits = (str || "").replace(/[^\d]/g, "");
+    return digits ? Number(digits) : 0;
+  }
+
   function renderServices() {
     const grid = document.getElementById("services-grid");
     grid.innerHTML = cfg.services
-      .map(
-        (s) => `
+      .map((s) => {
+        const savings = s.originalPrice ? moneyDigits(s.originalPrice) - moneyDigits(s.price) : 0;
+        return `
         <div class="service-card">
           <h3>${s.name}</h3>
           <p>${s.description}</p>
@@ -217,10 +223,15 @@
             <span>${s.price}</span>
             <span>${s.duration} min aprox.</span>
           </div>
-          <p class="service-deposit">Anticipo para reservar: ${formatMoney(s.depositAmount)}</p>
+          ${
+            s.originalPrice && savings > 0
+              ? `<p class="service-savings"><s>${s.originalPrice.replace(" MXN", "")} por separado</s> · <strong>Ahorras $${savings.toLocaleString("es-MX")}</strong></p>`
+              : ""
+          }
+          <p class="service-deposit">Reserva con ${formatMoney(s.depositAmount)}</p>
           <button type="button" class="btn btn-outline btn-sm" data-book-service="${s.id}">Reservar</button>
-        </div>`
-      )
+        </div>`;
+      })
       .join("");
 
     grid.querySelectorAll("[data-book-service]").forEach((btn) => {

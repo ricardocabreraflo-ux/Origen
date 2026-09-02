@@ -412,6 +412,13 @@ img { max-width: 100%; display: block; }
   padding-top: 14px;
   margin-bottom: 18px;
 }
+.service-savings {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  margin: -10px 0 12px;
+}
+.service-savings s { color: rgba(111, 101, 88, 0.7); }
+.service-savings strong { color: var(--color-accent-dark); font-weight: 700; }
 .service-deposit {
   font-size: 0.78rem;
   color: var(--color-muted);

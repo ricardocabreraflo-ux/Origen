@@ -105,7 +105,7 @@
       "id": "disenando-tu-origen",
       "name": "Diseñando tu ORIGEN",
       "description": "Solo diseño con visagismo + epilación con hilo.",
-      "price": "$220 MXN",
+      "price": "$349 MXN",
       "duration": 40,
       "depositAmount": 200
     },
@@ -113,7 +113,7 @@
       "id": "brow-tint-shape",
       "name": "Brow Tint & Shape",
       "description": "Diseño + hilo + tinte híbrido (Élan/Bronsun).",
-      "price": "$350 MXN",
+      "price": "$450 MXN",
       "duration": 50,
       "depositAmount": 200
     },
@@ -121,7 +121,7 @@
       "id": "korean-lash-lifting",
       "name": "Korean Lash Lifting",
       "description": "Levantamiento coreano + tinte negro + botox/keratina.",
-      "price": "$550 MXN",
+      "price": "$750 MXN",
       "duration": 75,
       "depositAmount": 200
     },
@@ -129,7 +129,7 @@
       "id": "luxury-brow-lamination",
       "name": "Luxury Brow Lamination",
       "description": "Diseño + hilo + laminado italiano + nutrición/botox.",
-      "price": "$480 MXN",
+      "price": "$649 MXN",
       "duration": 75,
       "depositAmount": 200
     },
@@ -137,7 +137,7 @@
       "id": "luxury-lamination-tint",
       "name": "Luxury Lamination + Tint",
       "description": "Laminado completo + tinte híbrido + botox.",
-      "price": "$580 MXN",
+      "price": "$749 MXN",
       "duration": 90,
       "depositAmount": 200
     },
@@ -145,7 +145,8 @@
       "id": "combo-full-look",
       "name": "Combo Full Look Origen",
       "description": "Luxury Brow Lamination + Korean Lash Lifting.",
-      "price": "$980 MXN",
+      "price": "$1,250 MXN",
+      "originalPrice": "$1,399 MXN",
       "duration": 120,
       "depositAmount": 300
     },
