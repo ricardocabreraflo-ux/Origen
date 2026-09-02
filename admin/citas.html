@@ -824,6 +824,7 @@
   // siempre es el real de ese momento, sin importar si los precios
   // cambiaron después.
   function formatDiscountCell(b) {
+    if (b.reward_redemption) return '<span style="color:var(--color-muted)">🎁 Canje de lealtad</span>';
     const listPrice = parsePriceLabel(b.price_label);
     if (!listPrice || b.total_amount === null || b.total_amount === undefined) {
       return '<span style="color:var(--color-muted)">—</span>';

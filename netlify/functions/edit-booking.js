@@ -82,10 +82,20 @@ exports.handler = async (event, context) => {
       return { statusCode: 404, body: JSON.stringify({ error: "not_found" }) };
     }
 
+    // price_label es la referencia contra la que se calcula el % de
+    // descuento en el panel — solo debe cambiar si esta edición reasigna
+    // la cita a otro servicio. Si el servicio sigue siendo el mismo, se
+    // deja el precio que ya tenía guardado, aunque el precio de lista del
+    // servicio haya subido o bajado después — si no, cualquier edición sin
+    // relación (corregir un teléfono, una nota) inflaría el % de
+    // descuento mostrado sin que se haya tocado el monto cobrado.
+    const serviceChanged = existing.service_id !== service.id;
+    const priceLabel = serviceChanged || !existing.price_label ? service.price : existing.price_label;
+
     const row = {
       service_id: service.id,
       service_name: service.name,
-      price_label: service.price,
+      price_label: priceLabel,
       deposit_amount: service.depositAmount,
       total_amount: effectiveTotalAmount,
       customer_name: customerName.trim(),
