@@ -244,7 +244,6 @@
       <button class="btn btn-outline btn-sm" id="waitlist-open-btn">⏳ Lista de espera</button>
       <button class="btn btn-outline btn-sm" id="export-btn">Exportar clientas (CSV)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
-      <button class="btn btn-outline btn-sm" id="fix-august-btn" title="Corrección de un solo uso: deja las citas antes del 1 de sept con el precio de lista que tenían entonces">🛠️ Corregir precios de agosto</button>
     </div>
   </div>
 
@@ -1780,30 +1779,6 @@
     loadBookings();
   });
   document.getElementById("refresh-btn").addEventListener("click", loadBookings);
-
-  // Corrección de un solo uso: deja las citas antes del 1 de septiembre de
-  // 2026 con el precio de lista que tenían entonces (antes del aumento de
-  // precios), ya que varias se corrompieron al precio nuevo. Es seguro
-  // volver a tocarlo, siempre deja el mismo resultado correcto.
-  document.getElementById("fix-august-btn").addEventListener("click", async (e) => {
-    const btn = e.currentTarget;
-    if (!window.confirm("¿Corregir el precio de lista de todas las citas antes del 1 de septiembre al precio que tenían entonces? Esto no cambia ningún monto cobrado, solo el precio de referencia para calcular el % de descuento.")) return;
-    btn.disabled = true;
-    btn.textContent = "Corrigiendo…";
-    try {
-      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
-      const res = await fetch("/api/fix-august-prices", { method: "POST", headers });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.message || "No se pudo corregir.");
-      alert(`Listo: se revisaron ${body.checked} citas y se corrigieron ${body.updated}.`);
-      loadBookings();
-    } catch (err) {
-      alert(err.message || "No se pudo corregir. Intenta de nuevo.");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "🛠️ Corregir precios de agosto";
-    }
-  });
 
   document.getElementById("export-btn").addEventListener("click", () => {
     if (lastLoadedBookings.length === 0) {
