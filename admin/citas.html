@@ -1637,6 +1637,12 @@
   const ebSubmit = document.getElementById("eb-submit");
   const ebHint = document.getElementById("eb-hint");
   let editingBookingId = null;
+  // Monto sobre el que se calcula el % de descuento: el monto que ya tenía
+  // guardado la cita (no el precio de lista actual del servicio, que puede
+  // haber cambiado desde que se agendó y haría que un "descuento" terminara
+  // subiendo el monto en vez de bajarlo).
+  let editDiscountBase = 0;
+  let editAmountEditedManually = false;
 
   async function openEditModal(booking) {
     ebHint.textContent = "";
@@ -1652,7 +1658,11 @@
     const startMin = toMinutesLocal(booking.start_time.slice(0, 5));
     const endMin = toMinutesLocal(booking.end_time.slice(0, 5));
     ebDuration.value = endMin - startMin;
-    ebAmount.value = booking.total_amount !== null && booking.total_amount !== undefined ? booking.total_amount : "";
+    const hasAmount = booking.total_amount !== null && booking.total_amount !== undefined;
+    ebAmount.value = hasAmount ? booking.total_amount : "";
+    const service = (cfg.services || []).find((s) => s.id === booking.service_id);
+    editDiscountBase = hasAmount ? Number(booking.total_amount) : parsePriceLabel(service && service.price);
+    editAmountEditedManually = false;
     ebDiscount.value = "";
     ebName.value = booking.customer_name || "";
     ebPhone.value = booking.customer_phone || "";
@@ -1674,18 +1684,21 @@
 
   document.getElementById("edit-cancel-btn").addEventListener("click", closeEditModal);
 
-  // Al escribir un % de descuento, recalcula el monto según el precio de
-  // lista del servicio elegido — pero si el monto se edita a mano después,
-  // ya no se vuelve a tocar solo.
+  // Si la administradora teclea el monto a mano, el % de descuento ya no
+  // se lo vuelve a pisar (útil sobre todo si cambia el monto después de
+  // haber puesto un descuento).
+  ebAmount.addEventListener("input", () => {
+    editAmountEditedManually = true;
+  });
+
+  // Al escribir un % de descuento, recalcula el monto sobre lo que la cita
+  // ya tenía guardado (editDiscountBase) — no sobre el precio de lista
+  // actual del servicio, que puede haber cambiado desde que se agendó.
   ebDiscount.addEventListener("input", () => {
-    const cfg = siteConfig;
-    if (!cfg) return;
-    const service = (cfg.services || []).find((s) => s.id === ebService.value);
-    if (!service) return;
+    if (editAmountEditedManually) return;
     const pct = Number(ebDiscount.value);
     if (!Number.isFinite(pct) || pct < 0 || pct > 100) return;
-    const listPrice = parsePriceLabel(service.price);
-    ebAmount.value = Math.round(listPrice * (1 - pct / 100));
+    ebAmount.value = Math.round(editDiscountBase * (1 - pct / 100));
   });
 
   editForm.addEventListener("submit", async (e) => {
