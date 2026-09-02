@@ -327,3 +327,8 @@ create table if not exists waitlist (
 create index if not exists waitlist_date_idx on waitlist (preferred_date);
 
 alter table waitlist enable row level security;
+
+-- Marca manual de "ya se cobró el total" (anticipo + el resto que se paga
+-- en el estudio) — la administradora la marca ella misma, no se calcula
+-- sola a partir del estado ni del monto capturado.
+alter table bookings add column if not exists paid boolean not null default false;

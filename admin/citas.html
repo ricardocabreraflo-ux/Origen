@@ -31,6 +31,12 @@
   .status-pending { background: #f4e3c1; color: #7a5b12; }
   .status-confirmed { background: #d3ead8; color: #1f6b34; }
   .status-cancelled, .status-expired { background: #eee; color: #777; }
+  .paid-toggle {
+    border: none; background: none; cursor: pointer; font-size: 1.15rem;
+    line-height: 1; padding: 4px; border-radius: 8px; color: var(--color-muted);
+  }
+  .paid-toggle:hover { background: rgba(33,29,25,0.06); }
+  .paid-toggle:disabled { cursor: wait; opacity: 0.6; }
   .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
 
@@ -291,6 +297,7 @@
           <th>Monto cobrado</th>
           <th>Descuento</th>
           <th>Estado</th>
+          <th>Pagado</th>
         </tr>
       </thead>
       <tbody id="bookings-tbody"></tbody>
@@ -848,6 +855,7 @@
           <td>${b.total_amount !== null && b.total_amount !== undefined ? `$${b.total_amount} MXN` : '<span style="color:var(--color-muted)">Sin capturar</span>'}</td>
           <td>${formatDiscountCell(b)}</td>
           <td><span class="status-pill status-${b.status}">${STATUS_LABEL[b.status] || b.status}</span></td>
+          <td><button type="button" class="paid-toggle" data-paid-id="${b.id}" data-paid="${b.paid ? "1" : "0"}" title="${b.paid ? "Marcar como no pagado" : "Marcar como pagado"}" aria-pressed="${b.paid ? "true" : "false"}">${b.paid ? "✅" : "☐"}</button></td>
         </tr>`
       )
       .join("");
@@ -914,7 +922,30 @@
 
   document.getElementById("actions-close-btn").addEventListener("click", closeActionsModal);
 
-  tbody.addEventListener("click", (e) => {
+  tbody.addEventListener("click", async (e) => {
+    const paidBtn = e.target.closest(".paid-toggle");
+    if (paidBtn) {
+      const id = paidBtn.getAttribute("data-paid-id");
+      const nextPaid = paidBtn.getAttribute("data-paid") !== "1";
+      paidBtn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/mark-paid", { method: "POST", headers, body: JSON.stringify({ id, paid: nextPaid }) });
+        if (!res.ok) throw new Error();
+        paidBtn.setAttribute("data-paid", nextPaid ? "1" : "0");
+        paidBtn.setAttribute("aria-pressed", nextPaid ? "true" : "false");
+        paidBtn.title = nextPaid ? "Marcar como no pagado" : "Marcar como pagado";
+        paidBtn.textContent = nextPaid ? "✅" : "☐";
+        const booking = lastLoadedBookings.find((b) => b.id === id);
+        if (booking) booking.paid = nextPaid;
+      } catch {
+        alert("No se pudo actualizar. Intenta de nuevo.");
+      } finally {
+        paidBtn.disabled = false;
+      }
+      return;
+    }
+
     const row = e.target.closest("tr[data-id]");
     if (!row) return;
     const booking = lastLoadedBookings.find((b) => b.id === row.getAttribute("data-id"));
