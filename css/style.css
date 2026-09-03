@@ -1304,6 +1304,22 @@ img { max-width: 100%; display: block; }
 
 .admin-shell .admin-wrap { flex: 1; min-width: 0; }
 
+/* Panel de Ayuda: los tutoriales se ven incrustados aquí mismo (un iframe
+   a las páginas de admin/ayuda/*.html), sin navegar a otra pestaña. */
+.ayuda-panel { display: flex; flex-direction: column; }
+.ayuda-panel-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.ayuda-panel-bar strong { font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark); }
+.ayuda-panel-close {
+  display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid rgba(33,29,25,0.15);
+  background: var(--color-white); color: var(--color-dark); padding: 8px 14px; border-radius: 100px;
+  cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; transition: border-color 140ms ease;
+}
+.ayuda-panel-close:hover { border-color: var(--color-primary); }
+.ayuda-panel iframe {
+  width: 100%; height: calc(100vh - 160px); min-height: 480px; border: 0;
+  border-radius: var(--radius); box-shadow: var(--shadow); background: var(--color-white);
+}
+
 @media (max-width: 720px) {
   /* La columna lateral se queda igual que en computadora: angosta, pegada
      a la izquierda, de arriba a abajo. Como no hay cursor para pasar por
