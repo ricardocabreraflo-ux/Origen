@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex" />
+<title>Tutorial: Panel de Clientas</title>
+<meta name="description" content="Recorrido guiado por la sección Clientas del panel de administración de Origen Brows: el formulario, la tabla, los 3 tipos de origen y dónde se puede confundir el equipo." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#f7f1e6;
+    --surface:#ffffff;
+    --surface-2:#fbf6ec;
+    --ink:#211b15;
+    --ink-soft:#453c30;
+    --muted:#766b5c;
+    --border:rgba(33,29,25,0.13);
+    --border-strong:rgba(33,29,25,0.22);
+    --gold:#b9a37f;
+    --gold-dark:#8a7350;
+    --gold-ghost:rgba(185,163,127,0.16);
+    --ok:#1f6b34; --ok-bg:#d9ecdd;
+    --warn:#86611a; --warn-bg:#f4e3c1;
+    --alert:#a13a2f; --alert-bg:#f3d9d3;
+    --info:#1a4a73; --info-bg:#d6e4f0;
+    --shadow:0 10px 30px rgba(33,29,25,0.10);
+    --radius:16px;
+    --font-head:'Fraunces', Georgia, serif;
+    --font-body:'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15110c; --surface:#211b15; --surface-2:#241d16;
+      --ink:#f3ece0; --ink-soft:#dccdb4; --muted:#a89a84;
+      --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.2);
+      --gold:#d3ba8d; --gold-dark:#b9a37f; --gold-ghost:rgba(211,186,141,0.14);
+      --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+      --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+      --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+      --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+      --shadow:0 12px 34px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15110c; --surface:#211b15; --surface-2:#241d16;
+    --ink:#f3ece0; --ink-soft:#dccdb4; --muted:#a89a84;
+    --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.2);
+    --gold:#d3ba8d; --gold-dark:#b9a37f; --gold-ghost:rgba(211,186,141,0.14);
+    --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+    --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+    --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+    --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+    --shadow:0 12px 34px rgba(0,0,0,0.5);
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:var(--font-head); text-wrap:balance; color:var(--ink); margin:0; }
+  p{ margin:0; }
+  img{ max-width:100%; }
+  a{ color:inherit; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 clamp(16px,4vw,40px); }
+
+  .hero{ padding:56px 0 34px; border-bottom:1px solid var(--border);
+    background:radial-gradient(620px 260px at 88% -60px, var(--gold-ghost), transparent 70%); }
+  .eyebrow{ font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dark); font-weight:700; margin-bottom:12px; display:block; }
+  .hero h1{ font-size:clamp(2rem,3.4vw + 1rem,2.9rem); font-weight:600; max-width:16ch; }
+  .hero .lede{ margin-top:14px; max-width:60ch; color:var(--ink-soft); font-size:1.05rem; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .hero-chip{ font-size:0.8rem; padding:7px 13px; border-radius:100px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .hero-chip b{ color:var(--ink); }
+
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; padding:40px 0 100px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; gap:0; padding-top:0; } }
+
+  .toc{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-size:0.85rem; max-height:calc(100vh - 48px); overflow-y:auto; }
+  .toc-label{ font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .toc a{ text-decoration:none; color:var(--muted); padding:7px 10px; border-radius:9px; border-left:2px solid transparent; transition:background 140ms ease,color 140ms ease; }
+  .toc a:hover{ background:var(--gold-ghost); color:var(--ink); }
+  .toc a.is-active{ color:var(--ink); font-weight:600; border-left-color:var(--gold-dark); background:var(--gold-ghost); }
+
+  @media (max-width:900px){
+    .toc{ position:sticky; top:0; z-index:20; flex-direction:row; gap:6px; max-height:none; overflow-x:auto; overflow-y:hidden;
+      background:var(--bg); padding:12px clamp(16px,4vw,40px); border-bottom:1px solid var(--border); margin:0 calc(-1 * clamp(16px,4vw,40px));
+      -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .toc::-webkit-scrollbar{ display:none; }
+    .toc-label{ display:none; }
+    .toc a{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; border-radius:100px; background:var(--surface); border:1px solid var(--border); }
+    .toc a.is-active{ border-color:var(--gold-dark); }
+  }
+
+  .content{ display:flex; flex-direction:column; gap:64px; min-width:0; }
+
+  section.step{ scroll-margin-top:88px; }
+  .step-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+  .step-num{ font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--gold-dark); flex-shrink:0; }
+  .step h2{ font-size:clamp(1.35rem,1.6vw + 0.9rem,1.7rem); font-weight:600; }
+  .step-intro{ color:var(--ink-soft); max-width:66ch; margin:10px 0 26px; }
+
+  .mk{ background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:clamp(14px,2.4vw,26px); box-shadow:var(--shadow); margin-bottom:22px; overflow-x:auto; }
+  .mk-caption{ font-size:0.74rem; color:var(--muted); margin-top:12px; text-align:center; }
+
+  .tag{ display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%;
+    background:var(--gold-dark); color:#fff; font-size:0.66rem; font-weight:700; font-family:var(--font-body); flex-shrink:0; box-shadow:0 0 0 2px var(--surface-2); }
+
+  .legend{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .legend li{ display:flex; gap:12px; align-items:flex-start; }
+  .legend .tag{ margin-top:3px; }
+  .legend strong{ color:var(--ink); }
+  .legend span.d{ display:block; color:var(--ink-soft); font-size:0.92rem; margin-top:2px; }
+
+  .callout{ border-radius:14px; padding:14px 16px; font-size:0.92rem; display:flex; gap:10px; margin-top:18px; border:1px solid transparent; }
+  .callout .ic{ flex-shrink:0; font-size:1.05rem; line-height:1.3; }
+  .callout.tip{ background:var(--gold-ghost); border-color:var(--border); color:var(--ink-soft); }
+  .callout.warn{ background:var(--warn-bg); color:var(--warn); border-color:transparent; }
+  .callout.warn strong{ color:inherit; }
+
+  .rep-dark{ --rd-bg:#211b15; --rd-bg2:#2a231b; --rd-white:#fff; --rd-accent:#b9a37f; }
+  .mk-btnrow{ display:flex; flex-wrap:wrap; gap:9px; }
+  .mk-btn{ font-family:var(--font-body); font-size:0.78rem; font-weight:600; border-radius:10px; padding:9px 14px;
+    border:1.5px solid var(--rd-bg); color:var(--rd-bg); background:transparent; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .mk-btn.primary{ background:var(--rd-bg); color:#fff; }
+
+  .mk-form{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 22px; max-width:560px; }
+  .mk-form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .mk-form-row{ display:flex; flex-direction:column; gap:4px; }
+  .mk-form-row.full{ grid-column:1/-1; }
+  .mk-form-row label{ font-size:0.75rem; font-weight:700; color:var(--ink-soft); }
+  .mk-field{ font-size:0.8rem; padding:8px 11px; border-radius:9px; border:1.5px solid var(--border-strong); background:var(--surface-2); color:var(--ink-soft); }
+  .mk-form-row .mk-field{ width:100%; }
+
+  .mk-filters{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .mk-check{ font-size:0.78rem; display:flex; align-items:center; gap:6px; color:var(--ink-soft); }
+  .mk-check .box{ width:14px; height:14px; border-radius:4px; border:1.5px solid var(--border-strong); }
+
+  .mk-table{ width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; font-size:0.76rem; min-width:600px; }
+  .mk-table th,.mk-table td{ padding:9px 10px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; }
+  .mk-table th{ background:var(--surface-2); font-weight:700; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); }
+  .pill{ display:inline-block; padding:3px 10px; border-radius:100px; font-size:0.68rem; font-weight:700; }
+  .pill.info{ background:var(--info-bg); color:var(--info); }
+  .pill.neutral{ background:var(--gold-ghost); color:var(--gold-dark); }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok); }
+  .muted-cell{ color:var(--muted); }
+
+  .cmp{ display:grid; grid-template-columns:1fr; gap:14px; }
+  @media (min-width:820px){ .cmp{ grid-template-columns:repeat(3,1fr); } }
+  .cmp-card{ border:1.5px solid var(--border-strong); border-radius:16px; padding:18px 20px; background:var(--surface); }
+  .cmp-card h3{ font-size:0.98rem; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .cmp-card p{ font-size:0.86rem; color:var(--ink-soft); }
+  .cmp-card .pill{ margin-bottom:10px; }
+
+  .recap-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; counter-reset:recap; }
+  .recap-list li{ counter-increment:recap; display:flex; gap:14px; align-items:flex-start; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+  .recap-list li::before{ content:counter(recap); font-family:var(--font-head); font-weight:700; color:var(--gold-dark); background:var(--gold-ghost); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem; }
+  .recap-list a{ font-size:0.78rem; color:var(--gold-dark); text-decoration:none; font-weight:600; white-space:nowrap; }
+  .recap-list .body{ flex:1; }
+  .recap-list strong{ display:block; margin-bottom:2px; }
+  .recap-list span{ color:var(--ink-soft); font-size:0.9rem; }
+  .recap-row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+
+  footer{ border-top:1px solid var(--border); padding:26px clamp(16px,4vw,40px) 40px; color:var(--muted); font-size:0.82rem; max-width:1180px; margin:0 auto; }
+
+  .tutorial-topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: #211b15; color: #fff;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 12px clamp(16px,4vw,40px);
+  }
+  .tutorial-topbar .back-link {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600;
+    color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .tutorial-topbar .back-link:hover { border-color: #fff; }
+  .tutorial-switch { display: flex; gap: 6px; flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tutorial-switch a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 6px 12px;
+    border-radius: 100px; white-space: nowrap; transition: background 140ms ease, color 140ms ease;
+  }
+  .tutorial-switch a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tutorial-switch a.is-current { background: #b9a37f; color: #2a2113; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="tutorial-topbar">
+    <a class="back-link" href="../clientas.html">← Volver al panel</a>
+    <nav class="tutorial-switch">
+    <a href="citas.html">📅 Citas</a>
+    <a href="clientas.html" class="is-current">👥 Clientas</a>
+    <a href="lealtad.html">🎁 Lealtad</a>
+    <a href="reportes.html">📊 Reportes</a>
+    <a href="finanzas.html">💰 Finanzas</a>
+    </nav>
+  </div>
+<div class="hero">
+  <div class="container">
+    <span class="eyebrow">Guía interna · Panel de administración</span>
+    <h1>Recorrido por la sección Clientas</h1>
+    <p class="lede">Todo lo que hay en <strong>Panel → Clientas</strong>: el formulario para agregar clientas a mano, la tabla con todas, qué significa cada "Origen" y dónde se confunde el equipo.</p>
+    <div class="hero-meta">
+      <span class="hero-chip">📍 <b>admin/clientas.html</b></span>
+      <span class="hero-chip">🧭 6 partes</span>
+      <span class="hero-chip">⚠️ 4 puntos donde te puedes atorar</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="layout">
+  <nav class="toc" id="toc">
+    <span class="toc-label">En este recorrido</span>
+    <a href="#encabezado">1. Los 2 botones de arriba</a>
+    <a href="#formulario">2. Agregar clienta a mano</a>
+    <a href="#origen">3. Los 3 tipos de "Origen"</a>
+    <a href="#tabla">4. La tabla y sus filtros</a>
+    <a href="#editar">5. Editar y eliminar</a>
+    <a href="#resumen">6. Dónde te atoras</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 1 -->
+    <section class="step" id="encabezado">
+      <div class="step-head"><span class="step-num">01</span><h2>Los 2 botones de arriba</h2></div>
+      <p class="step-intro">Mucho más simple que Citas: aquí solo hay dos acciones junto al título.</p>
+
+      <div class="mk">
+        <div class="mk-btnrow rep-dark">
+          <span class="mk-btn">Exportar CSV <span class="tag">1</span></span>
+          <span class="mk-btn">Actualizar <span class="tag">2</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Exportar CSV</strong><span class="d">Descarga nombre, teléfono y correo de <strong>todas</strong> las clientas cargadas — de los tres orígenes, no solo las agregadas a mano.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Actualizar</strong><span class="d">Vuelve a pedir la lista completa al servidor. Nota: la página ya se refresca sola cuando regresas a la pestaña o reabres la app, así que rara vez hace falta tocarlo a mano.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> el botón "Exportar CSV" de aquí ignora la caja de búsqueda — exporta <em>todas</em> las clientas cargadas, aunque hayas escrito un nombre para buscar a una sola. Solo respeta la casilla "Solo con correo" de la parte 4. Si quieres exportar nada más las que buscaste, tienes que copiarlas a mano de la tabla.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step" id="formulario">
+      <div class="step-head"><span class="step-num">02</span><h2>Agregar clienta a mano</h2></div>
+      <p class="step-intro">Para clientas que ya conoces de tu agenda física, pero que todavía no han reservado por el sitio.</p>
+
+      <div class="mk">
+        <div class="mk-form">
+          <h3 style="font-size:1.05rem;margin-bottom:4px;">Agregar clienta</h3>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Para clientas que ya conoces pero que todavía no han reservado por el sitio.</p>
+          <div class="mk-form-grid">
+            <div class="mk-form-row"><label>Nombre</label><span class="mk-field">Lucía Franco</span></div>
+            <div class="mk-form-row"><label>Teléfono</label><span class="mk-field">55 2211 4400</span></div>
+            <div class="mk-form-row"><label>Correo (opcional)</label><span class="mk-field">—</span></div>
+            <div class="mk-form-row full"><label>Notas (opcional) <span class="tag">1</span></label><span class="mk-field">Prefiere sábados por la mañana</span></div>
+          </div>
+          <div style="margin-top:14px;"><span class="mk-btn primary">Agregar clienta <span class="tag">2</span></span></div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Notas</strong><span class="d">Solo para tu referencia interna (preferencias, alergias, lo que sea útil recordar) — no se le muestra a la clienta en ningún lado.</span></div></li>
+        <li><span class="tag">2</span><div><strong>El botón cambia según el contexto</strong><span class="d">Dice "Agregar clienta" normalmente. Si estás editando a alguien (parte 5), el mismo formulario se reutiliza y el botón pasa a decir "Actualizar clienta".</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Este formulario es solo para capturar el <em>contacto</em> de la clienta — no crea ninguna cita. Para agendarle algo, sigues usando "+ Agendar manualmente" o "Registrar cita directa" en la sección Citas.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" id="origen">
+      <div class="step-head"><span class="step-num">03</span><h2>Los 3 tipos de "Origen"</h2></div>
+      <p class="step-intro">Cada clienta de la tabla trae una etiqueta que dice de dónde salió su registro. Es la columna que más se presta a dudas.</p>
+
+      <div class="cmp">
+        <div class="cmp-card">
+          <span class="pill info">Reservó en el sitio</span>
+          <h3>Llegó sola</h3>
+          <p>Se creó automáticamente la primera vez que agendó una cita — desde la web pública o desde el panel de Citas. No tiene botones de editar/eliminar aquí: para corregir su nombre o teléfono hay que hacerlo desde su cita, en Citas.</p>
+        </div>
+        <div class="cmp-card">
+          <span class="pill neutral">Agregada a mano</span>
+          <h3>La capturaste tú</h3>
+          <p>Viene del formulario de la parte 2. Nunca ha agendado por el sistema. Esta sí se puede editar y eliminar directamente aquí (parte 5).</p>
+        </div>
+        <div class="cmp-card">
+          <span class="pill ok">Ambos</span>
+          <h3>Las dos cosas</h3>
+          <p>La agregaste a mano en algún momento <em>y además</em> ya agendó una cita (o al revés). Conserva sus datos de contacto capturados a mano y también editable aquí, igual que "Agregada a mano".</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> si una clienta con "Reservó en el sitio" tiene mal el teléfono o el nombre, <strong>no la busques aquí para corregirla</strong> — no tiene botones de acción. Ve a Citas, abre una de sus citas y usa "Editar cita" para corregir sus datos ahí.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" id="tabla">
+      <div class="step-head"><span class="step-num">04</span><h2>La tabla y sus filtros</h2></div>
+      <p class="step-intro">Todas las clientas juntas, sin importar su origen.</p>
+
+      <div class="mk">
+        <div class="mk-filters" style="margin-bottom:14px;">
+          <span class="mk-field">🔍 Buscar por nombre o teléfono… <span class="tag">1</span></span>
+          <span class="mk-check"><span class="box"></span> Solo con correo <span class="tag">2</span></span>
+        </div>
+        <table class="mk-table">
+          <thead><tr><th>Nombre</th><th>Teléfono</th><th>Correo</th><th>Visitas confirmadas</th><th>Origen</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Fernanda Ríos</td><td>55 1122 3344</td><td>fer.rios@mail.com</td><td>4</td>
+              <td><span class="pill info">Reservó en el sitio</span></td>
+              <td class="muted-cell">Edítala desde Citas <span class="tag">3</span></td>
+            </tr>
+            <tr>
+              <td>Lucía Franco</td><td>55 2211 4400</td><td class="muted-cell">—</td><td>0</td>
+              <td><span class="pill neutral">Agregada a mano</span></td>
+              <td><span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Editar</span> <span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;color:var(--alert);border-color:var(--alert);">Eliminar</span> <span class="tag">4</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Buscar</strong><span class="d">Filtra por nombre o teléfono al momento, mientras escribes. Solo afecta lo que ves en pantalla — recuerda que no afecta al botón "Exportar CSV" de arriba.</span></div></li>
+        <li><span class="tag">2</span><div><strong>"Solo con correo"</strong><span class="d">A diferencia de la casilla parecida en Citas, aquí <strong>sí</strong> oculta filas de la tabla en pantalla, además de afectar el CSV. Ver el aviso abajo.</span></div></li>
+        <li><span class="tag">3</span><div><strong>"Edítala desde Citas"</strong><span class="d">Aparece en vez de botones cuando el origen es "Reservó en el sitio". No es un error — es intencional (parte 3).</span></div></li>
+        <li><span class="tag">4</span><div><strong>Editar / Eliminar</strong><span class="d">Solo aparecen para clientas "Agregada a mano" o "Ambos". Ver la parte 5.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> la casilla "Solo con correo" <strong>no se comporta igual que en Citas</strong>. En Citas, la casilla parecida solo afectaba al CSV exportado (la tabla en pantalla no cambiaba). Aquí en Clientas, marcarla <strong>sí</strong> esconde de la tabla a las clientas sin correo, además de afectar la exportación. Si buscas a alguien y no la encuentras, revisa si esta casilla está marcada.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="step" id="editar">
+      <div class="step-head"><span class="step-num">05</span><h2>Editar y eliminar</h2></div>
+      <p class="step-intro">Solo disponible para clientas "Agregada a mano" o "Ambos".</p>
+
+      <div class="mk">
+        <div class="mk-form" style="max-width:460px;">
+          <div style="background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:0.85rem;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+            <span>Editando una clienta.</span>
+            <span style="font-weight:700;text-decoration:underline;">Cancelar edición <span class="tag">1</span></span>
+          </div>
+          <h3 style="font-size:1.05rem;">Editar clienta</h3>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Tocar "Editar" en la tabla</strong><span class="d">Sube la página hasta el formulario de arriba (parte 2), lo llena solo con los datos de esa clienta, y cambia su título a "Editar clienta". Un aviso amarillo aparece arriba del formulario para que sepas que ya no estás agregando una nueva.</span></div></li>
+        <li><span class="tag">2</span><div><strong>"Cancelar edición"</strong><span class="d">Vacía el formulario y lo regresa al modo normal de "Agregar clienta", sin guardar nada.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Eliminar</strong><span class="d">Pide confirmar antes de borrar. Es permanente — no hay PIN de seguridad aquí (a diferencia de cancelar/eliminar una cita en Citas), así que ten cuidado con a quién le das clic.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Eliminar una clienta agregada a mano <strong>no borra sus citas</strong> si también reservó por el sistema — solo quita su registro de contacto manual. Si quieres deshacerte por completo del historial de alguien, revisa también sus citas en la sección Citas.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="step" id="resumen">
+      <div class="step-head"><span class="step-num">06</span><h2>Resumen: los 4 lugares donde te puedes atorar</h2></div>
+      <p class="step-intro">Para consultar rápido, sin releer todo el recorrido.</p>
+
+      <ol class="recap-list">
+        <li><div class="recap-row"><div class="body"><strong>"Exportar CSV" ignora la búsqueda</strong><span>Exporta a todas las clientas cargadas (según "Solo con correo"), no solo el resultado de lo que buscaste.</span></div><a href="#encabezado">Parte 1 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Las clientas "Reservó en el sitio" no se editan aquí</strong><span>No tienen botones de acción — corrígelas desde una de sus citas en la sección Citas.</span></div><a href="#origen">Parte 3 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Solo con correo" sí filtra la tabla en pantalla</strong><span>A diferencia de la casilla parecida en Citas (que solo afecta el CSV), aquí también oculta filas visibles.</span></div><a href="#tabla">Parte 4 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Eliminar una clienta no tiene PIN de seguridad</strong><span>A diferencia de cancelar/eliminar una cita en Citas — aquí solo pide confirmar, así que ten cuidado.</span></div><a href="#editar">Parte 5 ↑</a></div></li>
+      </ol>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<footer>Guía de referencia interna sobre <strong>admin/clientas.html</strong> — no requiere iniciar sesión para consultarla; los datos de ejemplo en las tablas no son reales.</footer>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if (!sections.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  function setActive(id){
+    if (id === current) return;
+    current = id;
+    links.forEach(function(a){ a.classList.remove('is-active'); });
+    var a = byId[id];
+    if (a) { a.classList.add('is-active'); if (a.scrollIntoView) a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){ if (entry.isIntersecting) setActive(entry.target.id); });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+  setActive(sections[0].id);
+})();
+</script>
+
+</body>
+</html>

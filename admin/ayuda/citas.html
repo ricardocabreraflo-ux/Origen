@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex" />
+<title>Tutorial: Panel de Citas</title>
+<meta name="description" content="Recorrido guiado por la sección Citas del panel de administración de Origen Brows: cada botón, cada modal y los puntos donde el equipo se suele atorar." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#f7f1e6;
+    --surface:#ffffff;
+    --surface-2:#fbf6ec;
+    --ink:#211b15;
+    --ink-soft:#453c30;
+    --muted:#766b5c;
+    --border:rgba(33,29,25,0.13);
+    --border-strong:rgba(33,29,25,0.22);
+    --gold:#b9a37f;
+    --gold-dark:#8a7350;
+    --gold-ghost:rgba(185,163,127,0.16);
+    --ok:#1f6b34; --ok-bg:#d9ecdd;
+    --warn:#86611a; --warn-bg:#f4e3c1;
+    --alert:#a13a2f; --alert-bg:#f3d9d3;
+    --info:#1a4a73; --info-bg:#d6e4f0;
+    --shadow:0 10px 30px rgba(33,29,25,0.10);
+    --radius:16px;
+    --font-head:'Fraunces', Georgia, serif;
+    --font-body:'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15110c;
+      --surface:#211b15;
+      --surface-2:#241d16;
+      --ink:#f3ece0;
+      --ink-soft:#dccdb4;
+      --muted:#a89a84;
+      --border:rgba(255,255,255,0.12);
+      --border-strong:rgba(255,255,255,0.2);
+      --gold:#d3ba8d;
+      --gold-dark:#b9a37f;
+      --gold-ghost:rgba(211,186,141,0.14);
+      --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+      --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+      --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+      --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+      --shadow:0 12px 34px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15110c;
+    --surface:#211b15;
+    --surface-2:#241d16;
+    --ink:#f3ece0;
+    --ink-soft:#dccdb4;
+    --muted:#a89a84;
+    --border:rgba(255,255,255,0.12);
+    --border-strong:rgba(255,255,255,0.2);
+    --gold:#d3ba8d;
+    --gold-dark:#b9a37f;
+    --gold-ghost:rgba(211,186,141,0.14);
+    --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+    --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+    --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+    --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+    --shadow:0 12px 34px rgba(0,0,0,0.5);
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:var(--font-head); text-wrap:balance; color:var(--ink); margin:0; }
+  p{ margin:0; }
+  img{ max-width:100%; }
+  a{ color:inherit; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 clamp(16px,4vw,40px); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:56px 0 34px;
+    border-bottom:1px solid var(--border);
+    background:
+      radial-gradient(620px 260px at 88% -60px, var(--gold-ghost), transparent 70%);
+  }
+  .eyebrow{
+    font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--gold-dark); font-weight:700; margin-bottom:12px; display:block;
+  }
+  .hero h1{ font-size:clamp(2rem,3.4vw + 1rem,2.9rem); font-weight:600; max-width:16ch; }
+  .hero .lede{ margin-top:14px; max-width:60ch; color:var(--ink-soft); font-size:1.05rem; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .hero-chip{
+    font-size:0.8rem; padding:7px 13px; border-radius:100px; border:1px solid var(--border-strong);
+    background:var(--surface); color:var(--ink-soft); display:flex; align-items:center; gap:6px;
+  }
+  .hero-chip b{ color:var(--ink); }
+
+  /* ---------- Layout ---------- */
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; padding:40px 0 100px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; gap:0; padding-top:0; } }
+
+  .toc{
+    position:sticky; top:24px; display:flex; flex-direction:column; gap:2px;
+    font-size:0.85rem; max-height:calc(100vh - 48px); overflow-y:auto;
+  }
+  .toc-label{ font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .toc a{
+    text-decoration:none; color:var(--muted); padding:7px 10px; border-radius:9px;
+    border-left:2px solid transparent; transition:background 140ms ease,color 140ms ease;
+  }
+  .toc a:hover{ background:var(--gold-ghost); color:var(--ink); }
+  .toc a.is-active{ color:var(--ink); font-weight:600; border-left-color:var(--gold-dark); background:var(--gold-ghost); }
+
+  @media (max-width:900px){
+    .toc{
+      position:sticky; top:0; z-index:20; flex-direction:row; gap:6px; max-height:none;
+      overflow-x:auto; overflow-y:hidden; background:var(--bg); padding:12px clamp(16px,4vw,40px);
+      border-bottom:1px solid var(--border); margin:0 calc(-1 * clamp(16px,4vw,40px));
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .toc::-webkit-scrollbar{ display:none; }
+    .toc-label{ display:none; }
+    .toc a{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; border-radius:100px; background:var(--surface); border:1px solid var(--border); }
+    .toc a.is-active{ border-color:var(--gold-dark); }
+  }
+
+  .content{ display:flex; flex-direction:column; gap:64px; min-width:0; }
+
+  /* ---------- Section ---------- */
+  section.step{ scroll-margin-top:88px; }
+  .step-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+  .step-num{
+    font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--gold-dark);
+    flex-shrink:0;
+  }
+  .step h2{ font-size:clamp(1.35rem,1.6vw + 0.9rem,1.7rem); font-weight:600; }
+  .step-intro{ color:var(--ink-soft); max-width:66ch; margin:10px 0 26px; }
+  .step-intro + .step-intro{ margin-top:-14px; }
+
+  /* ---------- Mockup shell ---------- */
+  .mk{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:20px;
+    padding:clamp(14px,2.4vw,26px); box-shadow:var(--shadow); margin-bottom:22px;
+    overflow-x:auto;
+  }
+  .mk-caption{ font-size:0.74rem; color:var(--muted); margin-top:12px; text-align:center; }
+
+  .tag{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:17px; height:17px; border-radius:50%; background:var(--gold-dark); color:#fff;
+    font-size:0.66rem; font-weight:700; font-family:var(--font-body); flex-shrink:0;
+    box-shadow:0 0 0 2px var(--surface-2);
+  }
+
+  /* legend list */
+  .legend{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .legend li{ display:flex; gap:12px; align-items:flex-start; }
+  .legend .tag{ margin-top:3px; }
+  .legend strong{ color:var(--ink); }
+  .legend span.d{ display:block; color:var(--ink-soft); font-size:0.92rem; margin-top:2px; }
+
+  /* ---------- Callouts ---------- */
+  .callout{
+    border-radius:14px; padding:14px 16px; font-size:0.92rem; display:flex; gap:10px;
+    margin-top:18px; border:1px solid transparent;
+  }
+  .callout .ic{ flex-shrink:0; font-size:1.05rem; line-height:1.3; }
+  .callout p{ color:inherit; }
+  .callout.tip{ background:var(--gold-ghost); border-color:var(--border); color:var(--ink-soft); }
+  .callout.warn{ background:var(--warn-bg); color:var(--warn); border-color:transparent; }
+  .callout.warn strong{ color:inherit; }
+  .callout.alert{ background:var(--alert-bg); color:var(--alert); }
+
+  /* ---------- Real UI replica bits (fixed brand colors, not theme tokens —
+     this is a faithful recreation of the actual product chrome) ---------- */
+  .rep-dark{ --rd-bg:#211b15; --rd-bg2:#2a231b; --rd-white:#fff; --rd-accent:#b9a37f; --rd-accent-dark:#5c4a2c; }
+
+  .mk-sidebar-row{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+  .mk-sidebar{
+    background:var(--rd-bg); border-radius:14px; padding:18px 10px; width:64px; flex-shrink:0;
+    display:flex; flex-direction:column; gap:4px; font-family:var(--font-body);
+    transition:width 200ms ease;
+  }
+  .mk-sidebar.is-open{ width:190px; }
+  .mk-sidebar .sb-brand{ display:flex; align-items:center; gap:8px; color:#fff; font-family:var(--font-head); font-weight:600; font-size:0.86rem; padding:0 4px 12px; border-bottom:1px solid rgba(255,255,255,0.16); margin-bottom:8px; white-space:nowrap; overflow:hidden; }
+  .mk-sidebar .sb-brand .dot{ width:20px; height:20px; border-radius:6px; background:var(--rd-accent); flex-shrink:0; }
+  .mk-sidebar .sb-link{ display:flex; align-items:center; gap:9px; padding:8px 8px; border-radius:8px; color:rgba(255,255,255,0.78); font-size:0.78rem; white-space:nowrap; overflow:hidden; }
+  .mk-sidebar .sb-link.is-active{ background:var(--rd-accent); color:#2a2113; font-weight:600; }
+  .mk-sidebar .sb-icon{ width:16px; text-align:center; flex-shrink:0; }
+  .mk-sidebar.is-open .sb-sub{ display:flex; }
+  .mk-sidebar .sb-sub{ display:none; flex-direction:column; gap:2px; margin:2px 0 6px 22px; }
+  .mk-sidebar .sb-sub a{ font-size:0.72rem; color:rgba(255,255,255,0.62); padding:5px 0; text-decoration:none; }
+  .mk-sidebar-label{ font-size:0.72rem; color:var(--muted); text-align:center; margin-top:8px; }
+  .mk-sidebar-col{ display:flex; flex-direction:column; align-items:center; }
+
+  .mk-btnrow{ display:flex; flex-wrap:wrap; gap:9px; }
+  .mk-btn{
+    font-family:var(--font-body); font-size:0.78rem; font-weight:600; border-radius:10px;
+    padding:9px 14px; border:1.5px solid var(--rd-bg); color:var(--rd-bg); background:transparent;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .mk-btn.primary{ background:var(--rd-bg); color:#fff; }
+
+  .mk-cal{ max-width:380px; }
+  .mk-cal-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .mk-cal-head strong{ flex:1; text-align:center; font-family:var(--font-head); font-size:1rem; }
+  .mk-cal-nav{ width:26px; height:26px; border-radius:8px; border:1.5px solid var(--border-strong); display:flex; align-items:center; justify-content:center; font-size:0.85rem; color:var(--ink); flex-shrink:0; }
+  .mk-cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .mk-cal-grid .wd{ font-size:0.62rem; text-align:center; color:var(--muted); font-weight:700; }
+  .mk-cal-grid .day{
+    aspect-ratio:1/0.86; border-radius:8px; border:1.5px solid var(--border); background:var(--surface);
+    display:flex; flex-direction:column; justify-content:space-between; padding:4px; font-size:0.68rem;
+  }
+  .mk-cal-grid .day.sel{ border-color:var(--gold-dark); border-width:2px; }
+  .mk-cal-grid .day .dots{ display:flex; gap:2px; }
+  .mk-cal-grid .day .dot{ width:5px; height:5px; border-radius:50%; background:var(--ok); }
+  .mk-cal-grid .day .dot.p{ background:var(--warn); }
+  .mk-cal-grid .day .rev{ font-size:0.55rem; color:var(--gold-dark); font-weight:700; }
+  .mk-cal-grid .day.closed{ background:repeating-linear-gradient(135deg,var(--surface-2),var(--surface-2) 5px,var(--border) 5px,var(--border) 10px); }
+
+  .mk-filters{ display:flex; flex-wrap:wrap; gap:9px; align-items:center; }
+  .mk-field{ font-size:0.78rem; padding:8px 11px; border-radius:9px; border:1.5px solid var(--border-strong); background:var(--surface); color:var(--ink-soft); }
+  .mk-check{ font-size:0.78rem; display:flex; align-items:center; gap:6px; color:var(--ink-soft); }
+  .mk-check .box{ width:14px; height:14px; border-radius:4px; border:1.5px solid var(--border-strong); }
+
+  .mk-table{ width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; font-size:0.76rem; min-width:640px; }
+  .mk-table th,.mk-table td{ padding:9px 10px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; }
+  .mk-table th{ background:var(--surface-2); font-weight:700; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); }
+  .pill{ display:inline-block; padding:3px 10px; border-radius:100px; font-size:0.68rem; font-weight:700; }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn); }
+  .muted-cell{ color:var(--muted); }
+
+  .mk-modal{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 22px; max-width:420px; box-shadow:var(--shadow); }
+  .mk-modal h3{ font-size:1.05rem; font-weight:600; margin-bottom:4px; }
+  .mk-modal .note{ font-size:0.82rem; color:var(--muted); margin-bottom:14px; }
+  .mk-action{
+    display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:11px;
+    background:var(--surface-2); border:1.5px solid var(--border); font-size:0.84rem; font-weight:600;
+    margin-bottom:8px;
+  }
+  .mk-action.primary{ background:var(--rd-bg); color:#fff; border-color:var(--rd-bg); }
+  .mk-action.danger{ color:var(--alert); border-color:var(--alert-bg); }
+  .mk-form-row{ display:flex; flex-direction:column; gap:3px; margin-bottom:10px; }
+  .mk-form-row label{ font-size:0.72rem; font-weight:700; color:var(--ink-soft); }
+  .mk-form-row .mk-field{ width:100%; }
+  .mk-form-row.pair{ flex-direction:row; gap:8px; }
+  .mk-form-row.pair > div{ flex:1; display:flex; flex-direction:column; gap:3px; }
+
+  /* comparison table */
+  .cmp{ display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:720px){ .cmp{ grid-template-columns:1fr 1fr; } }
+  .cmp-card{ border:1.5px solid var(--border-strong); border-radius:16px; padding:20px 22px; background:var(--surface); }
+  .cmp-card.b{ border-color:var(--gold-dark); box-shadow:0 0 0 1px var(--gold-dark) inset; }
+  .cmp-card h3{ font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .cmp-card .for{ font-size:0.82rem; color:var(--muted); margin-bottom:14px; }
+  .cmp-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; font-size:0.88rem; }
+  .cmp-list li{ display:flex; gap:8px; }
+  .cmp-list li::before{ content:"—"; color:var(--gold-dark); flex-shrink:0; }
+
+  /* recap */
+  .recap-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; counter-reset:recap; }
+  .recap-list li{
+    counter-increment:recap; display:flex; gap:14px; align-items:flex-start; padding:14px 16px;
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  }
+  .recap-list li::before{
+    content:counter(recap); font-family:var(--font-head); font-weight:700; color:var(--gold-dark);
+    background:var(--gold-ghost); width:26px; height:26px; border-radius:50%; display:flex;
+    align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem;
+  }
+  .recap-list a{ font-size:0.78rem; color:var(--gold-dark); text-decoration:none; font-weight:600; white-space:nowrap; }
+  .recap-list .body{ flex:1; }
+  .recap-list strong{ display:block; margin-bottom:2px; }
+  .recap-list span{ color:var(--ink-soft); font-size:0.9rem; }
+  .recap-row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+
+  footer{ border-top:1px solid var(--border); padding:26px clamp(16px,4vw,40px) 40px; color:var(--muted); font-size:0.82rem; max-width:1180px; margin:0 auto; }
+
+  .tutorial-topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: #211b15; color: #fff;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 12px clamp(16px,4vw,40px);
+  }
+  .tutorial-topbar .back-link {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600;
+    color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .tutorial-topbar .back-link:hover { border-color: #fff; }
+  .tutorial-switch { display: flex; gap: 6px; flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tutorial-switch a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 6px 12px;
+    border-radius: 100px; white-space: nowrap; transition: background 140ms ease, color 140ms ease;
+  }
+  .tutorial-switch a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tutorial-switch a.is-current { background: #b9a37f; color: #2a2113; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="tutorial-topbar">
+    <a class="back-link" href="../citas.html">← Volver al panel</a>
+    <nav class="tutorial-switch">
+    <a href="citas.html" class="is-current">📅 Citas</a>
+    <a href="clientas.html">👥 Clientas</a>
+    <a href="lealtad.html">🎁 Lealtad</a>
+    <a href="reportes.html">📊 Reportes</a>
+    <a href="finanzas.html">💰 Finanzas</a>
+    </nav>
+  </div>
+<div class="hero">
+  <div class="container">
+    <span class="eyebrow">Guía interna · Panel de administración</span>
+    <h1>Recorrido por la sección Citas</h1>
+    <p class="lede">Todo lo que hay en <strong>Panel → Citas</strong>: qué hace cada botón, qué abre cada modal y en qué pasos se atora normalmente alguien que la usa por primera vez.</p>
+    <div class="hero-meta">
+      <span class="hero-chip">📍 <b>admin/citas.html</b></span>
+      <span class="hero-chip">🧭 12 partes</span>
+      <span class="hero-chip">⚠️ 8 puntos donde te puedes atorar — ver el resumen al final</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="layout">
+
+  <nav class="toc" id="toc">
+    <span class="toc-label">En este recorrido</span>
+    <a href="#llegar">1. Cómo llegar</a>
+    <a href="#encabezado">2. Los 7 botones de arriba</a>
+    <a href="#calendario">3. Calendario del mes</a>
+    <a href="#filtros">4. Filtros de la tabla</a>
+    <a href="#tabla">5. La tabla de citas</a>
+    <a href="#acciones">6. Al tocar una fila</a>
+    <a href="#comparacion">7. Manual vs. directa</a>
+    <a href="#bloqueos">8. Bloqueos de horario</a>
+    <a href="#especial">9. Horario especial</a>
+    <a href="#espera">10. Lista de espera</a>
+    <a href="#editar">11. Editar una cita</a>
+    <a href="#resumen">12. Dónde te atoras</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 1 -->
+    <section class="step" id="llegar">
+      <div class="step-head"><span class="step-num">01</span><h2>Cómo llegar a Citas</h2></div>
+      <p class="step-intro">Citas es lo primero del menú lateral y la página con la que abre el panel. El menú vive angosto (solo iconos) y se abre solo al pasar el mouse — por diseño, para no robarle espacio a la tabla.</p>
+
+      <div class="mk rep-dark">
+        <div class="mk-sidebar-row">
+          <div class="mk-sidebar-col">
+            <div class="mk-sidebar">
+              <div class="sb-brand"><span class="dot"></span></div>
+              <div class="sb-link is-active"><span class="sb-icon">📅</span></div>
+              <div class="sb-link"><span class="sb-icon">👥</span></div>
+              <div class="sb-link"><span class="sb-icon">🎁</span></div>
+              <div class="sb-link"><span class="sb-icon">📊</span></div>
+              <div class="sb-link"><span class="sb-icon">💰</span></div>
+              <div class="sb-link"><span class="sb-icon">✏️</span></div>
+            </div>
+            <span class="mk-sidebar-label">En reposo <span class="tag">1</span></span>
+          </div>
+          <div class="mk-sidebar-col">
+            <div class="mk-sidebar is-open">
+              <div class="sb-brand"><span class="dot"></span><span>Origen · Panel</span></div>
+              <div class="sb-link is-active"><span class="sb-icon">📅</span><span>Citas <span class="tag" style="background:transparent;box-shadow:none;color:var(--rd-accent);font-size:0.9em;">›</span></span></div>
+              <div class="sb-sub">
+                <a>🚫 Bloqueos de horario</a>
+                <a>🔓 Horario especial</a>
+                <a>⏳ Lista de espera</a>
+              </div>
+              <div class="sb-link"><span class="sb-icon">👥</span><span>Clientas</span></div>
+              <div class="sb-link"><span class="sb-icon">🎁</span><span>Lealtad</span></div>
+              <div class="sb-link"><span class="sb-icon">📊</span><span>Reportes</span></div>
+              <div class="sb-link"><span class="sb-icon">💰</span><span>Finanzas</span></div>
+              <div class="sb-link"><span class="sb-icon">✏️</span><span>Contenido</span></div>
+            </div>
+            <span class="mk-sidebar-label">Al pasar el mouse / con el pin 📌 <span class="tag">2</span></span>
+          </div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Riel angosto por defecto.</strong><span class="d">Solo se ven los iconos. Es normal — no está roto, así ahorra espacio en pantallas chicas.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Se expande al pasar el mouse (o con el pin 📌).</strong><span class="d">El pin fija el menú abierto aunque quites el mouse — útil si vas a estar navegando entre secciones seguido. Vuelve a tocarlo para soltarlo.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>La flechita <strong>›</strong> junto a "Citas" no navega a otra página: despliega un submenú con 3 accesos directos — <strong>Bloqueos de horario</strong>, <strong>Horario especial</strong> y <strong>Lista de espera</strong>. Son atajos que abren la misma ventana emergente que sus botones gemelos del encabezado (parte 8, 9 y 10 de este recorrido), no páginas nuevas.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step" id="encabezado">
+      <div class="step-head"><span class="step-num">02</span><h2>Los 7 botones de arriba</h2></div>
+      <p class="step-intro">Toda la fila de acciones vive junto al título "Citas". En celular se puede deslizar horizontalmente si no caben todos.</p>
+
+      <div class="mk">
+        <div class="mk-btnrow rep-dark">
+          <span class="mk-btn primary">+ Agendar manualmente <span class="tag">1</span></span>
+          <span class="mk-btn">🕓 Registrar cita directa <span class="tag">2</span></span>
+          <span class="mk-btn">🚫 Bloqueos de horario <span class="tag">3</span></span>
+          <span class="mk-btn">🔓 Abrir horario especial <span class="tag">4</span></span>
+          <span class="mk-btn">⏳ Lista de espera <span class="tag">5</span></span>
+          <span class="mk-btn">Exportar clientas (CSV) <span class="tag">6</span></span>
+          <span class="mk-btn">Actualizar <span class="tag">7</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>+ Agendar manualmente</strong><span class="d">Crea una cita como si la clienta la hubiera agendado ella misma desde la web: elige un horario disponible real y, si el anticipo es por transferencia, la cita queda "pendiente" hasta confirmar. Ver la comparación completa en la parte 7.</span></div></li>
+        <li><span class="tag">2</span><div><strong>🕓 Registrar cita directa</strong><span class="d">Anota una cita que ya pasó (o con fecha/monto/duración libres), sin mandarle ningún WhatsApp a la clienta. Pensado para llevar el control de citas hechas por fuera del sistema. Ver la parte 7.</span></div></li>
+        <li><span class="tag">3</span><div><strong>🚫 Bloqueos de horario</strong><span class="d">Cierra un día completo o un rango de horas para que nadie pueda agendar ahí (vacaciones, cita médica, etc.). Parte 8.</span></div></li>
+        <li><span class="tag">4</span><div><strong>🔓 Abrir horario especial</strong><span class="d">Lo contrario: abre un hueco agendable en un día normalmente cerrado, como un domingo. Parte 9.</span></div></li>
+        <li><span class="tag">5</span><div><strong>⏳ Lista de espera</strong><span class="d">Clientas que pidieron que se les avise si se libera un lugar. Parte 10.</span></div></li>
+        <li><span class="tag">6</span><div><strong>Exportar clientas (CSV)</strong><span class="d">Descarga nombre, teléfono y correo de las citas que están cargadas <em>en ese momento</em> según los filtros — no solo la página que se ve en pantalla, sino todo el resultado filtrado. Sin duplicados.</span></div></li>
+        <li><span class="tag">7</span><div><strong>Actualizar</strong><span class="d">Vuelve a pedir la lista de citas al servidor con los mismos filtros. Úsalo si alguien más metió una cita nueva mientras tenías la pantalla abierta.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> "Exportar clientas (CSV)" respeta los filtros de fecha/mes/estado de la parte 4. Si acabas de abrir la página y no tocaste ningún filtro, exporta <em>todas</em> las citas cargadas; si filtraste por un solo día, solo exporta las de ese día. Revisa los filtros antes de exportar.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" id="calendario">
+      <div class="step-head"><span class="step-num">03</span><h2>Calendario del mes</h2></div>
+      <p class="step-intro">Panorama del mes completo, independiente de los filtros de la tabla — hasta que tocas un día.</p>
+
+      <div class="mk">
+        <div class="mk-cal">
+          <div class="mk-cal-head">
+            <span class="mk-cal-nav">‹</span><strong>Marzo 2026 <span class="tag">1</span></strong><span class="mk-cal-nav">›</span>
+            <span class="mk-btn" style="padding:5px 10px;font-size:0.68rem;">Ver todo el mes <span class="tag">2</span></span>
+          </div>
+          <div class="mk-cal-grid">
+            <span class="wd">L</span><span class="wd">M</span><span class="wd">M</span><span class="wd">J</span><span class="wd">V</span><span class="wd">S</span><span class="wd">D</span>
+            <span></span><span></span>
+            <div class="day"><span>1</span></div><div class="day"><span>2</span></div><div class="day"><span>3</span></div><div class="day"><span>4</span></div><div class="day"><span>5</span></div>
+            <div class="day"><span>6</span></div>
+            <div class="day sel"><span>7</span><span class="dots"><span class="dot"></span><span class="dot p"></span></span><span class="rev">$1,199 <span class="tag">3</span></span></div>
+            <div class="day"><span>8</span><span class="dots"><span class="dot p"></span></span></div>
+            <div class="day closed"><span>9 <span class="tag">4</span></span></div>
+            <div class="day"><span>10</span></div><div class="day"><span>11</span></div><div class="day"><span>12</span></div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>‹ › y el nombre del mes</strong><span class="d">Navegan entre meses sin tocar la tabla de abajo.</span></div></li>
+        <li><span class="tag">2</span><div><strong>"Ver todo el mes"</strong><span class="d">Limpia el filtro de un día específico y pone el filtro de mes en el que estás viendo, para que la tabla muestre todas las citas del mes en vez de un solo día.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Puntitos e ingreso del día</strong><span class="d">Un puntito verde = cita confirmada, ámbar = pendiente. El número es la suma de lo cobrado ese día (solo citas confirmadas y con ingreso). Tocar el día filtra la tabla a esa fecha.</span></div></li>
+        <li><span class="tag">4</span><div><strong>Días rayados</strong><span class="d">Son días cerrados según el horario del negocio (ej. lunes). Igual se pueden tocar para ver si hay algo agendado ahí por un horario especial.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Tocar un día del calendario y usar el filtro de fecha de la parte 4 hacen exactamente lo mismo — son dos caminos al mismo resultado, así que no hace falta usar los dos.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" id="filtros">
+      <div class="step-head"><span class="step-num">04</span><h2>Filtros de la tabla</h2></div>
+      <p class="step-intro">Debajo del calendario, independientes de él salvo cuando tocas un día.</p>
+
+      <div class="mk">
+        <div class="mk-filters">
+          <span class="mk-field">Todos los estados ▾ <span class="tag">1</span></span>
+          <span class="mk-field">📅 dd/mm/aaaa <span class="tag">2</span></span>
+          <span class="mk-field">📅 mes / año <span class="tag">3</span></span>
+          <span class="mk-check"><span class="box"></span> Exportar solo con correo registrado <span class="tag">4</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Estado</strong><span class="d">Todos, pendientes, confirmadas, canceladas o vencidas.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Un día exacto</strong><span class="d">Se llena solo al tocar un día del calendario, o se puede escribir a mano.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Un mes completo</strong><span class="d">Elegir uno borra el filtro de día, y viceversa — son excluyentes entre sí, no se combinan.</span></div></li>
+        <li><span class="tag">4</span><div><strong>Casilla "solo con correo"</strong><span class="d">Solo afecta al botón "Exportar clientas (CSV)" de la parte 2 — no oculta filas de la tabla.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> el filtro de fecha y el de mes se pisan entre sí. Si tenías un día elegido y luego escoges un mes, el día se borra solo (y al revés). No es un bug — es porque muestran cosas distintas y no tendría sentido combinarlos.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="step" id="tabla">
+      <div class="step-head"><span class="step-num">05</span><h2>La tabla de citas</h2></div>
+      <p class="step-intro">10 citas por página, con paginador abajo si hay más.</p>
+
+      <div class="mk">
+        <table class="mk-table">
+          <thead><tr><th>Código</th><th>Cliente</th><th>Servicio</th><th>Fecha / horario</th><th>Precio lista</th><th>Anticipo</th><th>Cobrado</th><th>Desc.</th><th>Estado</th><th>Pagado</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>ORB-2461</td>
+              <td>Fernanda Ríos<br><span class="muted-cell">55 1122 3344</span></td>
+              <td>Diseñando tu ORIGEN</td>
+              <td>Sáb 7 mar · 11:00–11:40</td>
+              <td>$349 MXN</td>
+              <td>$100 MXN</td>
+              <td>$349 MXN</td>
+              <td class="muted-cell">Sin descuento</td>
+              <td><span class="pill ok">Confirmada</span></td>
+              <td>✅</td>
+            </tr>
+            <tr>
+              <td>ORB-2465</td>
+              <td>Karla Domínguez<br><span class="muted-cell">55 9988 7766</span></td>
+              <td>Luxury Brow Lamination</td>
+              <td>Sáb 7 mar · 13:00–14:15</td>
+              <td>$649 MXN</td>
+              <td>$150 MXN</td>
+              <td class="muted-cell">Sin capturar</td>
+              <td class="muted-cell">—</td>
+              <td><span class="pill warn">Pendiente</span></td>
+              <td>☐</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="mk-caption">Toda la fila es un botón — tocarla (menos la última columna) abre el menú de acciones de la parte 6. <span class="tag" style="vertical-align:middle;">1</span> es la casilla de "Pagado", que actúa aparte.</div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Columna "Pagado" (✅ / ☐)</strong><span class="d">Es independiente del "Estado" de la cita. Una cita puede estar <em>confirmada</em> (el anticipo llegó) pero no <em>pagada</em> del todo (falta liquidar el resto en el salón). Tocar el icono la marca/desmarca al instante, sin abrir ningún modal.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> "Estado" (pendiente/confirmada/cancelada/vencida) y "Pagado" (✅/☐) son dos cosas distintas que se confunden fácil. El estado lo cambian las acciones de la parte 6; "Pagado" es solo para llevar la cuenta de si ya se cobró el total, y se cambia tocando directamente el icono en su columna.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="step" id="acciones">
+      <div class="step-head"><span class="step-num">06</span><h2>Al tocar una fila: el menú de acciones</h2></div>
+      <p class="step-intro">Las opciones que aparecen cambian según el estado actual de la cita.</p>
+
+      <div class="mk">
+        <div class="mk-modal" style="max-width:340px;">
+          <button style="all:unset;position:relative;float:right;width:26px;height:26px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:0.8rem;">✕</button>
+          <h3>ORB-2465</h3>
+          <p class="note">Karla Domínguez · 55 9988 7766</p>
+          <div class="mk-action primary">✅ Confirmar depósito <span class="tag">1</span></div>
+          <div class="mk-action">🚫 Cancelar cita <span class="tag">2</span></div>
+          <div class="mk-action">✏️ Editar cita <span class="tag">3</span></div>
+          <div class="mk-action">🙏 Agradecer visita <span class="tag">4</span></div>
+          <div class="mk-action">🎟️ Marcar sin ingreso <span class="tag">5</span></div>
+          <div class="mk-action danger">🗑️ Eliminar cita <span class="tag">6</span></div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Confirmar depósito</strong><span class="d">Solo aparece si la cita está "Pendiente". La pasa a "Confirmada" — úsalo cuando ya viste llegar la transferencia del anticipo.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Cancelar cita</strong><span class="d">Pide confirmar y luego pide un <strong>PIN de seguridad</strong>. La cita pasa a "Cancelada" pero el registro se conserva.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Editar cita</strong><span class="d">Abre el formulario de la parte 11.</span></div></li>
+        <li><span class="tag">4</span><div><strong>Agradecer visita</strong><span class="d">Manda un WhatsApp de agradecimiento a la clienta. Pide confirmación antes de enviarlo.</span></div></li>
+        <li><span class="tag">5</span><div><strong>Marcar sin ingreso</strong><span class="d">Para citas que no generan dinero real (ej. una rifa de apertura, un modelo de práctica). Pide escribir el motivo, y ese monto deja de sumar en reportes de ingresos. El botón cambia a "Quitar marca de sin ingreso" una vez aplicado.</span></div></li>
+        <li><span class="tag">6</span><div><strong>Eliminar cita</strong><span class="d">Borra el registro por completo, sin poder deshacerlo. También pide confirmar y el <strong>PIN de seguridad</strong>. Para cancelaciones normales usa "Cancelar" en vez de esto — eliminar es para errores de captura.</span></div></li>
+      </ol>
+
+      <p class="step-intro" style="margin-top:-6px;">Si la cita está <strong>vencida</strong>, en vez de "Confirmar depósito" aparece <strong>"Reactivar (ya llegó el depósito)"</strong> — para cuando el anticipo se acreditó tarde, después de que el sistema ya la había marcado como vencida por no pago a tiempo.</p>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> Cancelar y Eliminar piden un PIN de seguridad — no es tu contraseña de inicio de sesión. Si no lo tienes a la mano, cancela el prompt (no metas cualquier cosa); un PIN incorrecto simplemente rechaza la acción sin explicarlo mucho más.</p>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="step" id="comparacion">
+      <div class="step-head"><span class="step-num">07</span><h2>El punto que más confunde: "Agendar manualmente" vs. "Registrar cita directa"</h2></div>
+      <p class="step-intro">Se parecen porque los dos crean una cita desde el panel — pero son para momentos muy distintos. Esta es la comparación completa.</p>
+
+      <div class="cmp">
+        <div class="cmp-card">
+          <h3>+ Agendar manualmente</h3>
+          <p class="for">Para: clienta que llama o llega en persona a agendar <em>a futuro</em>.</p>
+          <ul class="cmp-list">
+            <li>Solo deja elegir horarios <strong>realmente disponibles</strong> — igual que en la web pública.</li>
+            <li>Fecha siempre <strong>hoy en adelante</strong> (respeta el máximo de meses a futuro configurado).</li>
+            <li>Si el pago es por <strong>transferencia</strong>, la cita queda "Pendiente" hasta que confirmes el depósito.</li>
+            <li>Si el pago es en <strong>efectivo</strong>, se confirma de una vez.</li>
+            <li>No permite tocar el monto ni la duración a mano.</li>
+          </ul>
+        </div>
+        <div class="cmp-card b">
+          <h3>🕓 Registrar cita directa</h3>
+          <p class="for">Para: anotar algo que <em>ya pasó</em>, o llevar control con datos libres.</p>
+          <ul class="cmp-list">
+            <li>La fecha <strong>puede ser pasada</strong> — no valida disponibilidad real.</li>
+            <li>Hora, duración y monto son <strong>libres</strong>, editables a mano (útiles para el "Servicio Especial").</li>
+            <li><strong>Nunca le manda WhatsApp a la clienta</strong> — ni confirmación, ni recordatorio.</li>
+            <li>Trae una casilla aparte para avisarle por WhatsApp su lealtad actualizada, si quieres.</li>
+            <li>Queda "Confirmada" de inmediato.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p><strong>Regla rápida:</strong> si la clienta todavía no ha venido y necesitas guardarle un horario real, usa <strong>Agendar manualmente</strong>. Si ya vino (o vas a anotar algo con datos fuera de lo normal) y no quieres que le llegue ningún mensaje, usa <strong>Registrar cita directa</strong>.</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="step" id="bloqueos">
+      <div class="step-head"><span class="step-num">08</span><h2>Bloqueos de horario</h2></div>
+      <p class="step-intro">Cierra un día completo o solo un rango de horas. Se sincroniza con Google Calendar.</p>
+
+      <div class="mk">
+        <div class="mk-modal" style="max-width:460px;">
+          <h3>Bloqueos de horario</h3>
+          <p class="note">Cierra un día completo o solo una parte para que no se puedan agendar citas ahí.</p>
+          <div class="mk-form-row pair">
+            <div><label>Desde <span class="tag">1</span></label><span class="mk-field">07/03/2026</span></div>
+            <div><label>Hasta (opcional)</label><span class="mk-field">—</span></div>
+          </div>
+          <div class="mk-check" style="margin-bottom:10px;"><span class="box"></span> Bloquear el/los día(s) completo(s) <span class="tag">2</span></div>
+          <div class="mk-form-row"><label>Motivo (opcional)</label><span class="mk-field">Cita médica</span></div>
+          <span class="mk-btn primary">Agregar bloqueo <span class="tag">3</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>"Desde" y "Hasta" (fecha)</strong><span class="d">"Hasta" es opcional y solo se llena si el bloqueo cubre varios días seguidos (ej. vacaciones de una semana).</span></div></li>
+        <li><span class="tag">2</span><div><strong>Casilla "día completo"</strong><span class="d">Viene marcada por default. Al desmarcarla aparecen dos campos de hora (Desde / Hasta) para bloquear solo un rango, como "cerrado de 2 a 4pm".</span></div></li>
+        <li><span class="tag">3</span><div><strong>Calendario de arriba del formulario</strong><span class="d">Los días con bloqueo se ven resaltados: relleno sólido si está bloqueado todo el día, rayado si es solo una parte. Tocar un día lo selecciona y muestra abajo sus bloqueos existentes con un botón para eliminarlos.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> la casilla "Bloquear el/los día(s) completo(s)" viene <strong>activada por default</strong>. Si tu intención era cerrar solo una tarde, hay que desmarcarla primero — si no, se te va a bloquear el día entero sin querer.</p>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="step" id="especial">
+      <div class="step-head"><span class="step-num">09</span><h2>Abrir horario especial</h2></div>
+      <p class="step-intro">Lo opuesto a un bloqueo: habilita un hueco agendable en un día normalmente cerrado o fuera de tu horario fijo.</p>
+
+      <div class="mk">
+        <div class="mk-modal" style="max-width:420px;">
+          <h3>Abrir horario especial</h3>
+          <p class="note">Solo aplica ese día, para el rango de horas que elijas — el resto de tu horario normal no cambia.</p>
+          <div class="mk-form-row"><label>Fecha <span class="tag">1</span></label><span class="mk-field">Domingo 8/mar/2026</span></div>
+          <div class="mk-form-row pair">
+            <div><label>Desde (hora)</label><span class="mk-field">11:00</span></div>
+            <div><label>Hasta (hora)</label><span class="mk-field">14:00</span></div>
+          </div>
+          <div class="mk-form-row"><label>Nota (opcional) <span class="tag">2</span></label><span class="mk-field">Cita especial para Fulanita</span></div>
+          <span class="mk-btn primary">Abrir horario <span class="tag">3</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Un solo día por horario</strong><span class="d">A diferencia de los bloqueos, aquí no hay "hasta" para varios días — cada horario especial es de un solo día.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Nota</strong><span class="d">Solo es para tu referencia interna; no la ve la clienta.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Lista de horarios abiertos</strong><span class="d">Debajo del formulario se listan los que ya tienes activos, cada uno con su botón de "Eliminar" para volver a cerrar ese hueco.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Piénsalo como el espejo de "Bloqueos de horario": uno quita disponibilidad, este otro la agrega. No se usan juntos para el mismo hueco.</p>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="step" id="espera">
+      <div class="step-head"><span class="step-num">10</span><h2>Lista de espera</h2></div>
+      <p class="step-intro">Clientas que pidieron que se les avise si se libera un lugar en una fecha que les salió llena o cerrada.</p>
+
+      <div class="mk">
+        <div class="mk-modal" style="max-width:440px;">
+          <h3>Lista de espera</h3>
+          <p class="note">"Avisar" les manda un WhatsApp — necesita la plantilla aprobada en Meta.</p>
+          <div style="border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+            <div>
+              <div style="font-weight:700;font-size:0.86rem;">Sáb 14 mar · Andrea Solís</div>
+              <div style="font-size:0.76rem;color:var(--muted);margin:2px 0;">55 4433 2211 · Korean Lash Lifting</div>
+              <span class="pill warn">En espera <span class="tag">1</span></span>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+              <span class="mk-btn" style="padding:5px 9px;font-size:0.7rem;">Avisar <span class="tag">2</span></span>
+              <span class="mk-btn" style="padding:5px 9px;font-size:0.7rem;">Eliminar <span class="tag">3</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Estado "En espera" / "Ya se le avisó"</strong><span class="d">Cambia solo cuando usas "Avisar" — no hay que marcarlo a mano.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Avisar</strong><span class="d">Manda el WhatsApp de "espacio liberado". Después de enviarlo, ese botón desaparece de la fila (ya no hace falta volver a avisarle).</span></div></li>
+        <li><span class="tag">3</span><div><strong>Eliminar</strong><span class="d">Solo la quita de la lista — no cancela ninguna cita, porque esta persona nunca llegó a tener una.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> "Avisar" solo funciona si la plantilla de WhatsApp <strong>espacio_liberado_origen</strong> está aprobada en Meta. Si el botón falla, es lo primero que hay que revisar antes de pensar que algo se rompió en el panel.</p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="step" id="editar">
+      <div class="step-head"><span class="step-num">11</span><h2>Editar una cita</h2></div>
+      <p class="step-intro">Corrige servicio, fecha, hora, datos de la clienta o el monto de una cita ya existente. No manda ningún WhatsApp por estos cambios.</p>
+
+      <div class="mk">
+        <div class="mk-modal" style="max-width:420px;">
+          <h3>Editar cita</h3>
+          <div class="mk-form-row pair">
+            <div><label>Duración (min)</label><span class="mk-field">75</span></div>
+            <div><label>Monto cobrado</label><span class="mk-field">$649</span></div>
+          </div>
+          <div class="mk-form-row"><label>% de descuento (opcional) <span class="tag">1</span></label><span class="mk-field">15</span></div>
+          <span class="mk-btn primary">Guardar cambios</span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Campo de % de descuento</strong><span class="d">Es un atajo: al escribir un porcentaje, recalcula el monto solo. El monto también se puede escribir directo a mano — en cuanto lo tocas, el campo de descuento deja de pisártelo.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> el % de descuento se calcula sobre el monto <strong>que la cita ya tenía guardado</strong> (o el precio de lista del servicio si no tenía monto capturado), no sobre el precio de hoy del servicio. Si los precios de la lista cambiaron desde que se agendó esta cita, el descuento sigue siendo correcto respecto a lo que se le cobró originalmente.</p>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section class="step" id="resumen">
+      <div class="step-head"><span class="step-num">12</span><h2>Resumen: los 8 lugares donde te puedes atorar</h2></div>
+      <p class="step-intro">Todo lo anterior, junto, para consultar rápido sin releer el recorrido completo.</p>
+
+      <ol class="recap-list">
+        <li><div class="recap-row"><div class="body"><strong>El menú lateral no muestra texto de entrada</strong><span>Es un riel angosto que se expande solo al pasar el mouse, o fijándolo con el pin 📌.</span></div><a href="#llegar">Parte 1 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>El CSV exporta según los filtros activos</strong><span>Ajusta fecha/mes/estado antes de exportar, o vas a llevarte menos (o más) clientas de las que esperabas.</span></div><a href="#encabezado">Parte 2 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Filtro de día y filtro de mes se excluyen entre sí</strong><span>Elegir uno borra el otro automáticamente — no es un error.</span></div><a href="#filtros">Parte 4 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Estado" y "Pagado" son cosas distintas</strong><span>Confirmada/pendiente es el estado de la cita; el ✅/☐ de "Pagado" es aparte, y se cambia tocando directo su icono.</span></div><a href="#tabla">Parte 5 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Cancelar y Eliminar piden un PIN de seguridad</strong><span>No es la contraseña de inicio de sesión — ten el PIN a la mano antes de intentarlo.</span></div><a href="#acciones">Parte 6 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Agendar manualmente" ≠ "Registrar cita directa"</strong><span>La primera es para una cita futura real (valida horarios, puede avisar por WhatsApp); la segunda es para anotar algo ya pasado, con datos libres, sin avisar nunca a la clienta.</span></div><a href="#comparacion">Parte 7 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Día completo" viene marcado por default al bloquear horario</strong><span>Desmárcalo si tu intención era bloquear solo unas horas.</span></div><a href="#bloqueos">Parte 8 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>El % de descuento al editar usa el monto original de la cita</strong><span>No el precio de lista actual del servicio, para que el cálculo siga siendo correcto aunque los precios hayan cambiado después.</span></div><a href="#editar">Parte 11 ↑</a></div></li>
+      </ol>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<footer>Guía de referencia interna sobre <strong>admin/citas.html</strong> — no requiere iniciar sesión para consultarla; los datos de ejemplo en las tablas y calendarios no son reales.</footer>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if (!sections.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+
+  var current = null;
+  function setActive(id){
+    if (id === current) return;
+    current = id;
+    links.forEach(function(a){ a.classList.remove('is-active'); });
+    var a = byId[id];
+    if (a) {
+      a.classList.add('is-active');
+      if (a.scrollIntoView) a.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting) setActive(entry.target.id);
+    });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(function(s){ io.observe(s); });
+  setActive(sections[0].id);
+})();
+</script>
+
+</body>
+</html>

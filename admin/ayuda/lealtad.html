@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex" />
+<title>Tutorial: Panel de Lealtad</title>
+<meta name="description" content="Recorrido guiado por la sección Lealtad del panel de administración de Origen Brows: el mensaje masivo vs. el reenvío individual, la tabla y la gráfica de progreso." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#f7f1e6; --surface:#ffffff; --surface-2:#fbf6ec;
+    --ink:#211b15; --ink-soft:#453c30; --muted:#766b5c;
+    --border:rgba(33,29,25,0.13); --border-strong:rgba(33,29,25,0.22);
+    --gold:#b9a37f; --gold-dark:#8a7350; --gold-ghost:rgba(185,163,127,0.16);
+    --ok:#1f6b34; --ok-bg:#d9ecdd;
+    --warn:#86611a; --warn-bg:#f4e3c1;
+    --alert:#a13a2f; --alert-bg:#f3d9d3;
+    --info:#1a4a73; --info-bg:#d6e4f0;
+    --shadow:0 10px 30px rgba(33,29,25,0.10); --radius:16px;
+    --font-head:'Fraunces', Georgia, serif;
+    --font-body:'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15110c; --surface:#211b15; --surface-2:#241d16;
+      --ink:#f3ece0; --ink-soft:#dccdb4; --muted:#a89a84;
+      --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.2);
+      --gold:#d3ba8d; --gold-dark:#b9a37f; --gold-ghost:rgba(211,186,141,0.14);
+      --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+      --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+      --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+      --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+      --shadow:0 12px 34px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15110c; --surface:#211b15; --surface-2:#241d16;
+    --ink:#f3ece0; --ink-soft:#dccdb4; --muted:#a89a84;
+    --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.2);
+    --gold:#d3ba8d; --gold-dark:#b9a37f; --gold-ghost:rgba(211,186,141,0.14);
+    --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+    --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+    --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+    --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+    --shadow:0 12px 34px rgba(0,0,0,0.5);
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:var(--font-head); text-wrap:balance; color:var(--ink); margin:0; }
+  p{ margin:0; }
+  img{ max-width:100%; }
+  a{ color:inherit; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 clamp(16px,4vw,40px); }
+
+  .hero{ padding:56px 0 34px; border-bottom:1px solid var(--border);
+    background:radial-gradient(620px 260px at 88% -60px, var(--gold-ghost), transparent 70%); }
+  .eyebrow{ font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dark); font-weight:700; margin-bottom:12px; display:block; }
+  .hero h1{ font-size:clamp(2rem,3.4vw + 1rem,2.9rem); font-weight:600; max-width:16ch; }
+  .hero .lede{ margin-top:14px; max-width:60ch; color:var(--ink-soft); font-size:1.05rem; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .hero-chip{ font-size:0.8rem; padding:7px 13px; border-radius:100px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .hero-chip b{ color:var(--ink); }
+
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; padding:40px 0 100px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; gap:0; padding-top:0; } }
+
+  .toc{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-size:0.85rem; max-height:calc(100vh - 48px); overflow-y:auto; }
+  .toc-label{ font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .toc a{ text-decoration:none; color:var(--muted); padding:7px 10px; border-radius:9px; border-left:2px solid transparent; transition:background 140ms ease,color 140ms ease; }
+  .toc a:hover{ background:var(--gold-ghost); color:var(--ink); }
+  .toc a.is-active{ color:var(--ink); font-weight:600; border-left-color:var(--gold-dark); background:var(--gold-ghost); }
+
+  @media (max-width:900px){
+    .toc{ position:sticky; top:0; z-index:20; flex-direction:row; gap:6px; max-height:none; overflow-x:auto; overflow-y:hidden;
+      background:var(--bg); padding:12px clamp(16px,4vw,40px); border-bottom:1px solid var(--border); margin:0 calc(-1 * clamp(16px,4vw,40px));
+      -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .toc::-webkit-scrollbar{ display:none; }
+    .toc-label{ display:none; }
+    .toc a{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; border-radius:100px; background:var(--surface); border:1px solid var(--border); }
+    .toc a.is-active{ border-color:var(--gold-dark); }
+  }
+
+  .content{ display:flex; flex-direction:column; gap:64px; min-width:0; }
+  section.step{ scroll-margin-top:88px; }
+  .step-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+  .step-num{ font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--gold-dark); flex-shrink:0; }
+  .step h2{ font-size:clamp(1.35rem,1.6vw + 0.9rem,1.7rem); font-weight:600; }
+  .step-intro{ color:var(--ink-soft); max-width:66ch; margin:10px 0 26px; }
+
+  .mk{ background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:clamp(14px,2.4vw,26px); box-shadow:var(--shadow); margin-bottom:22px; overflow-x:auto; }
+  .mk-caption{ font-size:0.74rem; color:var(--muted); margin-top:12px; text-align:center; }
+
+  .tag{ display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%;
+    background:var(--gold-dark); color:#fff; font-size:0.66rem; font-weight:700; font-family:var(--font-body); flex-shrink:0; box-shadow:0 0 0 2px var(--surface-2); }
+
+  .legend{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .legend li{ display:flex; gap:12px; align-items:flex-start; }
+  .legend .tag{ margin-top:3px; }
+  .legend strong{ color:var(--ink); }
+  .legend span.d{ display:block; color:var(--ink-soft); font-size:0.92rem; margin-top:2px; }
+
+  .callout{ border-radius:14px; padding:14px 16px; font-size:0.92rem; display:flex; gap:10px; margin-top:18px; border:1px solid transparent; }
+  .callout .ic{ flex-shrink:0; font-size:1.05rem; line-height:1.3; }
+  .callout.tip{ background:var(--gold-ghost); border-color:var(--border); color:var(--ink-soft); }
+  .callout.warn{ background:var(--warn-bg); color:var(--warn); border-color:transparent; }
+  .callout.warn strong{ color:inherit; }
+
+  .rep-dark{ --rd-bg:#211b15; --rd-white:#fff; }
+  .mk-btnrow{ display:flex; flex-wrap:wrap; gap:9px; }
+  .mk-btn{ font-family:var(--font-body); font-size:0.78rem; font-weight:600; border-radius:10px; padding:9px 14px;
+    border:1.5px solid var(--rd-bg); color:var(--rd-bg); background:transparent; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .mk-btn.primary{ background:var(--rd-bg); color:#fff; }
+
+  .mk-table{ width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; font-size:0.76rem; min-width:640px; }
+  .mk-table th,.mk-table td{ padding:9px 10px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; }
+  .mk-table th{ background:var(--surface-2); font-weight:700; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); }
+  .pill{ display:inline-block; padding:3px 10px; border-radius:100px; font-size:0.68rem; font-weight:700; background:var(--warn-bg); color:var(--warn); }
+  .muted-cell{ color:var(--muted); }
+
+  .chat-bubble{ background:#dcf8c6; color:#1a2e14; border-radius:14px 14px 4px 14px; padding:12px 16px; font-size:0.86rem; max-width:420px; box-shadow:var(--shadow); position:relative; }
+  .chat-wrap{ display:flex; flex-direction:column; gap:6px; }
+  .chat-label{ font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:700; }
+
+  .cmp{ display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:720px){ .cmp{ grid-template-columns:1fr 1fr; } }
+  .cmp-card{ border:1.5px solid var(--border-strong); border-radius:16px; padding:20px 22px; background:var(--surface); }
+  .cmp-card.b{ border-color:var(--gold-dark); box-shadow:0 0 0 1px var(--gold-dark) inset; }
+  .cmp-card h3{ font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .cmp-card .for{ font-size:0.82rem; color:var(--muted); margin-bottom:14px; }
+  .cmp-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; font-size:0.88rem; }
+  .cmp-list li{ display:flex; gap:8px; }
+  .cmp-list li::before{ content:"—"; color:var(--gold-dark); flex-shrink:0; }
+
+  .mk-chart{ background:var(--surface); border-radius:12px; padding:16px; }
+  .bars{ display:flex; align-items:flex-end; gap:10px; height:120px; }
+  .bars .bar{ flex:1; background:var(--rd-bg,#211b15); border-radius:4px 4px 0 0; position:relative; display:flex; align-items:flex-end; justify-content:center; }
+  .bars .bar.gold{ background:var(--gold-dark); }
+  .bars .bar span.count{ position:absolute; top:-18px; font-size:0.7rem; font-weight:700; }
+  .bars-labels{ display:flex; gap:10px; margin-top:6px; }
+  .bars-labels span{ flex:1; text-align:center; font-size:0.62rem; color:var(--muted); }
+
+  .recap-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; counter-reset:recap; }
+  .recap-list li{ counter-increment:recap; display:flex; gap:14px; align-items:flex-start; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+  .recap-list li::before{ content:counter(recap); font-family:var(--font-head); font-weight:700; color:var(--gold-dark); background:var(--gold-ghost); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem; }
+  .recap-list a{ font-size:0.78rem; color:var(--gold-dark); text-decoration:none; font-weight:600; white-space:nowrap; }
+  .recap-list .body{ flex:1; }
+  .recap-list strong{ display:block; margin-bottom:2px; }
+  .recap-list span{ color:var(--ink-soft); font-size:0.9rem; }
+  .recap-row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+
+  footer{ border-top:1px solid var(--border); padding:26px clamp(16px,4vw,40px) 40px; color:var(--muted); font-size:0.82rem; max-width:1180px; margin:0 auto; }
+
+  .tutorial-topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: #211b15; color: #fff;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 12px clamp(16px,4vw,40px);
+  }
+  .tutorial-topbar .back-link {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600;
+    color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .tutorial-topbar .back-link:hover { border-color: #fff; }
+  .tutorial-switch { display: flex; gap: 6px; flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tutorial-switch a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 6px 12px;
+    border-radius: 100px; white-space: nowrap; transition: background 140ms ease, color 140ms ease;
+  }
+  .tutorial-switch a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tutorial-switch a.is-current { background: #b9a37f; color: #2a2113; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="tutorial-topbar">
+    <a class="back-link" href="../lealtad.html">← Volver al panel</a>
+    <nav class="tutorial-switch">
+    <a href="citas.html">📅 Citas</a>
+    <a href="clientas.html">👥 Clientas</a>
+    <a href="lealtad.html" class="is-current">🎁 Lealtad</a>
+    <a href="reportes.html">📊 Reportes</a>
+    <a href="finanzas.html">💰 Finanzas</a>
+    </nav>
+  </div>
+<div class="hero">
+  <div class="container">
+    <span class="eyebrow">Guía interna · Panel de administración</span>
+    <h1>Recorrido por la sección Lealtad</h1>
+    <p class="lede">Todo lo que hay en <strong>Panel → Lealtad</strong>: el mensaje masivo del programa, el reenvío individual de progreso, la tabla y la gráfica de ciclos.</p>
+    <div class="hero-meta">
+      <span class="hero-chip">📍 <b>admin/lealtad.html</b></span>
+      <span class="hero-chip">🧭 5 partes</span>
+      <span class="hero-chip">⚠️ 3 puntos donde te puedes atorar</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="layout">
+  <nav class="toc" id="toc">
+    <span class="toc-label">En este recorrido</span>
+    <a href="#encabezado">1. Los 3 botones de arriba</a>
+    <a href="#tabla">2. La tabla</a>
+    <a href="#reenviar">3. Reenviar confirmación</a>
+    <a href="#grafica">4. La gráfica de ciclos</a>
+    <a href="#resumen">5. Dónde te atoras</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 1 -->
+    <section class="step" id="encabezado">
+      <div class="step-head"><span class="step-num">01</span><h2>Los 3 botones de arriba</h2></div>
+      <p class="step-intro">Esta página gira en torno a mandar WhatsApps sobre el programa de lealtad — pero hay <strong>dos mensajes distintos</strong> que puedes enviar, y estos botones solo cubren uno de ellos.</p>
+
+      <div class="mk">
+        <div class="mk-btnrow rep-dark">
+          <span class="mk-btn">Ver mensaje <span class="tag">1</span></span>
+          <span class="mk-btn primary">Avisar a todas (WhatsApp) <span class="tag">2</span></span>
+          <span class="mk-btn">Actualizar <span class="tag">3</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Ver mensaje</strong><span class="d">Muestra en una ventana el texto exacto del mensaje <strong>masivo</strong> de anuncio del programa (usando "Ana" como nombre de ejemplo). No manda nada — es solo para revisarlo antes de decidir enviarlo.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Avisar a todas (WhatsApp)</strong><span class="d">Envía ese mismo mensaje masivo a <strong>todas</strong> las clientas que tengan al menos una cita confirmada — no solo a las que están cerca de su recompensa. Pide confirmar antes de mandarlo, mostrando el texto una vez más.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Actualizar</strong><span class="d">Vuelve a cargar la tabla y la gráfica con los datos más recientes.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> "Ver mensaje" y "Avisar a todas" son sobre el <strong>anuncio general</strong> del programa ("ahora tenemos programa de lealtad…"). El mensaje de <em>progreso personal</em> de cada clienta ("llevas 3 de 5 visitas…") es otro totalmente distinto, y se manda fila por fila desde la tabla — ver la parte 3.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step" id="tabla">
+      <div class="step-head"><span class="step-num">02</span><h2>La tabla</h2></div>
+      <p class="step-intro">Solo aparecen clientas con al menos una cita confirmada — si aún no tienes ninguna, verás "Todavía no hay citas confirmadas" en vez de la tabla.</p>
+
+      <div class="mk">
+        <table class="mk-table">
+          <thead><tr><th>Clienta</th><th>Teléfono</th><th>Visitas</th><th>Progreso</th><th>Recompensa</th><th>Notificación preferida</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Fernanda Ríos</td><td>55 1122 3344</td><td>3</td><td>3 de 5</td>
+              <td class="muted-cell">— <span class="tag">1</span></td>
+              <td>WhatsApp <span class="tag">2</span></td>
+              <td><span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Reenviar confirmación <span class="tag">3</span></span></td>
+            </tr>
+            <tr>
+              <td>Karla Domínguez</td><td>55 9988 7766</td><td>5</td><td>5 de 5</td>
+              <td><span class="pill">🎁 Disponible</span></td>
+              <td class="muted-cell">Sin definir</td>
+              <td><span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Reenviar confirmación</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Columna "Recompensa"</strong><span class="d">Solo dice "🎁 Disponible" cuando la clienta completó su ciclo (llegó al número de visitas del programa). Antes de eso muestra un guion.</span></div></li>
+        <li><span class="tag">2</span><div><strong>"Notificación preferida"</strong><span class="d">Es de solo lectura: refleja lo que la clienta eligió por su cuenta (WhatsApp, correo, ambos o ninguna). No se cambia desde aquí. "Sin definir" significa que todavía no ha elegido nada.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Reenviar confirmación</strong><span class="d">Manda el mensaje de <em>progreso individual</em> a esa clienta en particular. Ver la parte 3.</span></div></li>
+      </ol>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" id="reenviar">
+      <div class="step-head"><span class="step-num">03</span><h2>Reenviar confirmación</h2></div>
+      <p class="step-intro">A diferencia del botón masivo de la parte 1, este es personal — usa los datos reales de esa clienta.</p>
+
+      <div class="mk">
+        <div class="chat-wrap">
+          <span class="chat-label">Vista previa antes de enviar, con los datos reales de la clienta</span>
+          <div class="chat-bubble">Hola Fernanda, este es tu progreso en el programa de lealtad de Origen Brows &amp; Hair Studio: llevas 3 de 5 visitas confirmadas. Te faltan 2 visitas más para tu 20% de descuento.</div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Antes de mandarlo, te lo muestra completo</strong><span class="d">El cuadro de confirmación trae el mensaje exacto, ya armado con el nombre, las visitas y el porcentaje de esa clienta — no hay sorpresas sobre qué va a recibir.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Si ya completó su ciclo</strong><span class="d">El mismo botón cambia el texto del mensaje: en vez de decir cuánto le falta, le confirma que ya tiene su descuento disponible.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Úsalo cuando una clienta pregunte "¿cuántas visitas llevo?" o cuando quieras recordarle que ya se ganó su descuento — es más directo que explicárselo a mano.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" id="grafica">
+      <div class="step-head"><span class="step-num">04</span><h2>La gráfica de ciclos</h2></div>
+      <p class="step-intro">Debajo de la tabla, un vistazo rápido de cuántas clientas llevan cada número de visitas.</p>
+
+      <div class="mk">
+        <div class="mk-chart">
+          <div class="bars">
+            <div class="bar" style="height:35%;"><span class="count">4</span></div>
+            <div class="bar" style="height:55%;"><span class="count">7</span></div>
+            <div class="bar" style="height:20%;"><span class="count">2</span></div>
+            <div class="bar" style="height:70%;"><span class="count">9</span></div>
+            <div class="bar gold" style="height:45%;"><span class="count">6 <span class="tag">1</span></span></div>
+          </div>
+          <div class="bars-labels"><span>1 visita</span><span>2 visitas</span><span>3 visitas</span><span>4 visitas</span><span>5 visitas</span></div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>La barra dorada</strong><span class="d">Es siempre la última del ciclo — las clientas que ya completaron sus visitas y tienen la recompensa disponible. Las demás barras, en negro, son las que van a la mitad del camino.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Sirve para ver de un vistazo si tienes muchas clientas a punto de ganar su descuento (barra dorada alta) — buen momento para mandar el aviso masivo de la parte 1 y motivar a las que les falta poco.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="step" id="resumen">
+      <div class="step-head"><span class="step-num">05</span><h2>Resumen: los 3 lugares donde te puedes atorar</h2></div>
+      <p class="step-intro">Para consultar rápido.</p>
+
+      <ol class="recap-list">
+        <li><div class="recap-row"><div class="body"><strong>Hay dos mensajes de WhatsApp distintos, no uno</strong><span>El anuncio masivo del programa (parte 1) y el progreso personal por clienta (parte 3) son textos completamente diferentes.</span></div><a href="#encabezado">Parte 1 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Avisar a todas" no filtra por cercanía a la recompensa</strong><span>Le llega a cualquier clienta con al menos una cita confirmada, aunque apenas lleve una visita.</span></div><a href="#encabezado">Parte 1 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Notificación preferida" no se edita aquí</strong><span>Es solo de lectura — la elige la propia clienta; "Sin definir" no es un error, solo significa que no ha elegido todavía.</span></div><a href="#tabla">Parte 2 ↑</a></div></li>
+      </ol>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<footer>Guía de referencia interna sobre <strong>admin/lealtad.html</strong> — no requiere iniciar sesión para consultarla; los datos de ejemplo no son reales.</footer>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if (!sections.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  function setActive(id){
+    if (id === current) return;
+    current = id;
+    links.forEach(function(a){ a.classList.remove('is-active'); });
+    var a = byId[id];
+    if (a) { a.classList.add('is-active'); if (a.scrollIntoView) a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){ if (entry.isIntersecting) setActive(entry.target.id); });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+  setActive(sections[0].id);
+})();
+</script>
+
+</body>
+</html>
