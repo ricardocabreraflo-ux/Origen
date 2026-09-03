@@ -234,7 +234,15 @@
       </div></div>
     </div>
       <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
-      <a class="sidebar-link sidebar-help" href="https://claude.ai/code/artifact/e861e4c0-a6c9-4464-b495-8d0d11f972a7" target="_blank" rel="noopener" title="Tutoriales del panel"><span class="sidebar-icon">❓</span><span class="sidebar-label">Ayuda</span></a>
+    <div class="sidebar-group sidebar-help" data-group>
+      <div class="sidebar-group-head">
+        <button type="button" class="sidebar-link"><span class="sidebar-icon">❓</span><span class="sidebar-label">Ayuda</span></button>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar tutoriales"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="https://claude.ai/code/artifact/e861e4c0-a6c9-4464-b495-8d0d11f972a7" target="_blank" rel="noopener">📅 Citas</a>
+      </div></div>
+    </div>
     </div>
     <div class="sidebar-user" id="sidebar-user"></div>
     <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
@@ -1857,8 +1865,9 @@
         return;
       }
       const chevBtn = e.target.closest(".sidebar-chev-btn");
-      if (chevBtn) {
-        chevBtn.closest("[data-group]").classList.toggle("is-open");
+      const groupToggle = e.target.closest(".sidebar-group-head .sidebar-link:not([href])");
+      if (chevBtn || groupToggle) {
+        (chevBtn || groupToggle).closest("[data-group]").classList.toggle("is-open");
         return;
       }
       if (isMobile() && e.target.closest(".sidebar-link, .sidebar-sublink")) {
