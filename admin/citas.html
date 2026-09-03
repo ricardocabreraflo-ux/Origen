@@ -39,13 +39,6 @@
   .paid-toggle:disabled { cursor: wait; opacity: 0.6; }
   .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
-  .admin-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .help-link {
-    display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600;
-    color: var(--color-muted); border: 1.5px solid rgba(33,29,25,0.15); padding: 6px 14px;
-    border-radius: 100px; background: var(--color-white); transition: color 140ms ease, border-color 140ms ease;
-  }
-  .help-link:hover { color: var(--color-primary); border-color: var(--color-primary); }
 
   @media (max-width: 640px) {
     .row-actions {
@@ -241,6 +234,7 @@
       </div></div>
     </div>
       <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
+      <a class="sidebar-link sidebar-help" href="https://claude.ai/code/artifact/e861e4c0-a6c9-4464-b495-8d0d11f972a7" target="_blank" rel="noopener" title="Tutoriales del panel"><span class="sidebar-icon">❓</span><span class="sidebar-label">Ayuda</span></a>
     </div>
     <div class="sidebar-user" id="sidebar-user"></div>
     <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
@@ -248,12 +242,7 @@
   <div class="sidebar-backdrop"></div>
   <div class="admin-wrap" id="admin-wrap">
   <div class="admin-header">
-    <div class="admin-title-row">
-      <h1>Citas</h1>
-      <a class="help-link" href="https://claude.ai/code/artifact/e861e4c0-a6c9-4464-b495-8d0d11f972a7" target="_blank" rel="noopener" title="Ver el tutorial de esta sección">
-        <span aria-hidden="true">❓</span> Ayuda
-      </a>
-    </div>
+    <h1>Citas</h1>
     <div class="row-actions">
       <button class="btn btn-primary btn-sm" id="manual-open-btn">+ Agendar manualmente</button>
       <button class="btn btn-outline btn-sm" id="direct-open-btn">🕓 Registrar cita directa</button>

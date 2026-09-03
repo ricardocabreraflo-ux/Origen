@@ -1152,7 +1152,9 @@ img { max-width: 100%; display: block; }
   width: auto;
   opacity: 1;
 }
-.sidebar-nav { display: flex; flex-direction: column; gap: 4px; min-height: 0; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; min-height: 0; flex: 1; }
+/* Botón de ayuda: pegado al fondo del riel, justo arriba de la sesión activa. */
+.sidebar-help { margin-top: auto; }
 .sidebar-link {
   display: flex;
   align-items: center;
