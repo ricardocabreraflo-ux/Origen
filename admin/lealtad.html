@@ -105,6 +105,10 @@
     </div>
     </div>
     <div class="sidebar-user" id="sidebar-user"></div>
+    <div class="presence-popover" id="presence-popover" hidden>
+      <div class="presence-popover-title">Conectadas ahora</div>
+      <ul class="presence-list" id="presence-list"></ul>
+    </div>
     <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
   </nav>
   <div class="sidebar-backdrop"></div>
@@ -404,13 +408,75 @@
     const el = document.getElementById("sidebar-user");
     const user = window.netlifyIdentity.currentUser();
     if (!el || !user) return;
-    el.innerHTML = `<span class="sidebar-avatar">${initialsFromUser(user)}</span><span class="sidebar-label">Sesión activa<br><strong>${user.email}</strong></span>`;
+    el.innerHTML = `<span class="sidebar-avatar-wrap"><span class="sidebar-avatar">${initialsFromUser(user)}</span><span class="sidebar-active-count" id="presence-count" hidden></span></span><span class="sidebar-label">Sesión activa<br><strong>${user.email}</strong></span>`;
+  }
+
+  function renderPresenceList(active) {
+    const list = document.getElementById("presence-list");
+    const badge = document.getElementById("presence-count");
+    if (!list || !badge) return;
+    const user = window.netlifyIdentity.currentUser();
+    const selfEmail = user && user.email;
+    if (!active || !active.length) {
+      badge.hidden = true;
+      list.innerHTML = '<li class="presence-empty">No se pudo cargar</li>';
+      return;
+    }
+    badge.hidden = false;
+    badge.textContent = String(active.length);
+    list.innerHTML = active
+      .map((a) => {
+        const label = a.full_name || (a.email || "").split("@")[0];
+        return `<li><span class="presence-dot"></span>${label}${a.email === selfEmail ? " (tú)" : ""}</li>`;
+      })
+      .join("");
+  }
+
+  let presenceTimer = null;
+  async function sendHeartbeat() {
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/heartbeat", { method: "POST", headers });
+      if (!res.ok) return;
+      const data = await res.json();
+      renderPresenceList(data.active);
+    } catch {}
+  }
+  function startPresence() {
+    sendHeartbeat();
+    if (presenceTimer) clearInterval(presenceTimer);
+    presenceTimer = setInterval(sendHeartbeat, 30000);
+    const avatarWrap = document.querySelector("#sidebar-user .sidebar-avatar-wrap");
+    const popover = document.getElementById("presence-popover");
+    if (!avatarWrap || !popover) return;
+    avatarWrap.onclick = (e) => {
+      e.stopPropagation();
+      if (!popover.hidden) {
+        popover.hidden = true;
+        return;
+      }
+      popover.hidden = false;
+      const rect = avatarWrap.getBoundingClientRect();
+      const sidebar = avatarWrap.closest(".admin-sidebar");
+      const sidebarRight = sidebar ? sidebar.getBoundingClientRect().right : rect.right;
+      popover.style.top = `${Math.max(8, rect.bottom - popover.offsetHeight)}px`;
+      popover.style.left = `${sidebarRight + 14}px`;
+    };
+    if (!startPresence.docClickBound) {
+      startPresence.docClickBound = true;
+      document.addEventListener("click", (e) => {
+        if (!popover.hidden && !popover.contains(e.target) && !e.target.closest(".sidebar-avatar-wrap")) {
+          popover.hidden = true;
+        }
+      });
+    }
   }
 
   function showAdmin() {
     loginGate.hidden = true;
     adminShell.hidden = false;
     renderSidebarUser();
+    startPresence();
     loadClients();
   }
   function showLogin() {

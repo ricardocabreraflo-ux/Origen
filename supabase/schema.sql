@@ -332,3 +332,12 @@ alter table waitlist enable row level security;
 -- en el estudio) — la administradora la marca ella misma, no se calcula
 -- sola a partir del estado ni del monto capturado.
 alter table bookings add column if not exists paid boolean not null default false;
+
+-- Presencia de administradoras en el panel: cada pestaña abierta manda un
+-- "heartbeat" cada 30s; se considera "conectada" a quien mandó uno en los
+-- últimos 90s (ver ACTIVE_WINDOW_SECONDS en heartbeat.js).
+create table if not exists admin_presence (
+  email text primary key,
+  full_name text,
+  last_seen timestamptz not null default now()
+);

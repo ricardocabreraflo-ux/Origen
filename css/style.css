@@ -1202,6 +1202,10 @@ img { max-width: 100%; display: block; }
   gap: 10px;
   min-width: 0;
 }
+.sidebar-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
 .sidebar-avatar {
   flex-shrink: 0;
   width: 30px;
@@ -1226,6 +1230,82 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
 }
 .sidebar-user .sidebar-label strong { display: block; color: rgba(255,255,255,0.85); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+
+/* Globo verde con el número de administradoras con sesión activa ahora
+   mismo (mandaron un "heartbeat" en los últimos 90s). Se oculta hasta
+   tener una respuesta real del servidor, para no mostrar un número falso. */
+.sidebar-active-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 50%;
+  background: #3fb950;
+  border: 2px solid var(--color-primary);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-avatar-wrap { cursor: pointer; }
+/* position: fixed (con top/left puestos por JS al abrir) para que no se
+   recorte contra el overflow-x: hidden del riel angosto del sidebar. */
+.presence-popover {
+  position: fixed;
+  background: var(--color-cream-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  min-width: 190px;
+  z-index: 60;
+}
+.presence-popover::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  bottom: 14px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-cream-soft);
+  transform: rotate(45deg);
+}
+.presence-popover-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  margin-bottom: 8px;
+}
+.presence-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.presence-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--color-dark);
+}
+.presence-list .presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3fb950;
+  flex-shrink: 0;
+}
+.presence-list .presence-empty { color: var(--color-muted); }
 
 /* Botón de cerrar sesión: color distinto (no el dorado de "activo") para
    que no se confunda con un enlace más del menú. */
