@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex" />
+<title>Tutorial: Panel de Finanzas</title>
+<meta name="description" content="Recorrido guiado por la sección Finanzas del panel de administración de Origen Brows: sueldo objetivo, punto de equilibrio, gastos y estado de resultados." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#f7f1e6; --surface:#ffffff; --surface-2:#fbf6ec;
+    --ink:#211b15; --ink-soft:#453c30; --muted:#766b5c;
+    --border:rgba(33,29,25,0.13); --border-strong:rgba(33,29,25,0.22);
+    --gold:#b9a37f; --gold-dark:#8a7350; --gold-ghost:rgba(185,163,127,0.16);
+    --ok:#1f6b34; --ok-bg:#d9ecdd;
+    --warn:#86611a; --warn-bg:#f4e3c1;
+    --alert:#a13a2f; --alert-bg:#f3d9d3;
+    --info:#1a4a73; --info-bg:#d6e4f0;
+    --shadow:0 10px 30px rgba(33,29,25,0.10); --radius:16px;
+    --font-head:'Fraunces', Georgia, serif;
+    --font-body:'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15110c; --surface:#211b15; --surface-2:#241d16;
+      --ink:#f3ece0; --ink-soft:#dccdb4; --muted:#a89a84;
+      --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.2);
+      --gold:#d3ba8d; --gold-dark:#b9a37f; --gold-ghost:rgba(211,186,141,0.14);
+      --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+      --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+      --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+      --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+      --shadow:0 12px 34px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15110c; --surface:#211b15; --surface-2:#241d16;
+    --ink:#f3ece0; --ink-soft:#dccdb4; --muted:#a89a84;
+    --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.2);
+    --gold:#d3ba8d; --gold-dark:#b9a37f; --gold-ghost:rgba(211,186,141,0.14);
+    --ok:#8fe0a8; --ok-bg:rgba(31,107,52,0.32);
+    --warn:#e8c481; --warn-bg:rgba(134,97,26,0.36);
+    --alert:#f0a495; --alert-bg:rgba(161,58,47,0.32);
+    --info:#8fc1ec; --info-bg:rgba(26,74,115,0.38);
+    --shadow:0 12px 34px rgba(0,0,0,0.5);
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:var(--font-head); text-wrap:balance; color:var(--ink); margin:0; }
+  p{ margin:0; }
+  img{ max-width:100%; }
+  a{ color:inherit; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 clamp(16px,4vw,40px); }
+
+  .hero{ padding:56px 0 34px; border-bottom:1px solid var(--border);
+    background:radial-gradient(620px 260px at 88% -60px, var(--gold-ghost), transparent 70%); }
+  .eyebrow{ font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dark); font-weight:700; margin-bottom:12px; display:block; }
+  .hero h1{ font-size:clamp(2rem,3.4vw + 1rem,2.9rem); font-weight:600; max-width:16ch; }
+  .hero .lede{ margin-top:14px; max-width:60ch; color:var(--ink-soft); font-size:1.05rem; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .hero-chip{ font-size:0.8rem; padding:7px 13px; border-radius:100px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .hero-chip b{ color:var(--ink); }
+
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; padding:40px 0 100px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; gap:0; padding-top:0; } }
+
+  .toc{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-size:0.85rem; max-height:calc(100vh - 48px); overflow-y:auto; }
+  .toc-label{ font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .toc a{ text-decoration:none; color:var(--muted); padding:7px 10px; border-radius:9px; border-left:2px solid transparent; transition:background 140ms ease,color 140ms ease; }
+  .toc a:hover{ background:var(--gold-ghost); color:var(--ink); }
+  .toc a.is-active{ color:var(--ink); font-weight:600; border-left-color:var(--gold-dark); background:var(--gold-ghost); }
+
+  @media (max-width:900px){
+    .toc{ position:sticky; top:0; z-index:20; flex-direction:row; gap:6px; max-height:none; overflow-x:auto; overflow-y:hidden;
+      background:var(--bg); padding:12px clamp(16px,4vw,40px); border-bottom:1px solid var(--border); margin:0 calc(-1 * clamp(16px,4vw,40px));
+      -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .toc::-webkit-scrollbar{ display:none; }
+    .toc-label{ display:none; }
+    .toc a{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; border-radius:100px; background:var(--surface); border:1px solid var(--border); }
+    .toc a.is-active{ border-color:var(--gold-dark); }
+  }
+
+  .content{ display:flex; flex-direction:column; gap:64px; min-width:0; }
+  section.step{ scroll-margin-top:88px; }
+  .step-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+  .step-num{ font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--gold-dark); flex-shrink:0; }
+  .step h2{ font-size:clamp(1.3rem,1.5vw + 0.9rem,1.6rem); font-weight:600; }
+  .step-intro{ color:var(--ink-soft); max-width:66ch; margin:10px 0 26px; }
+
+  .mk{ background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:clamp(14px,2.4vw,26px); box-shadow:var(--shadow); margin-bottom:22px; overflow-x:auto; }
+
+  .tag{ display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%;
+    background:var(--gold-dark); color:#fff; font-size:0.66rem; font-weight:700; font-family:var(--font-body); flex-shrink:0; box-shadow:0 0 0 2px var(--surface-2); }
+
+  .legend{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .legend li{ display:flex; gap:12px; align-items:flex-start; }
+  .legend .tag{ margin-top:3px; }
+  .legend strong{ color:var(--ink); }
+  .legend span.d{ display:block; color:var(--ink-soft); font-size:0.92rem; margin-top:2px; }
+
+  .callout{ border-radius:14px; padding:14px 16px; font-size:0.92rem; display:flex; gap:10px; margin-top:18px; border:1px solid transparent; }
+  .callout .ic{ flex-shrink:0; font-size:1.05rem; line-height:1.3; }
+  .callout.tip{ background:var(--gold-ghost); border-color:var(--border); color:var(--ink-soft); }
+  .callout.warn{ background:var(--warn-bg); color:var(--warn); border-color:transparent; }
+  .callout.alert{ background:var(--alert-bg); color:var(--alert); }
+  .callout strong{ color:inherit; }
+
+  .rep-dark{ --rd-bg:#211b15; --rd-white:#fff; }
+  .mk-btn{ font-family:var(--font-body); font-size:0.78rem; font-weight:600; border-radius:10px; padding:9px 14px;
+    border:1.5px solid var(--rd-bg,var(--ink)); color:var(--rd-bg,var(--ink)); background:transparent; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .mk-btn.primary{ background:var(--rd-bg,var(--ink)); color:#fff; }
+
+  .mk-tabs{ display:flex; gap:16px; border-bottom:1.5px solid var(--border); }
+  .mk-tabs span{ padding:8px 2px; font-size:0.88rem; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1.5px; }
+  .mk-tabs span.active{ color:var(--ink); font-weight:700; border-color:var(--gold-dark); }
+
+  .mk-form{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 22px; max-width:520px; }
+  .kind-row{ display:flex; gap:14px; flex-wrap:wrap; font-size:0.8rem; margin-bottom:14px; }
+  .kind-row span{ display:flex; align-items:center; gap:6px; }
+  .kind-row .dot{ width:14px; height:14px; border-radius:50%; border:1.5px solid var(--border-strong); }
+  .kind-row .dot.sel{ border-color:var(--gold-dark); background:var(--gold-dark); }
+  .mk-form-row{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+  .mk-form-row label{ font-size:0.75rem; font-weight:700; color:var(--ink-soft); }
+  .mk-field{ font-size:0.8rem; padding:8px 11px; border-radius:9px; border:1.5px solid var(--border-strong); background:var(--surface-2); color:var(--ink-soft); }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
+  .stat-card{ background:var(--surface); border-radius:12px; padding:12px 14px; }
+  .stat-card .lbl{ font-size:0.66rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); margin-bottom:4px; }
+  .stat-card .val{ font-family:var(--font-head); font-size:1.15rem; font-weight:600; }
+  .stat-card.neg .val{ color:var(--alert); }
+
+  .be-banner{ background:linear-gradient(135deg,#211b15,#3a3025); color:#fff; border-radius:16px; padding:20px 22px; }
+  .be-banner .lbl{ font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.7; margin-bottom:4px; }
+  .be-banner .head{ font-family:var(--font-head); font-size:1.5rem; font-weight:600; margin-bottom:4px; }
+  .be-banner .sub{ font-size:0.82rem; opacity:0.85; }
+  .be-banner .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; margin-top:14px; }
+  .be-banner .grid .num{ font-size:1.05rem; font-weight:700; }
+  .be-banner .grid .glbl{ font-size:0.7rem; opacity:0.75; }
+
+  .cmp{ display:grid; grid-template-columns:1fr; gap:14px; }
+  @media (min-width:720px){ .cmp{ grid-template-columns:1fr 1fr; } }
+  .cmp-card{ border:1.5px solid var(--border-strong); border-radius:16px; padding:18px 20px; background:var(--surface); }
+  .cmp-card h3{ font-size:0.98rem; margin-bottom:6px; }
+  .cmp-card p{ font-size:0.86rem; color:var(--ink-soft); }
+
+  .mk-modal{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; max-width:320px; }
+  .mk-action{ display:flex; align-items:center; gap:10px; width:100%; padding:9px 11px; border-radius:10px; background:var(--surface-2); border:1.5px solid var(--border); font-size:0.82rem; font-weight:600; margin-bottom:7px; }
+  .mk-action.danger{ color:var(--alert); border-color:var(--alert-bg); }
+
+  .mk-table{ width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; font-size:0.78rem; min-width:560px; }
+  .mk-table th,.mk-table td{ padding:9px 10px; text-align:left; border-bottom:1px solid var(--border); }
+  .mk-table th{ background:var(--surface-2); font-weight:700; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); }
+  .mk-table td.num, .mk-table th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .mk-table tr.total td{ font-weight:700; border-top:2px solid var(--border-strong); }
+  .mk-table tr.total td.neg{ color:var(--alert); }
+
+  .recap-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; counter-reset:recap; }
+  .recap-list li{ counter-increment:recap; display:flex; gap:14px; align-items:flex-start; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+  .recap-list li::before{ content:counter(recap); font-family:var(--font-head); font-weight:700; color:var(--gold-dark); background:var(--gold-ghost); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem; }
+  .recap-list a{ font-size:0.78rem; color:var(--gold-dark); text-decoration:none; font-weight:600; white-space:nowrap; }
+  .recap-list .body{ flex:1; }
+  .recap-list strong{ display:block; margin-bottom:2px; }
+  .recap-list span{ color:var(--ink-soft); font-size:0.9rem; }
+  .recap-row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+
+  footer{ border-top:1px solid var(--border); padding:26px clamp(16px,4vw,40px) 40px; color:var(--muted); font-size:0.82rem; max-width:1180px; margin:0 auto; }
+
+  .tutorial-topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: #211b15; color: #fff;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 12px clamp(16px,4vw,40px);
+  }
+  .tutorial-topbar .back-link {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600;
+    color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .tutorial-topbar .back-link:hover { border-color: #fff; }
+  .tutorial-switch { display: flex; gap: 6px; flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tutorial-switch a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 6px 12px;
+    border-radius: 100px; white-space: nowrap; transition: background 140ms ease, color 140ms ease;
+  }
+  .tutorial-switch a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tutorial-switch a.is-current { background: #b9a37f; color: #2a2113; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="tutorial-topbar">
+    <a class="back-link" href="../finanzas.html">← Volver al panel</a>
+    <nav class="tutorial-switch">
+    <a href="citas.html">📅 Citas</a>
+    <a href="clientas.html">👥 Clientas</a>
+    <a href="lealtad.html">🎁 Lealtad</a>
+    <a href="reportes.html">📊 Reportes</a>
+    <a href="finanzas.html" class="is-current">💰 Finanzas</a>
+    </nav>
+  </div>
+<div class="hero">
+  <div class="container">
+    <span class="eyebrow">Guía interna · Panel de administración</span>
+    <h1>Recorrido por la sección Finanzas</h1>
+    <p class="lede">Todo lo que hay en <strong>Panel → Finanzas</strong>: tu sueldo objetivo, el punto de equilibrio, los gastos y el estado de resultados mes a mes.</p>
+    <div class="hero-meta">
+      <span class="hero-chip">📍 <b>admin/finanzas.html</b></span>
+      <span class="hero-chip">🧭 8 partes</span>
+      <span class="hero-chip">⚠️ 5 puntos donde te puedes atorar</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="layout">
+  <nav class="toc" id="toc">
+    <span class="toc-label">En este recorrido</span>
+    <a href="#pestanas">1. Las 2 pestañas</a>
+    <a href="#sueldo">2. Configura tu sueldo</a>
+    <a href="#equilibrio">3. El punto de equilibrio</a>
+    <a href="#agregar">4. Agregar un gasto</a>
+    <a href="#editar">5. Editar, desactivar o eliminar</a>
+    <a href="#grafica">6. La gráfica</a>
+    <a href="#contabilidad">7. Contabilidad</a>
+    <a href="#resumen">8. Dónde te atoras</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 1 -->
+    <section class="step" id="pestanas">
+      <div class="step-head"><span class="step-num">01</span><h2>Las 2 pestañas</h2></div>
+      <p class="step-intro">Finanzas no tiene botones en el encabezado — se organiza en dos pestañas debajo del título.</p>
+
+      <div class="mk">
+        <div class="mk-tabs">
+          <span class="active">Gastos y punto de equilibrio <span class="tag">1</span></span>
+          <span>Contabilidad <span class="tag">2</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Gastos y punto de equilibrio</strong><span class="d">La pestaña con la que siempre abre. Aquí capturas tus gastos y ves cuántas citas necesitas al mes para no perder dinero (partes 2 a 6).</span></div></li>
+        <li><span class="tag">2</span><div><strong>Contabilidad</strong><span class="d">El estado de resultados mes a mes: ingresos, gastos y utilidad ya sumados por mes (parte 7).</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Los accesos "Gastos fijos", "Inversiones" y "Contabilidad" del submenú lateral de Finanzas son atajos a estas mismas pestañas y tarjetas — te traen aquí y bajan la página o cambian de pestaña automáticamente, no abren nada distinto.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step" id="sueldo">
+      <div class="step-head"><span class="step-num">02</span><h2>Configura tu sueldo objetivo</h2></div>
+      <p class="step-intro">Esta tarjeta solo aparece la primera vez, antes de que tengas un gasto fijo de categoría "Sueldo" activo.</p>
+
+      <div class="mk">
+        <div class="mk-form" style="text-align:center;">
+          <h3 style="font-size:1.05rem;">Configura tu sueldo objetivo</h3>
+          <p style="font-size:0.85rem;color:var(--muted);margin:8px 0 16px;">Para calcular tu punto de equilibrio necesitamos saber cuánto quieres ganar cada mes. Puedes cambiarlo después.</p>
+          <span class="mk-btn primary rep-dark">Empezar con $20,000 MXN/mes <span class="tag">1</span></span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>El botón guarda el gasto de inmediato</strong><span class="d">No abre un formulario para escribir tu propio número — al tocarlo, crea directo un gasto fijo real de $20,000 MXN/mes en la categoría "Sueldo". Es un punto de partida, no una vista previa.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> si tu sueldo objetivo real no es $20,000, tienes que ir después a la tabla de "Gastos fijos" (parte 5), abrir ese gasto de "Sueldo" y editarlo al monto correcto — el botón no te deja escribirlo antes de guardar.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" id="equilibrio">
+      <div class="step-head"><span class="step-num">03</span><h2>El punto de equilibrio</h2></div>
+      <p class="step-intro">Una vez que tienes sueldo y gastos fijos capturados, aparecen las tarjetas de resumen y el banner oscuro de punto de equilibrio.</p>
+
+      <div class="mk">
+        <div class="stat-grid" style="margin-bottom:16px;">
+          <div class="stat-card"><div class="lbl">Ingresos del mes</div><div class="val">$14,200</div></div>
+          <div class="stat-card"><div class="lbl">Gastos del mes</div><div class="val">$9,800</div></div>
+          <div class="stat-card"><div class="lbl">Utilidad del mes</div><div class="val">$4,400</div></div>
+        </div>
+        <div class="be-banner">
+          <div class="lbl">Punto de equilibrio mensual</div>
+          <div class="head">$9,800 MXN al mes <span class="tag" style="box-shadow:0 0 0 2px #3a3025;">1</span></div>
+          <div class="sub">Ticket promedio real: $580 (de 22 citas cobradas) · costo variable estimado por cita: $85</div>
+          <div class="grid">
+            <div><div class="num">17</div><div class="glbl">citas al mes</div></div>
+            <div><div class="num">4</div><div class="glbl">citas a la semana</div></div>
+            <div><div class="num">2</div><div class="glbl">citas por día que atiendes</div></div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>"$X MXN al mes" es tu suma de gastos fijos</strong><span class="d">Incluye tu sueldo objetivo más renta, servicios, etc. — es lo mínimo que necesitas facturar en ingresos variables cada mes solo para no perder dinero (sin contar tus gastos variables).</span></div></li>
+        <li><div><strong>"Ticket promedio real" vs. "estimado"</strong><span class="d">Si ya tienes suficientes citas cobradas con monto capturado, usa el promedio real de lo que cobras. Si no, usa tus precios de lista como estimado — el texto te dice cuál de los dos está usando.</span></div></li>
+      </ol>
+
+      <div class="cmp" style="margin-top:18px;">
+        <div class="cmp-card">
+          <h3>Caso normal</h3>
+          <p>Ves el banner con los números de citas que necesitas. Entre más completos tengas tus gastos fijos y tus montos cobrados reales, más preciso es el cálculo.</p>
+        </div>
+        <div class="cmp-card" style="border-color:var(--alert);">
+          <h3 style="color:var(--alert);">"No se alcanza con los precios actuales"</h3>
+          <p>Aparece en vez del banner normal cuando tu costo variable por cita es igual o mayor a tu ticket promedio. Significa que ninguna cantidad de citas te hace llegar al punto de equilibrio — hay que revisar precios o gastos variables antes, no agendar más.</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> si no ves ni el banner ni el mensaje de "no se alcanza", es que todavía te falta capturar el sueldo (parte 2) o algún gasto fijo (parte 4) — el cálculo necesita ambos para poder mostrarse.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" id="agregar">
+      <div class="step-head"><span class="step-num">04</span><h2>Agregar un gasto</h2></div>
+      <p class="step-intro">Con "+ Agregar gasto", encima de la tabla de "Gastos fijos". El formulario cambia según el tipo que elijas.</p>
+
+      <div class="mk">
+        <div class="mk-form">
+          <div class="kind-row">
+            <span><span class="dot sel"></span>Fijo <span class="tag">1</span></span>
+            <span><span class="dot"></span>Variable <span class="tag">2</span></span>
+            <span><span class="dot"></span>Inversión <span class="tag">3</span></span>
+          </div>
+          <div class="mk-form-row"><label>Descripción</label><span class="mk-field">Renta del local</span></div>
+          <div class="mk-form-row"><label>Categoría</label><span class="mk-field">Renta</span></div>
+          <div class="mk-form-row"><label>Monto (MXN)</label><span class="mk-field">4,500</span></div>
+          <div class="mk-form-row"><label>Desde cuándo aplica</label><span class="mk-field">01/03/2026</span></div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Fijo</strong><span class="d">Se captura una vez y cuenta automáticamente cada mes desde la fecha que indiques, hasta que lo desactives (parte 5). Ej. renta, sueldo, internet.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Variable</strong><span class="d">Un pago puntual con su fecha exacta — el campo cambia a "Fecha del gasto" en vez de "Desde cuándo aplica". Ej. una compra de insumos.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Inversión</strong><span class="d">Un gasto grande que se reparte entre varios meses. Aparecen dos campos extra: "Desde cuándo empieza a contar" y "Repartir en cuántos meses" — y la etiqueta del monto cambia a "Monto total (MXN)", porque tú escribes el total y el sistema calcula solo cuánto es por mes.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Para Inversión, el "Monto" que escribes es el <strong>total</strong> de todo el gasto (ej. $30,000 de remodelación), no lo que se cobra por mes — eso lo calcula solo la tabla dividiendo entre los meses que indiques.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="step" id="editar">
+      <div class="step-head"><span class="step-num">05</span><h2>Editar, desactivar o eliminar</h2></div>
+      <p class="step-intro">Toca cualquier fila de las tablas de Gastos fijos, Inversiones o Variables para abrir sus acciones.</p>
+
+      <div class="mk">
+        <div class="mk-modal">
+          <h3 style="font-size:1rem;">Renta del local</h3>
+          <p style="font-size:0.8rem;color:var(--muted);margin:2px 0 12px;">Renta · $4,500</p>
+          <div class="mk-action">✏️ Editar gasto</div>
+          <div class="mk-action">⏸️ Desactivar gasto <span class="tag">1</span></div>
+          <div class="mk-action danger">🗑️ Eliminar gasto <span class="tag">2</span></div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Desactivar (solo gastos fijos activos)</strong><span class="d">Le pone fecha de fin a hoy y deja de contarlo hacia adelante, pero <strong>conserva su historial</strong> — sigue apareciendo correctamente en los meses pasados de Contabilidad (parte 7). Úsalo cuando un gasto fijo dejó de aplicar (ej. cancelaste un servicio).</span></div></li>
+        <li><span class="tag">2</span><div><strong>Eliminar</strong><span class="d">Borra el gasto por completo, incluyendo su efecto en meses pasados. No se puede deshacer.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> para un gasto fijo que ya no aplica, usa <strong>Desactivar</strong>, no Eliminar — si lo eliminas, tu estado de resultados de meses anteriores (parte 7) también pierde ese gasto y deja de cuadrar con lo que realmente pasó.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="step" id="grafica">
+      <div class="step-head"><span class="step-num">06</span><h2>La gráfica de punto de equilibrio</h2></div>
+      <p class="step-intro">Debajo de las tablas de gastos: tres líneas contra el número de citas al mes.</p>
+
+      <div class="mk">
+        <svg viewBox="0 0 400 200" width="100%" height="200" style="background:var(--surface);border-radius:12px;">
+          <line x1="40" y1="20" x2="40" y2="170" stroke="var(--border-strong)"/>
+          <line x1="40" y1="170" x2="380" y2="170" stroke="var(--border-strong)"/>
+          <line x1="40" y1="130" x2="380" y2="130" stroke="var(--muted)" stroke-dasharray="6 5" stroke-width="2"/>
+          <line x1="40" y1="150" x2="380" y2="60" stroke="var(--ink)" stroke-width="2.5"/>
+          <line x1="40" y1="165" x2="380" y2="30" stroke="var(--gold-dark)" stroke-width="2.5"/>
+          <circle cx="230" cy="95" r="5" fill="var(--ink)"/>
+          <line x1="230" y1="95" x2="230" y2="170" stroke="var(--ink)" stroke-dasharray="3 4"/>
+          <text x="230" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">17 citas</text>
+        </svg>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:0.78rem;color:var(--ink-soft);">
+          <span>🟨 Ingresos</span><span>⬛ Costos totales</span><span>➖ Costos fijos</span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><div><strong>Dónde se cruzan las líneas de ingresos y costos totales</strong><span class="d">Ese punto (marcado con el punto negro) es tu punto de equilibrio — el mismo número de "citas al mes" que ya viste en el banner de la parte 3, solo que aquí puedes ver visualmente qué tan lejos o cerca estás según cuántas citas agendas.</span></div></li>
+      </ol>
+    </section>
+
+    <!-- 7 -->
+    <section class="step" id="contabilidad">
+      <div class="step-head"><span class="step-num">07</span><h2>Contabilidad</h2></div>
+      <p class="step-intro">La segunda pestaña: un estado de resultados mes a mes, para llevar tu contabilidad sin tener que sumar nada a mano.</p>
+
+      <div class="mk">
+        <div style="margin-bottom:10px;font-size:0.8rem;color:var(--muted);">Selector: <span class="mk-field" style="font-size:0.78rem;">Últimos 6 meses <span class="tag">1</span></span></div>
+        <table class="mk-table">
+          <thead><tr><th>Concepto</th><th class="num">Ene</th><th class="num">Feb</th><th class="num">Mar</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            <tr><td>Ingresos</td><td class="num">$11,200</td><td class="num">$13,400</td><td class="num">$14,200</td><td class="num">$38,800</td></tr>
+            <tr><td>Gastos variables</td><td class="num">$2,100</td><td class="num">$2,400</td><td class="num">$2,650</td><td class="num">$7,150</td></tr>
+            <tr><td>Gastos fijos</td><td class="num">$9,800</td><td class="num">$9,800</td><td class="num">$9,800</td><td class="num">$29,400</td></tr>
+            <tr class="total"><td>Utilidad</td><td class="num">$-700</td><td class="num">$1,200</td><td class="num">$1,750</td><td class="num">$2,250</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Selector de meses</strong><span class="d">3, 6 o 12 meses hacia atrás desde hoy. Cambiarlo vuelve a calcular toda la tabla al instante.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Los meses con utilidad negativa se marcan en rojo — útil para detectar de un vistazo si un mes malo fue cosa de una sola vez o si se repite seguido.</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="step" id="resumen">
+      <div class="step-head"><span class="step-num">08</span><h2>Resumen: los 5 lugares donde te puedes atorar</h2></div>
+      <p class="step-intro">Para consultar rápido.</p>
+
+      <ol class="recap-list">
+        <li><div class="recap-row"><div class="body"><strong>"Empezar con $20,000 MXN/mes" guarda el gasto de inmediato</strong><span>No es una vista previa — edítalo después si tu sueldo real es otro monto.</span></div><a href="#sueldo">Parte 2 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"No se alcanza con los precios actuales" no es un error</strong><span>Significa que tu costo variable por cita iguala o supera tu ticket promedio — hay que revisar precios, no agendar más.</span></div><a href="#equilibrio">Parte 3 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>El banner de punto de equilibrio necesita sueldo + gastos fijos</strong><span>Si no aparece ni el banner ni el aviso de "no se alcanza", todavía falta capturar alguno de los dos.</span></div><a href="#equilibrio">Parte 3 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>En Inversión, el monto que escribes es el total, no el mensual</strong><span>El monto por mes lo calcula solo la tabla, dividiendo entre los meses que indiques.</span></div><a href="#agregar">Parte 4 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Desactivar conserva el historial; Eliminar lo borra también de meses pasados</strong><span>Para un gasto fijo que ya no aplica, casi siempre quieres Desactivar.</span></div><a href="#editar">Parte 5 ↑</a></div></li>
+      </ol>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<footer>Guía de referencia interna sobre <strong>admin/finanzas.html</strong> — no requiere iniciar sesión para consultarla; los datos de ejemplo no son reales.</footer>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if (!sections.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  function setActive(id){
+    if (id === current) return;
+    current = id;
+    links.forEach(function(a){ a.classList.remove('is-active'); });
+    var a = byId[id];
+    if (a) { a.classList.add('is-active'); if (a.scrollIntoView) a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){ if (entry.isIntersecting) setActive(entry.target.id); });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+  setActive(sections[0].id);
+})();
+</script>
+
+</body>
+</html>
