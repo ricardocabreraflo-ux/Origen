@@ -341,3 +341,5 @@ create table if not exists admin_presence (
   full_name text,
   last_seen timestamptz not null default now()
 );
+
+alter table admin_presence enable row level security;
