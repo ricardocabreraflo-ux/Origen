@@ -478,6 +478,12 @@
       link.addEventListener("click", (e) => {
         e.preventDefault();
         openAyuda(link.getAttribute("href"));
+        // El enlace se queda con el foco al tocarlo, y eso por sí solo ya
+        // mantiene expandido el riel angosto (:focus-within) — sin esto, en
+        // celular el menú se queda abierto encima del panel de Ayuda.
+        link.blur();
+        const sidebarEl = document.querySelector(".admin-sidebar");
+        if (sidebarEl) sidebarEl.classList.remove("is-pinned");
       });
     });
     if (closeBtn) closeBtn.addEventListener("click", closeAyuda);

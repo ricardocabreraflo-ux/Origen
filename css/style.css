@@ -1093,10 +1093,15 @@ img { max-width: 100%; display: block; }
   overflow-x: hidden;
   transition: width 240ms cubic-bezier(.4,0,.2,1);
 }
-.admin-sidebar:hover,
 .admin-sidebar:focus-within,
 .admin-sidebar.is-pinned {
   width: 226px;
+}
+/* El expandido "al pasar el mouse" solo debe pasar con mouse/trackpad real —
+   en pantallas táctiles el :hover se puede quedar "atorado" después de tocar
+   un enlace, dejando el menú abierto encima del contenido. */
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover { width: 226px; }
 }
 .sidebar-pin {
   display: none;
@@ -1114,10 +1119,12 @@ img { max-width: 100%; display: block; }
   font-size: 0.72rem;
   cursor: pointer;
 }
-.admin-sidebar:hover .sidebar-pin,
 .admin-sidebar:focus-within .sidebar-pin,
 .admin-sidebar.is-pinned .sidebar-pin {
   display: flex;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-pin { display: flex; }
 }
 .sidebar-brand {
   display: flex;
@@ -1146,11 +1153,13 @@ img { max-width: 100%; display: block; }
   opacity: 0;
   transition: opacity 140ms ease;
 }
-.admin-sidebar:hover .sidebar-brand-text,
 .admin-sidebar:focus-within .sidebar-brand-text,
 .admin-sidebar.is-pinned .sidebar-brand-text {
   width: auto;
   opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-brand-text { width: auto; opacity: 1; }
 }
 .sidebar-nav { display: flex; flex-direction: column; gap: 4px; min-height: 0; flex: 1; }
 /* Botón de ayuda: pegado al fondo del riel, justo arriba de la sesión activa. */
@@ -1183,12 +1192,14 @@ img { max-width: 100%; display: block; }
   pointer-events: none;
   transition: opacity 120ms ease;
 }
-.admin-sidebar:hover .sidebar-label,
 .admin-sidebar:focus-within .sidebar-label,
 .admin-sidebar.is-pinned .sidebar-label {
   opacity: 1;
   position: static;
   pointer-events: auto;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-label { opacity: 1; position: static; pointer-events: auto; }
 }
 /* Quién tiene la sesión abierta: las iniciales se ven siempre, aunque el
    riel esté angosto; el nombre/correo solo aparece al expandirse, igual
@@ -1352,12 +1363,14 @@ img { max-width: 100%; display: block; }
   transition: opacity 120ms ease;
 }
 .sidebar-chev-btn:hover { color: var(--color-white); }
-.admin-sidebar:hover .sidebar-chev-btn,
 .admin-sidebar:focus-within .sidebar-chev-btn,
 .admin-sidebar.is-pinned .sidebar-chev-btn {
   width: 26px;
   opacity: 1;
   pointer-events: auto;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-chev-btn { width: 26px; opacity: 1; pointer-events: auto; }
 }
 .sidebar-chev-btn .sidebar-chev { transition: transform 200ms ease; display: inline-block; }
 .sidebar-group.is-open .sidebar-chev-btn .sidebar-chev { transform: rotate(90deg); }
@@ -1369,7 +1382,16 @@ img { max-width: 100%; display: block; }
 }
 .sidebar-sub > div { overflow: hidden; }
 .sidebar-group.is-open .sidebar-sub { grid-template-rows: 1fr; }
-.admin-sidebar:not(:hover):not(:focus-within):not(.is-pinned) .sidebar-sub { grid-template-rows: 0fr !important; }
+/* En pantallas táctiles no hay :hover real (puede quedar "atorado" después
+   de un toque), así que ahí el submenú depende solo de focus-within/is-pinned.
+   En mouse/trackpad sí se suma :hover, para poder previsualizar el submenú
+   con solo pasar el cursor. */
+@media not all and (hover: hover) {
+  .admin-sidebar:not(:focus-within):not(.is-pinned) .sidebar-sub { grid-template-rows: 0fr !important; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:not(:hover):not(:focus-within):not(.is-pinned) .sidebar-sub { grid-template-rows: 0fr !important; }
+}
 .sidebar-sublink {
   display: flex;
   align-items: center;
