@@ -135,6 +135,7 @@
   </nav>
   <div class="sidebar-backdrop"></div>
   <div class="admin-wrap" id="admin-wrap">
+  <div id="admin-wrap-content">
   <div class="admin-header">
     <h1>Clientas</h1>
     <div class="row-actions">
@@ -200,6 +201,15 @@
       </div>
       <p id="empty-state" hidden>No hay clientas con esos filtros.</p>
     </div>
+  </div>
+  </div>
+
+  <div class="ayuda-panel" id="ayuda-panel" hidden>
+    <div class="ayuda-panel-bar">
+      <strong>❓ Ayuda</strong>
+      <button type="button" class="ayuda-panel-close" id="ayuda-panel-close" aria-label="Cerrar ayuda">✕ Cerrar</button>
+    </div>
+    <iframe id="ayuda-frame" title="Tutorial del panel"></iframe>
   </div>
   </div>
 </div>
@@ -420,6 +430,42 @@
       backdrop.addEventListener("click", () => sidebar.classList.remove("is-pinned"));
     }
   });
+
+  // Panel de Ayuda: los tutoriales se abren aquí mismo, en un iframe que
+  // reemplaza el contenido normal de la página — no se navega a otra
+  // pestaña. El botón "Volver al panel" de esas páginas, cuando detecta
+  // que está incrustado, en vez de navegar le avisa a esta página (por
+  // postMessage) que lo cierre.
+  (function () {
+    const wrapContent = document.getElementById("admin-wrap-content");
+    const panel = document.getElementById("ayuda-panel");
+    const frame = document.getElementById("ayuda-frame");
+    const closeBtn = document.getElementById("ayuda-panel-close");
+    if (!wrapContent || !panel || !frame) return;
+
+    function openAyuda(url) {
+      frame.src = url;
+      wrapContent.hidden = true;
+      panel.hidden = false;
+      panel.scrollIntoView({ behavior: "instant", block: "start" });
+    }
+    function closeAyuda() {
+      panel.hidden = true;
+      wrapContent.hidden = false;
+      frame.src = "about:blank";
+    }
+
+    document.querySelectorAll(".sidebar-help .sidebar-sublink").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        openAyuda(link.getAttribute("href"));
+      });
+    });
+    if (closeBtn) closeBtn.addEventListener("click", closeAyuda);
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.source === "origen-ayuda" && e.data.type === "close") closeAyuda();
+    });
+  })();
 
   function initialsFromUser(user) {
     const fullName = (user.user_metadata && user.user_metadata.full_name) || "";
