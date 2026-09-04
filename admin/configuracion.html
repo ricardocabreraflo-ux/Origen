@@ -138,7 +138,7 @@
     <div class="row-actions" style="margin-bottom:16px;">
       <label class="btn btn-primary btn-sm" style="cursor:pointer;">
         + Subir foto
-        <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp" hidden />
+        <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp" multiple hidden />
       </label>
       <span class="form-hint" id="gallery-upload-hint"></span>
     </div>
@@ -350,48 +350,55 @@
     });
   }
 
-  galleryUploadInput.addEventListener("change", async () => {
-    const file = galleryUploadInput.files[0];
-    galleryUploadInput.value = "";
-    if (!file) return;
-
+  async function uploadOneFile(file) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      galleryUploadHint.textContent = "Formato no soportado. Usa JPG, PNG o WEBP.";
-      galleryUploadHint.classList.add("is-error");
-      return;
+      throw new Error(`"${file.name}": formato no soportado (usa JPG, PNG o WEBP).`);
     }
     if (file.size > 4.5 * 1024 * 1024) {
-      galleryUploadHint.textContent = "La foto pesa demasiado (máximo 4.5 MB). Usa una foto más ligera.";
-      galleryUploadHint.classList.add("is-error");
-      return;
+      throw new Error(`"${file.name}": pesa demasiado (máximo 4.5 MB).`);
+    }
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const dataBase64 = dataUrl.split(",")[1];
+
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    const res = await fetch("/api/upload-gallery-photo", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ dataBase64, contentType: file.type, alt: "" }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(`"${file.name}": ${body.message || "no se pudo subir."}`);
+  }
+
+  // Se suben una por una (no en paralelo) para no saturar la conexión con
+  // varias fotos en base64 al mismo tiempo, y para poder mostrar cuál va.
+  galleryUploadInput.addEventListener("change", async () => {
+    const files = Array.from(galleryUploadInput.files);
+    galleryUploadInput.value = "";
+    if (!files.length) return;
+
+    galleryUploadHint.classList.remove("is-error");
+    const errors = [];
+    for (let i = 0; i < files.length; i++) {
+      galleryUploadHint.textContent = files.length > 1 ? `Subiendo ${i + 1} de ${files.length}…` : "Subiendo…";
+      try {
+        await uploadOneFile(files[i]);
+      } catch (err) {
+        errors.push(err.message || "No se pudo subir.");
+      }
     }
 
-    galleryUploadHint.textContent = "Subiendo…";
-    galleryUploadHint.classList.remove("is-error");
-
-    try {
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      const dataBase64 = dataUrl.split(",")[1];
-
-      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
-      const res = await fetch("/api/upload-gallery-photo", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ dataBase64, contentType: file.type, alt: "" }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.message || "No se pudo subir la foto.");
-
-      galleryUploadHint.textContent = "Foto subida.";
-      await loadGallery();
-    } catch (err) {
-      galleryUploadHint.textContent = err.message || "No se pudo subir la foto.";
+    await loadGallery();
+    if (errors.length) {
+      galleryUploadHint.textContent = errors.join(" ");
       galleryUploadHint.classList.add("is-error");
+    } else {
+      galleryUploadHint.textContent = files.length > 1 ? `${files.length} fotos subidas.` : "Foto subida.";
     }
   });
 
