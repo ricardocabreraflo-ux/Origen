@@ -22,6 +22,14 @@
     // configuracion.html): una cuenta sin rol asignado ve todo (por
     // compatibilidad con cuentas ya existentes); si tiene rol, solo entra
     // aquí si "contenido" está entre sus secciones permitidas.
+    //
+    // Importante: esto NO llama a netlifyIdentity.init() — Decap CMS ya lo
+    // hace solo al montar su backend de git-gateway. Llamarlo dos veces
+    // (una aquí y otra desde Decap) hacía que el modal de inicio de
+    // sesión se abriera y cerrara en bucle. Por eso Decap se sigue
+    // cargando siempre igual que antes (script normal, sin condición) y
+    // lo único que se agrega es una capa visual encima si la cuenta no
+    // tiene permiso.
     function getUserRole(user) {
       const roles = user.app_metadata && user.app_metadata.roles;
       return Array.isArray(roles) && roles.length ? roles[0] : "administrador";
@@ -31,33 +39,28 @@
       const sections = user.app_metadata && user.app_metadata.sections;
       return Array.isArray(sections) && sections.includes("contenido");
     }
-    function loadDecapCms() {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js";
-      document.body.appendChild(script);
-    }
     function denyContenidoAccess() {
+      if (document.getElementById("contenido-denied-overlay")) return;
       const notice = document.createElement("div");
-      notice.style.cssText = "max-width:420px;margin:120px auto;text-align:center;font-family:sans-serif;padding:0 24px;";
-      notice.innerHTML = "<h1 style='font-size:1.4rem;'>Sin acceso</h1><p>Tu cuenta no tiene permiso para editar el contenido. Pide a una administradora que te lo active desde Configuración → Usuarios y permisos.</p>";
+      notice.id = "contenido-denied-overlay";
+      notice.style.cssText = "position:fixed;inset:0;z-index:999999;background:#211b15;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;";
+      notice.innerHTML = "<div style='max-width:420px;font-family:sans-serif;'><h1 style='font-size:1.4rem;'>Sin acceso</h1><p>Tu cuenta no tiene permiso para editar el contenido. Pide a una administradora que te lo active desde Configuración → Usuarios y permisos.</p></div>";
       document.body.appendChild(notice);
     }
     if (window.netlifyIdentity) {
       window.netlifyIdentity.on("init", (user) => {
         if (!user) {
-          // Sin sesión: se deja que Decap CMS muestre su propia pantalla de
-          // inicio de sesión (no hay nada que restringir todavía).
           window.netlifyIdentity.on("login", () => {
             document.location.href = "/admin/";
           });
-          loadDecapCms();
           return;
         }
-        if (canSeeContenido(user)) loadDecapCms();
-        else denyContenidoAccess();
+        if (!canSeeContenido(user)) denyContenidoAccess();
       });
-      window.netlifyIdentity.init();
     }
   </script>
+
+  <!-- Decap CMS: lee automáticamente admin/config.yml -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 </body>
 </html>

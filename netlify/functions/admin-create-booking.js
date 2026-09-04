@@ -70,8 +70,8 @@ exports.handler = async (event, context) => {
   // para anotar citas que ya pasaron y no se habían capturado, no para
   // crear reservas nuevas con hold/depósito pendiente en el pasado.
   if (isPast && !directEntry) return badRequest("La fecha debe ser hoy o una fecha futura.");
-  if (paymentMethod !== "cash" && paymentMethod !== "transfer") {
-    return badRequest("La forma de pago debe ser 'cash' o 'transfer'.");
+  if (paymentMethod !== "cash" && paymentMethod !== "card" && paymentMethod !== "transfer") {
+    return badRequest("La forma de pago debe ser 'cash', 'card' o 'transfer'.");
   }
   if (directEntry && totalAmount !== undefined && (!Number.isFinite(Number(totalAmount)) || Number(totalAmount) < 0)) {
     return badRequest("El monto debe ser un número mayor o igual a 0.");
@@ -132,7 +132,11 @@ exports.handler = async (event, context) => {
 
     // Una cita con fecha pasada ya sucedió — no tiene sentido dejarla
     // "pendiente" esperando un depósito que ya se resolvió en su momento.
-    const isCash = paymentMethod === "cash" || isPast;
+    // Efectivo y tarjeta (terminal en el estudio) se cobran ahí mismo, así
+    // que ambos confirman la cita de inmediato igual que antes solo hacía
+    // "cash" — la diferencia entre los dos queda en payment_method, para
+    // que Finanzas/Reportes los distinga.
+    const isPaidNow = paymentMethod === "cash" || paymentMethod === "card" || isPast;
     const now = new Date();
     const loyaltyStatus = await getLoyaltyStatus(supabase, config.loyalty, customerPhone);
     const effectiveTotalAmount =
@@ -152,10 +156,10 @@ exports.handler = async (event, context) => {
       booking_date: date,
       start_time: `${slot.startTime}:00`,
       end_time: `${slot.endTime}:00`,
-      status: isCash ? "confirmed" : "pending",
+      status: isPaidNow ? "confirmed" : "pending",
       expires_at: new Date(now.getTime() + holdMinutes * 60000).toISOString(),
-      confirmed_at: isCash ? now.toISOString() : null,
-      payment_method: isCash ? "cash" : "bank_transfer",
+      confirmed_at: isPaidNow ? now.toISOString() : null,
+      payment_method: isPast ? "cash" : paymentMethod === "card" ? "mercado_pago" : paymentMethod === "cash" ? "cash" : "bank_transfer",
       reward_redemption: loyaltyStatus.hasReward,
     };
 
@@ -177,7 +181,7 @@ exports.handler = async (event, context) => {
     // donde no tiene sentido crear un evento de Calendar para algo que ya
     // pasó. El aviso de lealtad para estos casos se manda aparte, más
     // abajo, con el estado actualizado en vez del mensaje de bienvenida/premio.
-    if (isCash && !isPast) {
+    if (isPaidNow && !isPast) {
       try {
         await runPostConfirmSideEffects(supabase, data);
       } catch (sideEffectErr) {
@@ -213,7 +217,7 @@ exports.handler = async (event, context) => {
         }
         // Si notifyLoyalty es false, no se manda ningún WhatsApp — nunca
         // la confirmación de cita, que no aplica a una fecha ya pasada.
-      } else if (isCash) {
+      } else if (isPaidNow) {
         await sendWhatsAppTemplate(data.customer_phone, "confirmacion_cita_pagada_origen", "es_MX", [
           {
             type: "body",
