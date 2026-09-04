@@ -234,6 +234,7 @@
       </div></div>
     </div>
       <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
+      <a class="sidebar-link" href="configuracion.html"><span class="sidebar-icon">⚙️</span><span class="sidebar-label">Configuración</span></a>
     <div class="sidebar-group sidebar-help" data-group>
       <div class="sidebar-group-head">
         <button type="button" class="sidebar-link"><span class="sidebar-icon">❓</span><span class="sidebar-label">Ayuda</span></button>
@@ -1996,6 +1997,52 @@
       .join("");
   }
 
+  const ALL_SECTIONS = ["citas", "clientas", "lealtad", "reportes", "finanzas", "contenido", "configuracion"];
+  const SECTION_BY_HREF = {
+    "citas.html": "citas",
+    "clientas.html": "clientas",
+    "lealtad.html": "lealtad",
+    "reportes.html": "reportes",
+    "finanzas.html": "finanzas",
+    "index.html": "contenido",
+    "configuracion.html": "configuracion",
+  };
+  function getUserRole(user) {
+    const roles = user.app_metadata && user.app_metadata.roles;
+    return Array.isArray(roles) && roles.length ? roles[0] : "administrador";
+  }
+  function getUserSections(user) {
+    if (getUserRole(user) === "administrador") return ALL_SECTIONS;
+    const sections = user.app_metadata && user.app_metadata.sections;
+    return Array.isArray(sections) ? sections : [];
+  }
+  function showAccessDenied() {
+    const wrap = document.getElementById("admin-wrap-content") || document.getElementById("admin-wrap");
+    if (wrap) {
+      wrap.innerHTML = '<div style="padding:80px 24px;text-align:center;max-width:420px;margin:0 auto;"><h1 style="font-size:1.6rem;">Sin acceso</h1><p class="section-note">Tu cuenta no tiene permiso para ver esta sección. Pide a una administradora que te lo active desde Configuración &rarr; Usuarios y permisos.</p></div>';
+    }
+  }
+  // Oculta del menú las secciones que esta cuenta no puede ver, y bloquea la
+  // página si la sección propia tampoco está permitida. Devuelve false
+  // cuando hay que detenerse (no cargar los datos de la página).
+  function applySectionAccess(pageSection) {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return true;
+    const sections = getUserSections(user);
+    document.querySelectorAll(".admin-sidebar .sidebar-link[href]").forEach((link) => {
+      const href = link.getAttribute("href").split("#")[0];
+      const section = SECTION_BY_HREF[href];
+      if (!section) return;
+      const target = link.closest("[data-group]") || link;
+      target.hidden = !sections.includes(section);
+    });
+    if (pageSection && !sections.includes(pageSection)) {
+      showAccessDenied();
+      return false;
+    }
+    return true;
+  }
+
   let presenceTimer = null;
   async function sendHeartbeat() {
     try {
@@ -2041,6 +2088,7 @@
     adminShell.hidden = false;
     renderSidebarUser();
     startPresence();
+    if (!applySectionAccess("citas")) return;
     loadBookings();
 
     // Los submenús del menú lateral (Bloqueos de horario / Horario

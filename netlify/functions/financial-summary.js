@@ -7,7 +7,7 @@
 //   citas necesarias = costos fijos / (ticket promedio - costo variable por cita)
 // en vez de ignorar el costo variable por cita como en la primera versión.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSection } = require("./_lib/requireAdmin");
 const { loadConfig } = require("./_lib/config");
 const { computeRange, toISODate } = require("./_lib/period");
 const { parsePriceAmount } = require("./_lib/money");
@@ -38,7 +38,7 @@ function monthlyEquivalent(expense) {
 
 exports.handler = async (event, context) => {
   try {
-    requireAdmin(context);
+    requireSection(context, "finanzas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

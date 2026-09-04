@@ -12,4 +12,48 @@ function requireAdmin(context) {
   return user;
 }
 
-module.exports = { requireAdmin };
+const ALL_SECTIONS = ["citas", "clientas", "lealtad", "reportes", "finanzas", "contenido", "configuracion"];
+
+// Antes de que existieran roles, cualquier persona con sesión iniciada
+// tenía acceso completo — para no dejar fuera a cuentas ya existentes que
+// nadie ha configurado todavía, una cuenta sin rol asignado se sigue
+// tratando como administradora (acceso total) hasta que alguien le
+// asigne un rol distinto desde Configuración.
+function getUserRole(user) {
+  const roles = user.app_metadata && user.app_metadata.roles;
+  return Array.isArray(roles) && roles.length ? roles[0] : "administrador";
+}
+
+// Una administradora siempre ve todas las secciones — no se puede
+// restringir por accidente y dejar el negocio sin nadie con acceso total.
+function getUserSections(user) {
+  if (getUserRole(user) === "administrador") return ALL_SECTIONS;
+  const sections = user.app_metadata && user.app_metadata.sections;
+  return Array.isArray(sections) ? sections : [];
+}
+
+function requireSection(context, section) {
+  const user = requireAdmin(context);
+  if (!getUserSections(user).includes(section)) {
+    const err = new Error("Esta cuenta no tiene permiso para ver esta sección.");
+    err.statusCode = 403;
+    throw err;
+  }
+  return user;
+}
+
+// Otorgar/quitar permisos es en sí una acción sensible — no basta con
+// tener marcada la sección "configuracion" (esa también la puede tener,
+// por ejemplo, quien solo sube fotos a la galería). Cambiar los permisos
+// de alguien más requiere ser administradora.
+function requireAdministrator(context) {
+  const user = requireAdmin(context);
+  if (getUserRole(user) !== "administrador") {
+    const err = new Error("Solo una cuenta administradora puede hacer esto.");
+    err.statusCode = 403;
+    throw err;
+  }
+  return user;
+}
+
+module.exports = { requireAdmin, requireSection, requireAdministrator, getUserRole, getUserSections, ALL_SECTIONS };

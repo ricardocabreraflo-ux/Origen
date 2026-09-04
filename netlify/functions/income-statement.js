@@ -2,7 +2,7 @@
 // últimos N meses de calendario, para llevar la contabilidad mes a mes
 // (no solo el mes actual, como en financial-summary.js).
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSection } = require("./_lib/requireAdmin");
 const { computeRange, toISODate } = require("./_lib/period");
 
 const MONTHS_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -24,7 +24,7 @@ function monthlyEquivalent(expense) {
 
 exports.handler = async (event, context) => {
   try {
-    requireAdmin(context);
+    requireSection(context, "finanzas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

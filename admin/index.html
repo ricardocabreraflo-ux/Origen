@@ -18,18 +18,46 @@
   <!-- Maneja el inicio de sesión (invitaciones, "olvidé mi contraseña", etc.) -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script>
+    // Mismo criterio de permisos que el resto del panel (ver
+    // configuracion.html): una cuenta sin rol asignado ve todo (por
+    // compatibilidad con cuentas ya existentes); si tiene rol, solo entra
+    // aquí si "contenido" está entre sus secciones permitidas.
+    function getUserRole(user) {
+      const roles = user.app_metadata && user.app_metadata.roles;
+      return Array.isArray(roles) && roles.length ? roles[0] : "administrador";
+    }
+    function canSeeContenido(user) {
+      if (getUserRole(user) === "administrador") return true;
+      const sections = user.app_metadata && user.app_metadata.sections;
+      return Array.isArray(sections) && sections.includes("contenido");
+    }
+    function loadDecapCms() {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js";
+      document.body.appendChild(script);
+    }
+    function denyContenidoAccess() {
+      const notice = document.createElement("div");
+      notice.style.cssText = "max-width:420px;margin:120px auto;text-align:center;font-family:sans-serif;padding:0 24px;";
+      notice.innerHTML = "<h1 style='font-size:1.4rem;'>Sin acceso</h1><p>Tu cuenta no tiene permiso para editar el contenido. Pide a una administradora que te lo active desde Configuración → Usuarios y permisos.</p>";
+      document.body.appendChild(notice);
+    }
     if (window.netlifyIdentity) {
       window.netlifyIdentity.on("init", (user) => {
         if (!user) {
+          // Sin sesión: se deja que Decap CMS muestre su propia pantalla de
+          // inicio de sesión (no hay nada que restringir todavía).
           window.netlifyIdentity.on("login", () => {
             document.location.href = "/admin/";
           });
+          loadDecapCms();
+          return;
         }
+        if (canSeeContenido(user)) loadDecapCms();
+        else denyContenidoAccess();
       });
+      window.netlifyIdentity.init();
     }
   </script>
-
-  <!-- Decap CMS: lee automáticamente admin/config.yml -->
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 </body>
 </html>
