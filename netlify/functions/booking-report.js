@@ -3,7 +3,7 @@
 // confirmadas que no estén marcadas "sin ingreso" y que ya tengan un
 // total_amount capturado (ver set-total-amount.js).
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSection } = require("./_lib/requireAdmin");
 const { computeRange, toISODate, addDays } = require("./_lib/period");
 
 function bucketKey(dateStr, bucketBy) {
@@ -30,7 +30,7 @@ function buildBucketList(start, end, bucketBy) {
 
 exports.handler = async (event, context) => {
   try {
-    requireAdmin(context);
+    requireSection(context, "reportes");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

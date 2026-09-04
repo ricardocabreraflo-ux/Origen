@@ -3,7 +3,7 @@
 // desactivarlo con save-expense.js (active:false, end_date:hoy) para no
 // perder el historial de los meses en que sí contaba.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireSection } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireSection(context, "finanzas");
+    requireSectionWrite(context, "finanzas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

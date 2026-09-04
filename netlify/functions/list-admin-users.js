@@ -1,7 +1,7 @@
 // Lista las cuentas de Netlify Identity con acceso al panel, con su rol y
 // qué secciones puede ver cada una — para la pantalla de Configuración →
 // Usuarios y permisos.
-const { requireAdministrator, getUserRole, getUserSections } = require("./_lib/requireAdmin");
+const { requireAdministrator, getUserRole, getUserSections, getUserReadOnlySections } = require("./_lib/requireAdmin");
 const { listIdentityUsers } = require("./_lib/identityAdmin");
 
 exports.handler = async (event, context) => {
@@ -25,6 +25,7 @@ exports.handler = async (event, context) => {
         confirmedAt: u.confirmed_at || null,
         role: getUserRole(u),
         sections: getUserSections(u),
+        readOnlySections: getUserReadOnlySections(u),
       }))
       .sort((a, b) => a.email.localeCompare(b.email));
 

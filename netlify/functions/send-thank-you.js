@@ -2,7 +2,7 @@
 // disparado a mano por la administradora desde el panel de Citas.
 // Requiere Meta configurado y la plantilla "agradecimiento_visita_origen"
 // aprobada.
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
 
 exports.handler = async (event, context) => {
@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

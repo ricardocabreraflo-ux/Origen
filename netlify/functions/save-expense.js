@@ -1,5 +1,5 @@
 const { getServiceClient } = require("./_lib/supabase");
-const { requireSection } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 
 const CATEGORIES = ["renta", "insumos", "servicios", "sueldo", "marketing", "mantenimiento", "inversion", "otro"];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireSection(context, "finanzas");
+    requireSectionWrite(context, "finanzas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

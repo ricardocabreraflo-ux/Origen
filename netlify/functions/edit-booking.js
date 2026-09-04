@@ -5,7 +5,7 @@
 // se actualiza ese mismo evento (no se crea uno nuevo).
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 const { toMinutes, toHHMM } = require("./_lib/slots");
 const { parsePriceAmount } = require("./_lib/money");
 const { updateCalendarEvent } = require("./_lib/googleCalendar");
@@ -24,7 +24,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

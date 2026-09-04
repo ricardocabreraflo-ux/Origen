@@ -5,7 +5,12 @@
 const { requireAdministrator, ALL_SECTIONS } = require("./_lib/requireAdmin");
 const { updateIdentityUser } = require("./_lib/identityAdmin");
 
-const VALID_ROLES = ["administrador", "manager", "vendedor"];
+// El rol es sobre todo una etiqueta — el permiso real lo dan las
+// secciones. Solo el valor exacto "administrador" tiene tratamiento
+// especial (acceso total, no se puede restringir). Cualquier otro texto
+// corto sirve como rol (Manager, Vendedora, o uno que la administradora
+// invente, ej. "Recepción").
+const ROLE_RE = /^[\p{L}0-9 ._-]{2,40}$/u;
 
 function badRequest(message) {
   return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message }) };
@@ -30,29 +35,46 @@ exports.handler = async (event, context) => {
     return badRequest("JSON inválido.");
   }
 
-  const { userId, role, sections } = payload;
+  const { userId, role, sections, readOnlySections } = payload;
   if (!userId || typeof userId !== "string") return badRequest("Falta el usuario.");
-  if (!VALID_ROLES.includes(role)) return badRequest("Rol inválido.");
+  if (typeof role !== "string" || !ROLE_RE.test(role.trim())) {
+    return badRequest("El rol debe tener entre 2 y 40 letras/números.");
+  }
+  const cleanRole = role.trim();
   if (!Array.isArray(sections) || sections.some((s) => typeof s !== "string")) {
     return badRequest("Las secciones deben ser una lista.");
+  }
+  if (readOnlySections !== undefined && (!Array.isArray(readOnlySections) || readOnlySections.some((s) => typeof s !== "string"))) {
+    return badRequest("Las secciones de solo lectura deben ser una lista.");
   }
 
   // Nadie puede quitarse el rol de administradora a sí misma por error
   // desde este formulario — evita quedarse sin ninguna cuenta con acceso
   // total sin querer.
-  if (requester.sub === userId && role !== "administrador") {
+  if (requester.sub === userId && cleanRole !== "administrador") {
     return badRequest("No puedes quitarte tu propio rol de administradora desde aquí.");
   }
 
-  // Una administradora siempre ve todo — no tiene caso "restringirla" a
-  // medias, y así el checkbox de secciones no importa si eligieron ese rol.
-  const effectiveSections = role === "administrador" ? ALL_SECTIONS : sections.filter((s) => ALL_SECTIONS.includes(s));
+  // Una administradora siempre ve todo, en modo edición — no tiene caso
+  // "restringirla" a medias, y así los checkboxes no importan si eligieron
+  // ese rol.
+  const isAdminRole = cleanRole === "administrador";
+  const effectiveSections = isAdminRole ? ALL_SECTIONS : sections.filter((s) => ALL_SECTIONS.includes(s));
+  const effectiveReadOnly = isAdminRole
+    ? []
+    : (readOnlySections || []).filter((s) => ALL_SECTIONS.includes(s) && effectiveSections.includes(s));
 
   try {
-    const updated = await updateIdentityUser(context, userId, { roles: [role], sections: effectiveSections });
+    const updated = await updateIdentityUser(context, userId, {
+      roles: [cleanRole],
+      sections: effectiveSections,
+      readOnlySections: effectiveReadOnly,
+    });
     return {
       statusCode: 200,
-      body: JSON.stringify({ user: { id: updated.id, email: updated.email, role, sections: effectiveSections } }),
+      body: JSON.stringify({
+        user: { id: updated.id, email: updated.email, role: cleanRole, sections: effectiveSections, readOnlySections: effectiveReadOnly },
+      }),
     };
   } catch (err) {
     console.error("update-admin-user error", err);

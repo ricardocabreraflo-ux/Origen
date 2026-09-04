@@ -117,10 +117,31 @@
     }
   }
 
-  function renderGallery() {
+  async function renderGallery() {
     const grid = document.getElementById("gallery-grid");
-    const items = cfg.galleryImages;
-    if (!grid || !items || items.length === 0) return;
+    if (!grid) return;
+
+    // Las fotos vienen del panel (Configuración → Galería de fotos, que
+    // las administra en vivo); los videos siguen viniendo de
+    // data/config.json como antes, porque ese panel solo maneja fotos.
+    // Si /api/list-gallery falla (o la tabla todavía no existe), se cae
+    // de vuelta a las fotos que ya traía config.json para no dejar la
+    // sección vacía.
+    let items = cfg.galleryImages || [];
+    try {
+      const res = await fetch("/api/list-gallery");
+      if (res.ok) {
+        const body = await res.json();
+        if (Array.isArray(body.photos)) {
+          const photoItems = body.photos.map((p) => ({ src: p.url, alt: p.alt || "" }));
+          const videoItems = (cfg.galleryImages || []).filter((g) => g.type === "video");
+          items = [...photoItems, ...videoItems];
+        }
+      }
+    } catch {
+      // sin conexión con la API: se usa cfg.galleryImages tal cual.
+    }
+    if (!items || items.length === 0) return;
 
     // El carrete se desliza solo en bucle infinito: duplicamos las fotos
     // una vez para que, al llegar a la mitad, el "salto" de regreso al

@@ -1,5 +1,5 @@
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSection } = require("./_lib/requireAdmin");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "GET") {
@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSection(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

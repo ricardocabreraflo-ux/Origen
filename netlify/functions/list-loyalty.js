@@ -1,11 +1,11 @@
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSection } = require("./_lib/requireAdmin");
 const { last10, computeLoyaltyStatus } = require("./_lib/loyalty");
 
 exports.handler = async (event, context) => {
   try {
-    requireAdmin(context);
+    requireSection(context, "lealtad");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

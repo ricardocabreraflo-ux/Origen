@@ -42,6 +42,25 @@ function requireSection(context, section) {
   return user;
 }
 
+// Secciones marcadas "solo lectura": la cuenta las puede ver (list-* sigue
+// funcionando) pero no crear/editar/borrar nada ahí. Una administradora
+// nunca es de solo lectura en ninguna sección.
+function getUserReadOnlySections(user) {
+  if (getUserRole(user) === "administrador") return [];
+  const readOnly = user.app_metadata && user.app_metadata.readOnlySections;
+  return Array.isArray(readOnly) ? readOnly : [];
+}
+
+function requireSectionWrite(context, section) {
+  const user = requireSection(context, section);
+  if (getUserReadOnlySections(user).includes(section)) {
+    const err = new Error("Esta cuenta solo puede ver esta sección, no editarla.");
+    err.statusCode = 403;
+    throw err;
+  }
+  return user;
+}
+
 // Otorgar/quitar permisos es en sí una acción sensible — no basta con
 // tener marcada la sección "configuracion" (esa también la puede tener,
 // por ejemplo, quien solo sube fotos a la galería). Cambiar los permisos
@@ -56,4 +75,13 @@ function requireAdministrator(context) {
   return user;
 }
 
-module.exports = { requireAdmin, requireSection, requireAdministrator, getUserRole, getUserSections, ALL_SECTIONS };
+module.exports = {
+  requireAdmin,
+  requireSection,
+  requireSectionWrite,
+  requireAdministrator,
+  getUserRole,
+  getUserSections,
+  getUserReadOnlySections,
+  ALL_SECTIONS,
+};

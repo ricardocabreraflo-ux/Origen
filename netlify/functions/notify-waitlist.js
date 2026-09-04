@@ -3,7 +3,7 @@
 // que send-thank-you.js. Requiere Meta configurado y la plantilla
 // "espacio_liberado_origen" aprobada.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
 
 function formatDateEs(dateStr) {
@@ -17,7 +17,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

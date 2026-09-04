@@ -4,12 +4,12 @@
 // dígitos) para no duplicar a alguien que ya reservó y también fue
 // agregada a mano.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSection } = require("./_lib/requireAdmin");
 const { last10 } = require("./_lib/loyalty");
 
 exports.handler = async (event, context) => {
   try {
-    requireAdmin(context);
+    requireSection(context, "clientas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

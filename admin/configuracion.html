@@ -22,17 +22,37 @@
   .card h2 { font-size: 1.1rem; margin: 0 0 6px; }
   .card .section-note { margin: 0 0 16px; }
 
-  .gallery-shortcut { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-  .gallery-shortcut p { flex: 1 1 260px; margin: 0; }
+  #gallery-loading, #gallery-empty { text-align: center; padding: 30px 20px; color: var(--color-muted); }
+  .gallery-manager-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .gallery-manager-item { border: 1.5px solid rgba(33,29,25,0.1); border-radius: 12px; overflow: hidden; background: var(--color-cream-soft); }
+  .gallery-manager-item .thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: rgba(33,29,25,0.05); }
+  .gallery-manager-item .item-body { padding: 8px 10px 10px; }
+  .gallery-manager-item input[type="text"] {
+    width: 100%; padding: 6px 8px; border-radius: 6px; border: 1.5px solid rgba(33,29,25,0.15);
+    font-family: var(--font-body); font-size: 0.76rem; background: var(--color-white); margin-bottom: 6px;
+  }
+  .gallery-manager-item .item-actions { display: flex; align-items: center; gap: 4px; }
+  .gallery-manager-item .item-actions button {
+    border: 1.5px solid rgba(33,29,25,0.15); background: var(--color-white); border-radius: 6px;
+    width: 26px; height: 26px; cursor: pointer; font-size: 0.8rem; line-height: 1; flex-shrink: 0;
+  }
+  .gallery-manager-item .item-actions button:disabled { opacity: 0.35; cursor: default; }
+  .gallery-manager-item .item-actions .del-btn { margin-left: auto; color: #a13a2f; border-color: rgba(161,58,47,0.35); }
 
   .table-scroll { overflow-x: auto; }
   table.users-table { width: 100%; border-collapse: collapse; }
   .users-table th, .users-table td { padding: 12px 10px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid rgba(33,29,25,0.08); vertical-align: top; }
   .users-table th { color: var(--color-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
-  .users-table select { padding: 7px 10px; border-radius: 8px; border: 1.5px solid rgba(33,29,25,0.15); font-family: var(--font-body); background: var(--color-cream-soft); }
-  .section-checks { display: flex; flex-wrap: wrap; gap: 8px 14px; max-width: 320px; }
-  .section-checks label { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; white-space: nowrap; }
-  .section-checks input[type="checkbox"] { width: 15px; height: 15px; margin: 0; }
+  .users-table select, .users-table input[type="text"] {
+    padding: 7px 10px; border-radius: 8px; border: 1.5px solid rgba(33,29,25,0.15);
+    font-family: var(--font-body); background: var(--color-cream-soft);
+  }
+  .users-table input[type="text"] { margin-top: 6px; width: 100%; }
+  table.mini-section-table { border-collapse: collapse; }
+  .mini-section-table th, .mini-section-table td { padding: 3px 8px; text-align: center; font-size: 0.76rem; }
+  .mini-section-table td:first-child, .mini-section-table th:first-child { text-align: left; padding-left: 0; }
+  .mini-section-table th { color: var(--color-muted); font-weight: 600; font-size: 0.66rem; text-transform: uppercase; }
+  .mini-section-table input[type="checkbox"] { width: 15px; height: 15px; margin: 0; }
   .user-save-hint { font-size: 0.76rem; color: var(--color-muted); margin-top: 4px; }
   .user-save-hint.is-ok { color: #2f6b2a; }
   .user-save-hint.is-error { color: #a13a2f; }
@@ -112,12 +132,19 @@
     <h1>Configuración</h1>
   </div>
 
-  <div class="card">
+  <div class="card" id="gallery-card">
     <h2>Galería de fotos</h2>
-    <div class="gallery-shortcut">
-      <p class="section-note">Las fotos de trabajos realizados que se muestran en la página principal (y el orden en que aparecen) se administran desde el editor de contenido — ahí puedes subir fotos nuevas, borrarlas y arrastrarlas para reordenarlas.</p>
-      <a class="btn btn-primary btn-sm" href="index.html#/collections/config/entries/config">Abrir editor de contenido</a>
+    <p class="section-note">Fotos de trabajos realizados que se muestran en la página principal. Usa las flechas para ordenarlas — el primer lugar es el que aparece primero en el carrusel.</p>
+    <div class="row-actions" style="margin-bottom:16px;">
+      <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+        + Subir foto
+        <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp" hidden />
+      </label>
+      <span class="form-hint" id="gallery-upload-hint"></span>
     </div>
+    <div id="gallery-loading">Cargando…</div>
+    <div id="gallery-empty" hidden>Todavía no hay fotos.</div>
+    <div class="gallery-manager-grid" id="gallery-manager-grid" hidden></div>
   </div>
 
   <div class="card" id="users-card">
@@ -183,28 +210,40 @@
     return { Authorization: `Bearer ${token}` };
   }
 
-  function sectionChecksHtml(userId, currentSections, isAdminRole) {
-    return Object.keys(SECTION_LABEL)
+  const PRESET_ROLES = ["administrador", "manager", "vendedor"];
+
+  function sectionChecksHtml(currentSections, currentReadOnly, isAdminRole) {
+    const rows = Object.keys(SECTION_LABEL)
       .map((s) => {
-        const checked = isAdminRole || currentSections.includes(s);
-        return `<label><input type="checkbox" data-section="${s}" ${checked ? "checked" : ""} ${isAdminRole ? "disabled" : ""} /> ${SECTION_LABEL[s]}</label>`;
+        const viewChecked = isAdminRole || currentSections.includes(s);
+        const roChecked = !isAdminRole && currentReadOnly.includes(s);
+        return `
+          <tr>
+            <td>${SECTION_LABEL[s]}</td>
+            <td><input type="checkbox" data-section="${s}" data-kind="view" ${viewChecked ? "checked" : ""} ${isAdminRole ? "disabled" : ""} /></td>
+            <td><input type="checkbox" data-section="${s}" data-kind="readonly" ${roChecked ? "checked" : ""} ${isAdminRole || !viewChecked ? "disabled" : ""} /></td>
+          </tr>`;
       })
       .join("");
+    return `<table class="mini-section-table"><thead><tr><th></th><th>Ver</th><th>Solo lectura</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
   function rowHtml(u) {
     const isAdminRole = u.role === "administrador";
+    const isPreset = PRESET_ROLES.includes(u.role);
     return `
       <tr data-user-id="${u.id}">
         <td><strong>${u.fullName || u.email}</strong>${u.fullName ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${u.email}</span>` : ""}</td>
         <td>
-          <select data-field="role">
+          <select data-field="role-preset">
             <option value="administrador" ${u.role === "administrador" ? "selected" : ""}>Administradora</option>
             <option value="manager" ${u.role === "manager" ? "selected" : ""}>Manager</option>
             <option value="vendedor" ${u.role === "vendedor" ? "selected" : ""}>Vendedora</option>
+            <option value="__custom__" ${!isPreset ? "selected" : ""}>Personalizado…</option>
           </select>
+          <input type="text" data-field="role-custom" placeholder="Nombre del rol" maxlength="40" value="${!isPreset ? u.role : ""}" ${isPreset ? "hidden" : ""} />
         </td>
-        <td><div class="section-checks" data-field="sections">${sectionChecksHtml(u.id, u.sections, isAdminRole)}</div></td>
+        <td><div class="section-checks" data-field="sections">${sectionChecksHtml(u.sections, u.readOnlySections || [], isAdminRole)}</div></td>
         <td>
           <button type="button" class="btn btn-outline btn-sm" data-action="save">Guardar</button>
           <p class="user-save-hint" hidden></p>
@@ -212,14 +251,206 @@
       </tr>`;
   }
 
-  function refreshRowCheckboxState(row) {
-    const role = row.querySelector('select[data-field="role"]').value;
-    const isAdminRole = role === "administrador";
-    row.querySelectorAll('.section-checks input[type="checkbox"]').forEach((cb) => {
+  function refreshRowRoleState(row) {
+    const preset = row.querySelector('select[data-field="role-preset"]').value;
+    const customInput = row.querySelector('input[data-field="role-custom"]');
+    customInput.hidden = preset !== "__custom__";
+    const isAdminRole = preset === "administrador";
+    row.querySelectorAll('.section-checks input[data-kind="view"]').forEach((cb) => {
       cb.disabled = isAdminRole;
       if (isAdminRole) cb.checked = true;
+      refreshReadOnlyCheckboxState(cb, isAdminRole);
     });
   }
+
+  // El checkbox "solo lectura" de una sección solo tiene sentido si esa
+  // sección está marcada "Ver" y la cuenta no es administradora.
+  function refreshReadOnlyCheckboxState(viewCheckbox, isAdminRole) {
+    const section = viewCheckbox.getAttribute("data-section");
+    const table = viewCheckbox.closest("table");
+    const roCheckbox = table.querySelector(`input[data-kind="readonly"][data-section="${section}"]`);
+    if (!roCheckbox) return;
+    roCheckbox.disabled = isAdminRole || !viewCheckbox.checked;
+    if (isAdminRole || !viewCheckbox.checked) roCheckbox.checked = false;
+  }
+
+  /* ---------------------------------------------------------
+     Galería de fotos
+  --------------------------------------------------------- */
+  const galleryLoading = document.getElementById("gallery-loading");
+  const galleryEmpty = document.getElementById("gallery-empty");
+  const galleryGrid = document.getElementById("gallery-manager-grid");
+  const galleryUploadInput = document.getElementById("gallery-upload-input");
+  const galleryUploadHint = document.getElementById("gallery-upload-hint");
+  let galleryPhotos = [];
+  let galleryReadOnly = false;
+
+  function galleryItemHtml(photo, index, total) {
+    if (galleryReadOnly) {
+      return `
+        <div class="gallery-manager-item" data-photo-id="${photo.id}">
+          <img class="thumb" src="${photo.url}" alt="${photo.alt || ""}" loading="lazy" />
+          <div class="item-body">
+            <p style="margin:0;font-size:0.78rem;color:var(--color-muted);">${photo.alt || "Sin descripción"}</p>
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="gallery-manager-item" data-photo-id="${photo.id}">
+        <img class="thumb" src="${photo.url}" alt="${photo.alt || ""}" loading="lazy" />
+        <div class="item-body">
+          <input type="text" data-field="alt" placeholder="Descripción (opcional)" value="${(photo.alt || "").replace(/"/g, "&quot;")}" />
+          <div class="item-actions">
+            <button type="button" data-action="up" ${index === 0 ? "disabled" : ""} title="Mover antes">↑</button>
+            <button type="button" data-action="down" ${index === total - 1 ? "disabled" : ""} title="Mover después">↓</button>
+            <button type="button" class="del-btn" data-action="delete" title="Borrar">✕</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderGalleryGrid() {
+    galleryGrid.innerHTML = galleryPhotos.map((p, i) => galleryItemHtml(p, i, galleryPhotos.length)).join("");
+  }
+
+  async function loadGallery() {
+    galleryLoading.hidden = false;
+    galleryEmpty.hidden = true;
+    galleryGrid.hidden = true;
+    try {
+      const res = await fetch("/api/list-gallery");
+      const body = await res.json();
+      galleryLoading.hidden = true;
+      if (!res.ok) {
+        galleryEmpty.textContent = "No se pudo cargar la galería.";
+        galleryEmpty.hidden = false;
+        return;
+      }
+      galleryPhotos = body.photos || [];
+      if (!galleryPhotos.length) {
+        galleryEmpty.textContent = "Todavía no hay fotos.";
+        galleryEmpty.hidden = false;
+        return;
+      }
+      renderGalleryGrid();
+      galleryGrid.hidden = false;
+    } catch {
+      galleryLoading.hidden = true;
+      galleryEmpty.textContent = "No se pudo cargar la galería.";
+      galleryEmpty.hidden = false;
+    }
+  }
+
+  async function saveGalleryOrder() {
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/reorder-gallery", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ orderedIds: galleryPhotos.map((p) => p.id) }),
+    });
+  }
+
+  galleryUploadInput.addEventListener("change", async () => {
+    const file = galleryUploadInput.files[0];
+    galleryUploadInput.value = "";
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      galleryUploadHint.textContent = "Formato no soportado. Usa JPG, PNG o WEBP.";
+      galleryUploadHint.classList.add("is-error");
+      return;
+    }
+    if (file.size > 4.5 * 1024 * 1024) {
+      galleryUploadHint.textContent = "La foto pesa demasiado (máximo 4.5 MB). Usa una foto más ligera.";
+      galleryUploadHint.classList.add("is-error");
+      return;
+    }
+
+    galleryUploadHint.textContent = "Subiendo…";
+    galleryUploadHint.classList.remove("is-error");
+
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const dataBase64 = dataUrl.split(",")[1];
+
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/upload-gallery-photo", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ dataBase64, contentType: file.type, alt: "" }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo subir la foto.");
+
+      galleryUploadHint.textContent = "Foto subida.";
+      await loadGallery();
+    } catch (err) {
+      galleryUploadHint.textContent = err.message || "No se pudo subir la foto.";
+      galleryUploadHint.classList.add("is-error");
+    }
+  });
+
+  galleryGrid.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const item = btn.closest(".gallery-manager-item");
+    const photoId = item.getAttribute("data-photo-id");
+    const index = galleryPhotos.findIndex((p) => p.id === photoId);
+    if (index === -1) return;
+    const action = btn.getAttribute("data-action");
+
+    if (action === "up" && index > 0) {
+      [galleryPhotos[index - 1], galleryPhotos[index]] = [galleryPhotos[index], galleryPhotos[index - 1]];
+      renderGalleryGrid();
+      await saveGalleryOrder();
+    } else if (action === "down" && index < galleryPhotos.length - 1) {
+      [galleryPhotos[index + 1], galleryPhotos[index]] = [galleryPhotos[index], galleryPhotos[index + 1]];
+      renderGalleryGrid();
+      await saveGalleryOrder();
+    } else if (action === "delete") {
+      if (!window.confirm("¿Borrar esta foto de la galería?")) return;
+      btn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/delete-gallery-photo", { method: "POST", headers, body: JSON.stringify({ id: photoId }) });
+        if (!res.ok) throw new Error();
+        galleryPhotos.splice(index, 1);
+        renderGalleryGrid();
+        if (!galleryPhotos.length) {
+          galleryEmpty.textContent = "Todavía no hay fotos.";
+          galleryEmpty.hidden = false;
+          galleryGrid.hidden = true;
+        }
+      } catch {
+        alert("No se pudo borrar la foto. Intenta de nuevo.");
+        btn.disabled = false;
+      }
+    }
+  });
+
+  // Guarda la descripción al salir del campo (blur), no en cada tecla.
+  galleryGrid.addEventListener(
+    "blur",
+    async (e) => {
+      if (!e.target.matches('input[data-field="alt"]')) return;
+      const item = e.target.closest(".gallery-manager-item");
+      const photoId = item.getAttribute("data-photo-id");
+      const photo = galleryPhotos.find((p) => p.id === photoId);
+      const alt = e.target.value.trim();
+      if (!photo || photo.alt === alt) return;
+      photo.alt = alt;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        await fetch("/api/update-gallery-photo", { method: "POST", headers, body: JSON.stringify({ id: photoId, alt }) });
+      } catch {}
+    },
+    true
+  );
 
   async function loadUsers() {
     usersLoading.hidden = false;
@@ -254,8 +485,16 @@
   }
 
   usersTbody.addEventListener("change", (e) => {
-    if (e.target.matches('select[data-field="role"]')) {
-      refreshRowCheckboxState(e.target.closest("tr"));
+    // Ojo: el checkbox de una sección vive dentro de la mini-tabla
+    // (.mini-section-table), que tiene sus propios <tr> — hay que buscar
+    // el <tr data-user-id> de afuera, no el más cercano a secas.
+    const row = e.target.closest("tr[data-user-id]");
+    if (!row) return;
+    if (e.target.matches('select[data-field="role-preset"]')) {
+      refreshRowRoleState(row);
+    } else if (e.target.matches('.section-checks input[data-kind="view"]')) {
+      const isAdminRole = row.querySelector('select[data-field="role-preset"]').value === "administrador";
+      refreshReadOnlyCheckboxState(e.target, isAdminRole);
     }
   });
 
@@ -264,9 +503,18 @@
     if (!btn) return;
     const row = btn.closest("tr");
     const userId = row.getAttribute("data-user-id");
-    const role = row.querySelector('select[data-field="role"]').value;
-    const sections = Array.from(row.querySelectorAll('.section-checks input[type="checkbox"]:checked')).map((cb) => cb.getAttribute("data-section"));
+    const rolePreset = row.querySelector('select[data-field="role-preset"]').value;
+    const role = rolePreset === "__custom__" ? row.querySelector('input[data-field="role-custom"]').value.trim() : rolePreset;
+    const sections = Array.from(row.querySelectorAll('.section-checks input[data-kind="view"]:checked')).map((cb) => cb.getAttribute("data-section"));
+    const readOnlySections = Array.from(row.querySelectorAll('.section-checks input[data-kind="readonly"]:checked')).map((cb) => cb.getAttribute("data-section"));
     const hint = row.querySelector(".user-save-hint");
+
+    if (!role) {
+      hint.textContent = "Escribe un nombre para el rol personalizado.";
+      hint.classList.add("is-error");
+      hint.hidden = false;
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = "Guardando…";
@@ -274,7 +522,7 @@
     hint.classList.remove("is-ok", "is-error");
     try {
       const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
-      const res = await fetch("/api/update-admin-user", { method: "POST", headers, body: JSON.stringify({ userId, role, sections }) });
+      const res = await fetch("/api/update-admin-user", { method: "POST", headers, body: JSON.stringify({ userId, role, sections, readOnlySections }) });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || "No se pudo guardar.");
       hint.textContent = "Guardado.";
@@ -415,6 +663,11 @@
     const sections = user.app_metadata && user.app_metadata.sections;
     return Array.isArray(sections) ? sections : [];
   }
+  function getUserReadOnlySections(user) {
+    if (getUserRole(user) === "administrador") return [];
+    const readOnly = user.app_metadata && user.app_metadata.readOnlySections;
+    return Array.isArray(readOnly) ? readOnly : [];
+  }
   function showAccessDenied() {
     const wrap = document.getElementById("admin-wrap-content") || document.getElementById("admin-wrap");
     if (wrap) {
@@ -491,6 +744,19 @@
       document.getElementById("users-card").hidden = true;
     } else {
       loadUsers();
+    }
+
+    const sections = getUserSections(user);
+    const galleryCard = document.getElementById("gallery-card");
+    if (!sections.includes("contenido")) {
+      galleryCard.hidden = true;
+    } else {
+      galleryReadOnly = getUserReadOnlySections(user).includes("contenido");
+      if (galleryReadOnly) {
+        const uploadLabel = galleryCard.querySelector(".row-actions label");
+        if (uploadLabel) uploadLabel.hidden = true;
+      }
+      loadGallery();
     }
   }
   function showLogin() {

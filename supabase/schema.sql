@@ -343,3 +343,34 @@ create table if not exists admin_presence (
 );
 
 alter table admin_presence enable row level security;
+
+-- Galería de fotos del panel (Configuración → Galería de fotos): bucket
+-- público para los archivos + tabla para el orden/descripción. Las 6
+-- fotos que ya estaban en data/config.json se migran aquí con su ruta
+-- absoluta tal cual (storage_path empieza con "/"), sin volver a subir
+-- el archivo — solo las fotos nuevas que se suban desde el panel quedan
+-- dentro del bucket "gallery" (storage_path relativo).
+insert into storage.buckets (id, name, public)
+values ('gallery', 'gallery', true)
+on conflict (id) do nothing;
+
+create table if not exists gallery_photos (
+  id uuid primary key default gen_random_uuid(),
+  storage_path text not null,
+  alt text,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table gallery_photos enable row level security;
+
+insert into gallery_photos (storage_path, alt, sort_order)
+select v.storage_path, v.alt, v.sort_order
+from (values
+  ('/assets/gallery-2.jpg', 'Origen Brows & Hair Studio', 0),
+  ('/assets/gallery-3.jpg', 'Origen Brows & Hair Studio', 1),
+  ('/assets/gallery-4.jpg', 'Diseño de cejas en Origen Brows & Hair Studio', 2),
+  ('/assets/gallery-5.jpg', 'Productos profesionales InLei usados en Origen Brows', 3),
+  ('/assets/gallery-6.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 4),
+  ('/assets/gallery-7.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 5)
+) as v(storage_path, alt, sort_order)
+where not exists (select 1 from gallery_photos g where g.storage_path = v.storage_path);

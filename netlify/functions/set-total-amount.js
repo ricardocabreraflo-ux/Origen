@@ -4,7 +4,7 @@
 // fijo y por lo tanto no se pueden contar en los reportes de ingresos
 // hasta que la administradora captura cuánto se cobró de verdad.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -12,7 +12,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

@@ -3,7 +3,7 @@
 // toca la administradora, no se calcula sola a partir del estado ni del
 // monto capturado.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

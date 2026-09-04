@@ -9,7 +9,7 @@
 //     WhatsApp pidiéndole su comprobante de depósito.
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 const { slotsForDate, isTodayOrFuture, isWithinBookingWindow, toMinutes, toHHMM, rangesOverlap } = require("./_lib/slots");
 const { generateReservationCode } = require("./_lib/reservationCode");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }
