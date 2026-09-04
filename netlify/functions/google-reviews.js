@@ -5,6 +5,15 @@
 // Limitación de la propia API de Google: solo entrega hasta 5 reseñas por
 // negocio (las que Google considera "más relevantes"), no todas las que
 // existen en Maps — no hay forma de pedir más vía API oficial.
+//
+// Estado actual (revisado): el campo "reviews" de Place Details (New)
+// pertenece al SKU "Enterprise + Atmosphere" de Google, el nivel más caro
+// de esa API — si el proyecto de Google Cloud de la llave no tiene ese
+// nivel habilitado, Google responde 200 OK pero con un objeto vacío (sin
+// error), así que el filtro de abajo nunca tiene nada que mostrar. No es
+// un bug de este código: para que funcione hay que habilitar ese SKU en
+// Google Cloud Console (cuesta más por llamada). Mientras tanto la
+// página cae de vuelta a los testimonios manuales del panel de Contenido.
 const { loadConfig } = require("./_lib/config");
 
 exports.handler = async () => {
