@@ -603,6 +603,14 @@
         <input type="number" id="eb-discount" min="0" max="100" step="1" placeholder="Ej. 15 — recalcula el monto según el precio de lista" />
       </div>
       <div>
+        <label for="eb-payment">Cómo se pagó</label>
+        <select id="eb-payment" required>
+          <option value="cash">Efectivo</option>
+          <option value="bank_transfer">Transferencia</option>
+          <option value="mercado_pago">Tarjeta</option>
+        </select>
+      </div>
+      <div>
         <label for="eb-name">Nombre de la clienta</label>
         <input type="text" id="eb-name" required />
       </div>
@@ -868,12 +876,21 @@
     return `<span class="status-pill" style="background:#f0dcc0;color:#7a4a12;">-${pct}%</span>`;
   }
 
+  const PAYMENT_METHOD_BADGE = {
+    cash: '<span class="status-pill" style="background:#dcefd8;color:#2f6b2a;margin-top:4px;">💵 Efectivo</span>',
+    bank_transfer: '<span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🏦 Transferencia</span>',
+    mercado_pago: '<span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Tarjeta</span>',
+  };
+  function paymentMethodBadge(b) {
+    return PAYMENT_METHOD_BADGE[b.payment_method] || "";
+  }
+
   function renderTable(bookings) {
     tbody.innerHTML = bookings
       .map(
         (b) => `
         <tr data-id="${b.id}" class="booking-row">
-          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${b.payment_method === "mercado_pago" ? '<br/><span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Pagado con tarjeta</span>' : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
+          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
@@ -1708,6 +1725,7 @@
   const ebDuration = document.getElementById("eb-duration");
   const ebAmount = document.getElementById("eb-amount");
   const ebDiscount = document.getElementById("eb-discount");
+  const ebPayment = document.getElementById("eb-payment");
   const ebName = document.getElementById("eb-name");
   const ebPhone = document.getElementById("eb-phone");
   const ebEmail = document.getElementById("eb-email");
@@ -1742,6 +1760,7 @@
     editDiscountBase = hasAmount ? Number(booking.total_amount) : parsePriceLabel(service && service.price);
     editAmountEditedManually = false;
     ebDiscount.value = "";
+    ebPayment.value = booking.payment_method || "bank_transfer";
     ebName.value = booking.customer_name || "";
     ebPhone.value = booking.customer_phone || "";
     ebEmail.value = booking.customer_email || "";
@@ -1803,6 +1822,7 @@
           notes: ebNotes.value.trim(),
           totalAmount: ebAmount.value,
           durationMinutes: ebDuration.value,
+          paymentMethod: ebPayment.value,
         }),
       });
       const body = await res.json();

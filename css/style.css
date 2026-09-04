@@ -1049,7 +1049,10 @@ img { max-width: 100%; display: block; }
   .transfer-row span:last-child { text-align: left; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  /* Antes el corte era en 768px, pero el menú de escritorio (logo + 7
+     enlaces + botón) necesita ~850px para no desbordarse — con 768px
+     quedaba roto en tablets reales (iPad en vertical: 768-834px). */
   .main-nav, .nav-cta { display: none; }
   .hamburger { display: flex; }
   .main-nav.open {

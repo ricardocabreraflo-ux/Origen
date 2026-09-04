@@ -47,7 +47,13 @@ exports.handler = async (event, context) => {
     notes,
     totalAmount,
     durationMinutes,
+    paymentMethod,
   } = payload;
+
+  const VALID_PAYMENT_METHODS = ["cash", "bank_transfer", "mercado_pago"];
+  if (paymentMethod !== undefined && !VALID_PAYMENT_METHODS.includes(paymentMethod)) {
+    return badRequest("Forma de pago inválida.");
+  }
 
   if (!id) return badRequest("Falta el id de la cita.");
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
@@ -98,6 +104,7 @@ exports.handler = async (event, context) => {
       price_label: priceLabel,
       deposit_amount: service.depositAmount,
       total_amount: effectiveTotalAmount,
+      payment_method: paymentMethod !== undefined ? paymentMethod : existing.payment_method,
       customer_name: customerName.trim(),
       customer_phone: customerPhone.trim(),
       customer_email: (customerEmail || "").trim() || null,
