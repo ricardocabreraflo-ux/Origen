@@ -122,12 +122,18 @@
     <p class="section-eyebrow">Galería</p>
     <h2 class="section-title">Nuestro trabajo</h2>
   </div>
-  <div class="gallery-marquee">
+  <div class="gallery-marquee" id="gallery-marquee">
     <div class="gallery-grid" id="gallery-grid">
       <!-- generado por script.js -->
     </div>
   </div>
 </section>
+
+<!-- Foto ampliada de la galería: pausa el carrusel mientras está abierta. -->
+<div class="lightbox-overlay" id="lightbox-overlay" hidden>
+  <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Cerrar">✕</button>
+  <img class="lightbox-image" id="lightbox-image" src="" alt="" />
+</div>
 
 <!-- REEL ANTES Y DESPUÉS (oculto hasta activarse desde config.json) -->
 <section class="section section-alt reel-section" id="transformacion" hidden>

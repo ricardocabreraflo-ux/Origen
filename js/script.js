@@ -117,9 +117,47 @@
     }
   }
 
+  function openLightbox(src, alt) {
+    const overlay = document.getElementById("lightbox-overlay");
+    const img = document.getElementById("lightbox-image");
+    const marquee = document.getElementById("gallery-marquee");
+    if (!overlay || !img) return;
+    img.src = src;
+    img.alt = alt || "";
+    overlay.hidden = false;
+    if (marquee) marquee.classList.add("is-paused");
+  }
+  function closeLightbox() {
+    const overlay = document.getElementById("lightbox-overlay");
+    const marquee = document.getElementById("gallery-marquee");
+    if (!overlay) return;
+    overlay.hidden = true;
+    if (marquee) marquee.classList.remove("is-paused");
+  }
+  function initLightbox() {
+    const overlay = document.getElementById("lightbox-overlay");
+    const closeBtn = document.getElementById("lightbox-close");
+    if (!overlay || !closeBtn) return;
+    closeBtn.addEventListener("click", closeLightbox);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeLightbox();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !overlay.hidden) closeLightbox();
+    });
+  }
+
   function renderGallery() {
     const grid = document.getElementById("gallery-grid");
     if (!grid) return;
+
+    // Tocar/hacer clic en una foto la agranda y pausa el carrusel
+    // mientras se ve (los videos siguen con sus controles normales).
+    grid.addEventListener("click", (e) => {
+      const img = e.target.closest(".gallery-item img");
+      if (!img) return;
+      openLightbox(img.getAttribute("src"), img.getAttribute("alt"));
+    });
 
     // El carrete se desliza solo en bucle infinito: duplicamos las fotos
     // una vez para que, al llegar a la mitad, el "salto" de regreso al
@@ -832,6 +870,7 @@
     renderAnnouncement();
     initPromoPopup();
     renderFounder();
+    initLightbox();
     renderGallery();
     renderTransformationReel();
     renderContact();
