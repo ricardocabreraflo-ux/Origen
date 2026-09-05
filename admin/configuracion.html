@@ -301,8 +301,8 @@
         <div class="item-body">
           <input type="text" data-field="alt" placeholder="Descripción (opcional)" value="${(photo.alt || "").replace(/"/g, "&quot;")}" />
           <div class="item-actions">
-            <button type="button" data-action="up" ${index === 0 ? "disabled" : ""} title="Mover antes">↑</button>
-            <button type="button" data-action="down" ${index === total - 1 ? "disabled" : ""} title="Mover después">↓</button>
+            <button type="button" data-action="left" ${index === 0 ? "disabled" : ""} title="Mover a la izquierda">←</button>
+            <button type="button" data-action="right" ${index === total - 1 ? "disabled" : ""} title="Mover a la derecha">→</button>
             <button type="button" class="del-btn" data-action="delete" title="Borrar">✕</button>
           </div>
         </div>
@@ -411,11 +411,11 @@
     if (index === -1) return;
     const action = btn.getAttribute("data-action");
 
-    if (action === "up" && index > 0) {
+    if (action === "left" && index > 0) {
       [galleryPhotos[index - 1], galleryPhotos[index]] = [galleryPhotos[index], galleryPhotos[index - 1]];
       renderGalleryGrid();
       await saveGalleryOrder();
-    } else if (action === "down" && index < galleryPhotos.length - 1) {
+    } else if (action === "right" && index < galleryPhotos.length - 1) {
       [galleryPhotos[index + 1], galleryPhotos[index]] = [galleryPhotos[index], galleryPhotos[index + 1]];
       renderGalleryGrid();
       await saveGalleryOrder();

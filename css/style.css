@@ -495,8 +495,8 @@ img { max-width: 100%; display: block; }
 .gallery-marquee:focus-within .gallery-grid,
 .gallery-marquee.is-paused .gallery-grid { animation-play-state: paused; }
 @keyframes gallery-scroll {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 @media (prefers-reduced-motion: reduce) {
   .gallery-grid { animation: none; }
