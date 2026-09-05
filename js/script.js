@@ -117,62 +117,65 @@
     }
   }
 
-  async function renderGallery() {
+  function renderGallery() {
     const grid = document.getElementById("gallery-grid");
     if (!grid) return;
-
-    // Las fotos vienen del panel (Configuración → Galería de fotos, que
-    // las administra en vivo); los videos siguen viniendo de
-    // data/config.json como antes, porque ese panel solo maneja fotos.
-    // Si /api/list-gallery falla (o la tabla todavía no existe), se cae
-    // de vuelta a las fotos que ya traía config.json para no dejar la
-    // sección vacía.
-    let items = cfg.galleryImages || [];
-    try {
-      const res = await fetch("/api/list-gallery");
-      if (res.ok) {
-        const body = await res.json();
-        if (Array.isArray(body.photos)) {
-          const photoItems = body.photos.map((p) => ({ src: p.url, alt: p.alt || "" }));
-          const videoItems = (cfg.galleryImages || []).filter((g) => g.type === "video");
-          items = [...photoItems, ...videoItems];
-        }
-      }
-    } catch {
-      // sin conexión con la API: se usa cfg.galleryImages tal cual.
-    }
-    if (!items || items.length === 0) return;
 
     // El carrete se desliza solo en bucle infinito: duplicamos las fotos
     // una vez para que, al llegar a la mitad, el "salto" de regreso al
     // inicio sea invisible (la segunda copia queda oculta a lectores de
-    // pantalla para no anunciar cada foto dos veces).
+    // pantalla para no anunciar cada foto dos veces). Sin loading="lazy":
+    // son pocas fotos (no una lista larga) y, al estar siempre en
+    // movimiento, el lazy-load solo lograba que se vieran huecos en
+    // blanco mientras cada una entraba a la vista.
     function renderItem(g, hidden) {
       const media =
         g.type === "video"
           ? `<video src="${g.src}" controls playsinline preload="metadata" aria-label="${escapeHtml(g.alt || "")}"></video>`
-          : `<img src="${g.src}" alt="${g.alt || ""}" loading="lazy" />`;
+          : `<img src="${g.src}" alt="${g.alt || ""}" />`;
       return `<div class="gallery-item"${hidden ? ' aria-hidden="true"' : ""}>${media}</div>`;
     }
 
-    grid.innerHTML = items.map((g) => renderItem(g, false)).join("") + items.map((g) => renderItem(g, true)).join("");
+    function paint(items) {
+      if (!items || items.length === 0) return;
+      grid.innerHTML = items.map((g) => renderItem(g, false)).join("") + items.map((g) => renderItem(g, true)).join("");
 
-    // Reproduce en automático (sin sonido) el video con el que el cursor
-    // se detiene encima, como vista previa; se pausa y regresa al inicio
-    // al quitar el cursor. En celular (sin cursor) el botón de play normal
-    // del video sigue funcionando igual.
-    grid.querySelectorAll(".gallery-item").forEach((item) => {
-      const video = item.querySelector("video");
-      if (!video) return;
-      item.addEventListener("mouseenter", () => {
-        video.muted = true;
-        video.play().catch(() => {});
+      // Reproduce en automático (sin sonido) el video con el que el cursor
+      // se detiene encima, como vista previa; se pausa y regresa al inicio
+      // al quitar el cursor. En celular (sin cursor) el botón de play normal
+      // del video sigue funcionando igual.
+      grid.querySelectorAll(".gallery-item").forEach((item) => {
+        const video = item.querySelector("video");
+        if (!video) return;
+        item.addEventListener("mouseenter", () => {
+          video.muted = true;
+          video.play().catch(() => {});
+        });
+        item.addEventListener("mouseleave", () => {
+          video.pause();
+          video.currentTime = 0;
+        });
       });
-      item.addEventListener("mouseleave", () => {
-        video.pause();
-        video.currentTime = 0;
-      });
-    });
+    }
+
+    // Se pinta de inmediato con lo que ya está en config.json — el
+    // carrete no espera ninguna llamada de red para empezar a moverse.
+    // Las fotos del panel (Configuración → Galería de fotos) se piden
+    // aparte y, si llegan, reemplazan las fotos (los videos, que ese
+    // panel no maneja, se quedan igual); si la llamada tarda, falla o la
+    // tabla todavía no existe, la sección ya está funcionando desde el
+    // primer segundo con lo que había.
+    paint(cfg.galleryImages || []);
+
+    fetch("/api/list-gallery")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (!body || !Array.isArray(body.photos)) return;
+        const photoItems = body.photos.map((p) => ({ src: p.url, alt: p.alt || "" }));
+        const videoItems = (cfg.galleryImages || []).filter((g) => g.type === "video");
+        paint([...photoItems, ...videoItems]);
+      })
+      .catch(() => {});
   }
 
   function renderTransformationReel() {
