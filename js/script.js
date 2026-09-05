@@ -120,10 +120,15 @@
   function openLightbox(src, alt) {
     const overlay = document.getElementById("lightbox-overlay");
     const img = document.getElementById("lightbox-image");
+    const caption = document.getElementById("lightbox-caption");
     const marquee = document.getElementById("gallery-marquee");
     if (!overlay || !img) return;
     img.src = src;
     img.alt = alt || "";
+    if (caption) {
+      caption.textContent = alt || "";
+      caption.hidden = !alt;
+    }
     overlay.hidden = false;
     if (marquee) marquee.classList.add("is-paused");
   }
@@ -159,6 +164,13 @@
       openLightbox(img.getAttribute("src"), img.getAttribute("alt"));
     });
 
+    // Cuando una foto tiene descripción (la que se escribe en Configuración
+    // → Galería de fotos), se ve encima de la foto misma, no solo como
+    // texto alternativo escondido — así la clienta la lee directo ahí.
+    function captionHtml(alt) {
+      return alt ? `<span class="gallery-caption">${escapeHtml(alt)}</span>` : "";
+    }
+
     // El carrete se desliza solo en bucle infinito: duplicamos las fotos
     // una vez para que, al llegar a la mitad, el "salto" de regreso al
     // inicio sea invisible (la segunda copia queda oculta a lectores de
@@ -170,7 +182,7 @@
       const media =
         g.type === "video"
           ? `<video src="${g.src}" controls playsinline preload="metadata" aria-label="${escapeHtml(g.alt || "")}"></video>`
-          : `<img src="${g.src}" alt="${g.alt || ""}" />`;
+          : `<img src="${g.src}" alt="${g.alt || ""}" />${captionHtml(g.alt)}`;
       return `<div class="gallery-item"${hidden ? ' aria-hidden="true"' : ""}>${media}</div>`;
     }
 

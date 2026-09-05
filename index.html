@@ -132,7 +132,10 @@
 <!-- Foto ampliada de la galería: pausa el carrusel mientras está abierta. -->
 <div class="lightbox-overlay" id="lightbox-overlay" hidden>
   <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Cerrar">✕</button>
-  <img class="lightbox-image" id="lightbox-image" src="" alt="" />
+  <div class="lightbox-content">
+    <img class="lightbox-image" id="lightbox-image" src="" alt="" />
+    <p class="lightbox-caption" id="lightbox-caption" hidden></p>
+  </div>
 </div>
 
 <!-- REEL ANTES Y DESPUÉS (oculto hasta activarse desde config.json) -->
