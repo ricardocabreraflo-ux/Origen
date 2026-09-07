@@ -130,7 +130,7 @@
     {
       "id": "luxury-brow-lamination",
       "name": "Luxury Brow Lamination",
-      "description": "Diseño + hilo + laminado italiano + nutrición/botox + tinte (Maxymova, Bronsun e InLei).",
+      "description": "Diseño + hilo + laminado italiano + nutrición/botox.",
       "price": "$649 MXN",
       "duration": 75,
       "depositAmount": 200
@@ -139,7 +139,7 @@
       "id": "luxury-lamination-tint",
       "name": "Luxury Lamination + Tint",
       "badge": "Favorito",
-      "description": "Laminado completo + tinte híbrido + botox.",
+      "description": "Laminado completo + tinte híbrido (Maxymova, Bronsun e InLei) + botox.",
       "price": "$749 MXN",
       "duration": 90,
       "depositAmount": 200
