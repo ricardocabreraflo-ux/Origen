@@ -337,13 +337,18 @@
       const res = await fetch("/.netlify/functions/google-reviews");
       if (res.ok) {
         const data = await res.json();
-        items = (data.reviews || []).map((r) => ({ quote: r.quote, author: r.author, stars: r.rating }));
+        items = (data.reviews || []).map((r) => ({ quote: r.quote, author: r.author, stars: r.rating, photos: [] }));
       }
     } catch (err) {
       // Sin conexión con Google: seguimos con el respaldo manual de abajo.
     }
     if (items.length === 0) {
-      items = (cfg.testimonials || []).map((t) => ({ quote: t.quote, author: t.author, stars: 5 }));
+      items = (cfg.testimonials || []).map((t) => ({
+        quote: t.quote,
+        author: t.author,
+        stars: t.stars || 5,
+        photos: Array.isArray(t.photos) ? t.photos : [],
+      }));
     }
 
     if (items.length === 0) {
@@ -361,9 +366,20 @@
           <div class="testimonial-stars" aria-hidden="true">${"★".repeat(Math.round(t.stars) || 5)}</div>
           <p class="testimonial-quote">“${escapeHtml(t.quote)}”</p>
           <p class="testimonial-author">${escapeHtml(t.author)}</p>
+          ${
+            t.photos.length
+              ? `<div class="testimonial-photos">${t.photos
+                  .map((src) => `<img src="${src}" alt="Foto del trabajo, reseña de ${escapeHtml(t.author)}" loading="lazy">`)
+                  .join("")}</div>`
+              : ""
+          }
         </div>`
       )
       .join("");
+
+    grid.querySelectorAll(".testimonial-photos img").forEach((img) => {
+      img.addEventListener("click", () => openLightbox(img.getAttribute("src"), img.getAttribute("alt")));
+    });
   }
 
   function renderFAQ() {

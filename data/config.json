@@ -37,15 +37,18 @@
   "testimonials": [
     {
       "quote": "Lo recomiendo totalmente si quieres que tus cejas luzcan perfectas y naturales. Me encantó el resultado y la atención que te brindan, te hacen sentir muy a gusto.",
-      "author": "Viridiana Medina"
+      "author": "Viridiana Medina",
+      "stars": 5
     },
     {
       "quote": "Me encantaron mis cejas, 100% recomendada. Mon te hace el diseño de acuerdo a tu tipo de cara, súper profesional y el lugar me encanta.",
-      "author": "Nan Lugo"
+      "author": "Nan Lugo",
+      "stars": 5
     },
     {
       "quote": "Su atención siempre es muy agradable, quedamos de acuerdo en lo que me haría para que fuera acorde a mis rasgos. Quedé muy satisfecha con el resultado, me encantó la remodelación.",
-      "author": "Tokki Likethis"
+      "author": "Tokki Likethis",
+      "stars": 5
     }
   ],
 
