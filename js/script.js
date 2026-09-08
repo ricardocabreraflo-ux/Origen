@@ -326,6 +326,49 @@
       .join("");
   }
 
+  const TESTIMONIALS_PER_PAGE = 6;
+
+  function testimonialCardHtml(t) {
+    return `
+      <div class="testimonial-card">
+        <div class="testimonial-stars" aria-hidden="true">${"★".repeat(Math.round(t.stars) || 5)}</div>
+        <p class="testimonial-quote">“${escapeHtml(t.quote)}”</p>
+        <p class="testimonial-author">${escapeHtml(t.author)}${t.date ? `<span class="testimonial-date"> · ${escapeHtml(t.date)}</span>` : ""}</p>
+        ${
+          t.photos.length
+            ? `<div class="testimonial-photos">${t.photos
+                .map((src) => `<img src="${src}" alt="Foto del trabajo, reseña de ${escapeHtml(t.author)}" loading="lazy">`)
+                .join("")}</div>`
+            : ""
+        }
+      </div>`;
+  }
+
+  function renderTestimonialPage(items, page) {
+    const grid = document.getElementById("testimonial-grid");
+    const pagination = document.getElementById("testimonial-pagination");
+    const pageCount = document.getElementById("testimonial-page-count");
+    const prevBtn = document.getElementById("testimonial-prev");
+    const nextBtn = document.getElementById("testimonial-next");
+    const totalPages = Math.ceil(items.length / TESTIMONIALS_PER_PAGE);
+    const start = page * TESTIMONIALS_PER_PAGE;
+    const pageItems = items.slice(start, start + TESTIMONIALS_PER_PAGE);
+
+    grid.innerHTML = pageItems.map(testimonialCardHtml).join("");
+    grid.querySelectorAll(".testimonial-photos img").forEach((img) => {
+      img.addEventListener("click", () => openLightbox(img.getAttribute("src"), img.getAttribute("alt")));
+    });
+
+    if (totalPages > 1) {
+      pagination.hidden = false;
+      pageCount.textContent = `${page + 1} / ${totalPages}`;
+      prevBtn.disabled = page === 0;
+      nextBtn.disabled = page === totalPages - 1;
+    } else {
+      pagination.hidden = true;
+    }
+  }
+
   async function renderTestimonials() {
     const grid = document.getElementById("testimonial-grid");
 
@@ -337,7 +380,7 @@
       const res = await fetch("/.netlify/functions/google-reviews");
       if (res.ok) {
         const data = await res.json();
-        items = (data.reviews || []).map((r) => ({ quote: r.quote, author: r.author, stars: r.rating, photos: [] }));
+        items = (data.reviews || []).map((r) => ({ quote: r.quote, author: r.author, stars: r.rating, date: "", photos: [] }));
       }
     } catch (err) {
       // Sin conexión con Google: seguimos con el respaldo manual de abajo.
@@ -347,6 +390,7 @@
         quote: t.quote,
         author: t.author,
         stars: t.stars || 5,
+        date: t.date || "",
         photos: Array.isArray(t.photos) ? t.photos : [],
       }));
     }
@@ -359,26 +403,24 @@
         </div>`;
       return;
     }
-    grid.innerHTML = items
-      .map(
-        (t) => `
-        <div class="testimonial-card">
-          <div class="testimonial-stars" aria-hidden="true">${"★".repeat(Math.round(t.stars) || 5)}</div>
-          <p class="testimonial-quote">“${escapeHtml(t.quote)}”</p>
-          <p class="testimonial-author">${escapeHtml(t.author)}</p>
-          ${
-            t.photos.length
-              ? `<div class="testimonial-photos">${t.photos
-                  .map((src) => `<img src="${src}" alt="Foto del trabajo, reseña de ${escapeHtml(t.author)}" loading="lazy">`)
-                  .join("")}</div>`
-              : ""
-          }
-        </div>`
-      )
-      .join("");
 
-    grid.querySelectorAll(".testimonial-photos img").forEach((img) => {
-      img.addEventListener("click", () => openLightbox(img.getAttribute("src"), img.getAttribute("alt")));
+    let page = 0;
+    renderTestimonialPage(items, page);
+    const prevBtn = document.getElementById("testimonial-prev");
+    const nextBtn = document.getElementById("testimonial-next");
+    prevBtn.addEventListener("click", () => {
+      if (page > 0) {
+        page -= 1;
+        renderTestimonialPage(items, page);
+        grid.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+    nextBtn.addEventListener("click", () => {
+      if (page < Math.ceil(items.length / TESTIMONIALS_PER_PAGE) - 1) {
+        page += 1;
+        renderTestimonialPage(items, page);
+        grid.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     });
   }
 

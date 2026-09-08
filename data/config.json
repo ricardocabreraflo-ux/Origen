@@ -38,57 +38,67 @@
     {
       "quote": "Excelente servicio. La profesional es muy meticulosa y sabe exactamente qué forma favorece según el rostro. La higiene es impecable y el ambiente es muy relajante. 100% recomendado.",
       "author": "Janette Gastélum",
-      "stars": 5
+      "stars": 5,
+      "date": "septiembre 2026"
     },
     {
       "quote": "Me encantó el servicio, la chica súper linda y amable. El diseño de mi cejas muy bonito. Te dan masaje, y parches de colágeno.",
       "author": "Miriel Bernal Serrano",
       "stars": 5,
+      "date": "septiembre 2026",
       "photos": ["assets/testimonials/miriel-1.jpg", "assets/testimonials/miriel-2.jpg"]
     },
     {
       "quote": "Hermoso trabajo me encantó, el ambiente es muy relajante te hacen sentir súper bien, son muy amables y elijo el lugar para mis cejas mil veces.",
       "author": "Valentina Espinosa",
       "stars": 5,
+      "date": "septiembre 2026",
       "photos": ["assets/testimonials/valentina-1.jpg", "assets/testimonials/valentina-2.jpg"]
     },
     {
       "quote": "Me encantó, excelente trabajo y trato, sin duda un lugar al cual volvería.",
       "author": "Fernanda Diego Castillo",
-      "stars": 5
+      "stars": 5,
+      "date": "septiembre 2026"
     },
     {
       "quote": "Es un studio donde te hacen el diseño personalizado, no te depilan sin que autorices, te consienten con aromaterapia y te pone parches de colágeno al final para que tu piel se vaya hidratada y luminosa. La verdad es un servicio muy completo y de calidad.",
       "author": "Yazale Serrano Martinez",
       "stars": 5,
+      "date": "septiembre 2026",
       "photos": ["assets/testimonials/yazale-1.jpg", "assets/testimonials/yazale-2.jpg"]
     },
     {
       "quote": "Me encantó la atención, es excelente, lo mejor es que ayudan al cuidado de la piel con sus productos de calidad, y en cuanto al lugar es muy bonito y cómodo.",
       "author": "Alejandra Hernandez Serrano",
       "stars": 5,
+      "date": "septiembre 2026",
       "photos": ["assets/testimonials/alejandra-1.jpg"]
     },
     {
       "quote": "Excelente servicio. Excelente ambiente. Es un trato muy personalizado, recomiendo el studio y sobre todo la calidad de trabajo y productos. Gracias infinitas por el trato y la atención recibida.",
       "author": "Yoselin Ayala",
       "stars": 5,
+      "date": "agosto 2026",
       "photos": ["assets/testimonials/yoselin-1.jpg"]
     },
     {
       "quote": "Lo recomiendo totalmente si quieres que tus cejas luzcan perfectas y naturales. Me encantó el resultado y la atención que te brindan, te hacen sentir muy a gusto.",
       "author": "Viridiana Medina",
-      "stars": 5
+      "stars": 5,
+      "date": "agosto 2026"
     },
     {
       "quote": "Me encantaron mis cejas, 100% recomendada. Mon te hace el diseño de acuerdo a tu tipo de cara, súper profesional y el lugar me encanta.",
       "author": "Nan Lugo",
-      "stars": 5
+      "stars": 5,
+      "date": "agosto 2026"
     },
     {
       "quote": "Su atención siempre es muy agradable, quedamos de acuerdo en lo que me haría para que fuera acorde a mis rasgos. Quedé muy satisfecha con el resultado, me encantó la remodelación.",
       "author": "Tokki Likethis",
       "stars": 5,
+      "date": "agosto 2026",
       "photos": ["assets/testimonials/tokki-1.jpg", "assets/testimonials/tokki-2.jpg"]
     }
   ],
