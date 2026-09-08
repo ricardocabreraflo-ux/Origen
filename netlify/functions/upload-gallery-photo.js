@@ -1,13 +1,21 @@
-// Sube una foto nueva a la galería de trabajos realizados, desde
+// Sube una foto o video nuevo a la galería de trabajos realizados, desde
 // Configuración → Galería de fotos. Requiere permiso de escritura en
 // "contenido".
 const { getServiceClient } = require("./_lib/supabase");
 const { requireSectionWrite } = require("./_lib/requireAdmin");
 
-// ~4.5MB de imagen real; el POST completo en base64 (que pesa ~33% más)
-// queda dentro del límite de tamaño de las Netlify Functions síncronas.
+// ~4.5MB de archivo real; el POST completo en base64 (que pesa ~33% más)
+// queda dentro del límite de tamaño de las Netlify Functions síncronas
+// (por eso los videos deben ser clips cortos, no de varios minutos).
 const MAX_BYTES = 4.5 * 1024 * 1024;
-const ALLOWED_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+const ALLOWED_TYPES = {
+  "image/jpeg": { ext: "jpg", mediaType: "photo" },
+  "image/png": { ext: "png", mediaType: "photo" },
+  "image/webp": { ext: "webp", mediaType: "photo" },
+  "video/mp4": { ext: "mp4", mediaType: "video" },
+  "video/quicktime": { ext: "mov", mediaType: "video" },
+  "video/webm": { ext: "webm", mediaType: "video" },
+};
 
 function badRequest(message) {
   return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message }) };
@@ -32,18 +40,18 @@ exports.handler = async (event, context) => {
   }
 
   const { dataBase64, contentType, alt } = payload;
-  if (!dataBase64 || typeof dataBase64 !== "string") return badRequest("Falta la imagen.");
-  const ext = ALLOWED_TYPES[contentType];
-  if (!ext) return badRequest("Formato no soportado. Usa JPG, PNG o WEBP.");
+  if (!dataBase64 || typeof dataBase64 !== "string") return badRequest("Falta el archivo.");
+  const typeInfo = ALLOWED_TYPES[contentType];
+  if (!typeInfo) return badRequest("Formato no soportado. Usa JPG, PNG, WEBP, MP4, MOV o WEBM.");
 
   const buffer = Buffer.from(dataBase64, "base64");
   if (buffer.length > MAX_BYTES) {
-    return badRequest("La foto pesa demasiado (máximo 4.5 MB). Usa una foto más ligera o comprímela antes de subirla.");
+    return badRequest("El archivo pesa demasiado (máximo 4.5 MB). Usa un archivo más ligero o comprímelo antes de subirlo.");
   }
 
   try {
     const supabase = getServiceClient();
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${typeInfo.ext}`;
 
     const { error: uploadError } = await supabase.storage.from("gallery").upload(path, buffer, { contentType });
     if (uploadError) throw uploadError;
@@ -58,14 +66,17 @@ exports.handler = async (event, context) => {
 
     const { data, error } = await supabase
       .from("gallery_photos")
-      .insert({ storage_path: path, alt: (alt || "").trim() || null, sort_order: nextOrder })
+      .insert({ storage_path: path, alt: (alt || "").trim() || null, sort_order: nextOrder, media_type: typeInfo.mediaType })
       .select()
       .single();
     if (error) throw error;
 
-    return { statusCode: 200, body: JSON.stringify({ photo: { id: data.id, alt: data.alt || "", sortOrder: data.sort_order } }) };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ photo: { id: data.id, alt: data.alt || "", sortOrder: data.sort_order, mediaType: data.media_type } }),
+    };
   } catch (err) {
     console.error("upload-gallery-photo error", err);
-    return { statusCode: 500, body: JSON.stringify({ error: "server_error", message: "No se pudo subir la foto." }) };
+    return { statusCode: 500, body: JSON.stringify({ error: "server_error", message: "No se pudo subir el archivo." }) };
   }
 };

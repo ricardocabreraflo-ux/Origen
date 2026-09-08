@@ -26,6 +26,12 @@
   .gallery-manager-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
   .gallery-manager-item { border: 1.5px solid rgba(33,29,25,0.1); border-radius: 12px; overflow: hidden; background: var(--color-cream-soft); }
   .gallery-manager-item .thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: rgba(33,29,25,0.05); }
+  .gallery-manager-item .thumb-wrap { position: relative; }
+  .gallery-manager-item .thumb-play {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.55); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 0.8rem; pointer-events: none;
+  }
   .gallery-manager-item .item-body { padding: 8px 10px 10px; }
   .gallery-manager-item input[type="text"] {
     width: 100%; padding: 6px 8px; border-radius: 6px; border: 1.5px solid rgba(33,29,25,0.15);
@@ -137,8 +143,8 @@
     <p class="section-note">Fotos de trabajos realizados que se muestran en la página principal. Usa las flechas para ordenarlas — el primer lugar es el que aparece primero en el carrusel.</p>
     <div class="row-actions" style="margin-bottom:16px;">
       <label class="btn btn-primary btn-sm" style="cursor:pointer;">
-        + Subir foto
-        <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp" multiple hidden />
+        + Subir foto o video
+        <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" multiple hidden />
       </label>
       <span class="form-hint" id="gallery-upload-hint"></span>
     </div>
@@ -285,11 +291,17 @@
   let galleryPhotos = [];
   let galleryReadOnly = false;
 
+  function galleryThumbHtml(photo) {
+    return photo.mediaType === "video"
+      ? `<div class="thumb-wrap"><video class="thumb" src="${photo.url}" muted playsinline preload="metadata"></video><span class="thumb-play">▶</span></div>`
+      : `<img class="thumb" src="${photo.url}" alt="${photo.alt || ""}" loading="lazy" />`;
+  }
+
   function galleryItemHtml(photo, index, total) {
     if (galleryReadOnly) {
       return `
         <div class="gallery-manager-item" data-photo-id="${photo.id}">
-          <img class="thumb" src="${photo.url}" alt="${photo.alt || ""}" loading="lazy" />
+          ${galleryThumbHtml(photo)}
           <div class="item-body">
             <p style="margin:0;font-size:0.78rem;color:var(--color-muted);">${photo.alt || "Sin descripción"}</p>
           </div>
@@ -297,7 +309,7 @@
     }
     return `
       <div class="gallery-manager-item" data-photo-id="${photo.id}">
-        <img class="thumb" src="${photo.url}" alt="${photo.alt || ""}" loading="lazy" />
+        ${galleryThumbHtml(photo)}
         <div class="item-body">
           <input type="text" data-field="alt" placeholder="Descripción (opcional)" value="${(photo.alt || "").replace(/"/g, "&quot;")}" />
           <div class="item-actions">
@@ -350,12 +362,14 @@
     });
   }
 
+  const ALLOWED_UPLOAD_TYPES = ["image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime", "video/webm"];
+
   async function uploadOneFile(file) {
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      throw new Error(`"${file.name}": formato no soportado (usa JPG, PNG o WEBP).`);
+    if (!ALLOWED_UPLOAD_TYPES.includes(file.type)) {
+      throw new Error(`"${file.name}": formato no soportado (usa JPG, PNG, WEBP para fotos o MP4, MOV, WEBM para videos).`);
     }
     if (file.size > 4.5 * 1024 * 1024) {
-      throw new Error(`"${file.name}": pesa demasiado (máximo 4.5 MB).`);
+      throw new Error(`"${file.name}": pesa demasiado (máximo 4.5 MB, incluidos los videos — usa un clip corto o comprímelo antes de subirlo).`);
     }
     const dataUrl = await new Promise((resolve, reject) => {
       const reader = new FileReader();

@@ -359,18 +359,27 @@ create table if not exists gallery_photos (
   storage_path text not null,
   alt text,
   sort_order int not null default 0,
+  media_type text not null default 'photo',
   created_at timestamptz not null default now()
 );
 alter table gallery_photos enable row level security;
 
-insert into gallery_photos (storage_path, alt, sort_order)
-select v.storage_path, v.alt, v.sort_order
+-- Si la tabla ya existía de antes (sin esta columna), agregarla ahora.
+alter table gallery_photos add column if not exists media_type text not null default 'photo';
+alter table gallery_photos drop constraint if exists gallery_photos_media_type_check;
+alter table gallery_photos add constraint gallery_photos_media_type_check check (media_type in ('photo', 'video'));
+
+insert into gallery_photos (storage_path, alt, sort_order, media_type)
+select v.storage_path, v.alt, v.sort_order, v.media_type
 from (values
-  ('/assets/gallery-2.jpg', 'Origen Brows & Hair Studio', 0),
-  ('/assets/gallery-3.jpg', 'Origen Brows & Hair Studio', 1),
-  ('/assets/gallery-4.jpg', 'Diseño de cejas en Origen Brows & Hair Studio', 2),
-  ('/assets/gallery-5.jpg', 'Productos profesionales InLei usados en Origen Brows', 3),
-  ('/assets/gallery-6.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 4),
-  ('/assets/gallery-7.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 5)
-) as v(storage_path, alt, sort_order)
+  ('/assets/gallery-2.jpg', 'Origen Brows & Hair Studio', 0, 'photo'),
+  ('/assets/gallery-3.jpg', 'Origen Brows & Hair Studio', 1, 'photo'),
+  ('/assets/gallery-4.jpg', 'Diseño de cejas en Origen Brows & Hair Studio', 2, 'photo'),
+  ('/assets/gallery-5.jpg', 'Productos profesionales InLei usados en Origen Brows', 3, 'photo'),
+  ('/assets/gallery-6.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 4, 'photo'),
+  ('/assets/gallery-7.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 5, 'photo'),
+  ('/assets/gallery-video-1.mov', 'Video de trabajo en Origen Brows & Hair Studio', 100, 'video'),
+  ('/assets/gallery-video-2.mov', 'Video de trabajo en Origen Brows & Hair Studio', 101, 'video'),
+  ('/assets/gallery-video-3.mp4', 'Video de trabajo en Origen Brows & Hair Studio', 102, 'video')
+) as v(storage_path, alt, sort_order, media_type)
 where not exists (select 1 from gallery_photos g where g.storage_path = v.storage_path);

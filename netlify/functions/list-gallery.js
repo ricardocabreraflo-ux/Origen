@@ -18,6 +18,7 @@ exports.handler = async (event) => {
       id: p.id,
       url: buildPublicUrl(p.storage_path),
       alt: p.alt || "",
+      mediaType: p.media_type || "photo",
     }));
 
     return { statusCode: 200, body: JSON.stringify({ photos }) };

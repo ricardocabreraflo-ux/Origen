@@ -210,20 +210,22 @@
 
     // Se pinta de inmediato con lo que ya está en config.json — el
     // carrete no espera ninguna llamada de red para empezar a moverse.
-    // Las fotos del panel (Configuración → Galería de fotos) se piden
-    // aparte y, si llegan, reemplazan las fotos (los videos, que ese
-    // panel no maneja, se quedan igual); si la llamada tarda, falla o la
-    // tabla todavía no existe, la sección ya está funcionando desde el
-    // primer segundo con lo que había.
+    // Las fotos y videos del panel (Configuración → Galería de fotos) se
+    // piden aparte y, si llegan, reemplazan todo el contenido; si la
+    // llamada tarda, falla o la tabla todavía no existe, la sección ya
+    // está funcionando desde el primer segundo con lo que había.
     paint(cfg.galleryImages || []);
 
     fetch("/api/list-gallery")
       .then((res) => (res.ok ? res.json() : null))
       .then((body) => {
         if (!body || !Array.isArray(body.photos)) return;
-        const photoItems = body.photos.map((p) => ({ src: p.url, alt: p.alt || "" }));
-        const videoItems = (cfg.galleryImages || []).filter((g) => g.type === "video");
-        paint([...photoItems, ...videoItems]);
+        const items = body.photos.map((p) => ({
+          src: p.url,
+          alt: p.alt || "",
+          type: p.mediaType === "video" ? "video" : undefined,
+        }));
+        paint(items);
       })
       .catch(() => {});
   }
