@@ -11,6 +11,18 @@
     return (str || "").replace(/\D/g, "");
   }
 
+  // Las reseñas de Google son texto público que cualquier persona puede
+  // escribir — a diferencia del resto de cfg (editado solo por la dueña
+  // vía CMS), hay que escaparlo antes de insertarlo como HTML.
+  function escapeHtml(str) {
+    return (str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function whatsappLink(message) {
     const phone = digitsOnly(cfg.whatsappNumber);
     const text = encodeURIComponent(message || "");
@@ -180,72 +192,8 @@
     }, 1000);
   }
 
-  function initPwaInstallBanner() {
-    const banner = document.getElementById("pwa-install-banner");
-    if (!banner) return;
-
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-    if (isStandalone) return;
-    if (localStorage.getItem("pwaInstallDismissed")) return;
-
-    const closeBtn = document.getElementById("pwa-install-close");
-    const actionBtn = document.getElementById("pwa-install-action");
-    const messageEl = document.getElementById("pwa-install-message");
-
-    function dismiss() {
-      banner.hidden = true;
-      localStorage.setItem("pwaInstallDismissed", "1");
-    }
-    closeBtn.addEventListener("click", dismiss);
-
-    // No mostramos el aviso encima de la ventana emergente de promoción:
-    // esperamos a que se cierre (o a que nunca aparezca) antes de mostrarlo.
-    function revealWhenClear() {
-      const overlay = document.getElementById("promo-popup-overlay");
-      if (overlay && !overlay.hidden) {
-        setTimeout(revealWhenClear, 800);
-        return;
-      }
-      banner.hidden = false;
-    }
-
-    const ua = window.navigator.userAgent;
-    const isIOS = /iphone|ipad|ipod/i.test(ua);
-    const isIOSOtherBrowser = /crios|fxios/i.test(ua); // Chrome/Firefox en iOS no pueden agregar a inicio
-
-    let deferredPrompt = null;
-    let canShowNativePrompt = false;
-
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      canShowNativePrompt = true;
-      actionBtn.hidden = false;
-    });
-
-    actionBtn.addEventListener("click", async () => {
-      if (!deferredPrompt) return;
-      actionBtn.disabled = true;
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      if (choice.outcome === "accepted") dismiss();
-      else actionBtn.disabled = false;
-    });
-
-    // Le damos 3.5s para que el navegador dispare "beforeinstallprompt" (si
-    // lo soporta) antes de decidir qué mensaje mostrar.
-    setTimeout(() => {
-      if (canShowNativePrompt) {
-        revealWhenClear();
-      } else if (isIOS && !isIOSOtherBrowser) {
-        messageEl.textContent = "Toca el botón de compartir (⬆️) en Safari y luego 'Agregar a inicio'.";
-        revealWhenClear();
-      }
-      // En otros navegadores sin "Agregar a inicio" disponible, no forzamos
-      // ningún aviso — no hay una acción real que la clienta pueda tomar.
-    }, 3500);
-  }
+  // El aviso para instalar la app vive en js/pwa-install.js (compartido
+  // con tarjeta.html) y corre solo, sin depender de config.json.
 
   function renderFounder() {
     if (cfg.founder) {
@@ -260,12 +208,128 @@
     }
   }
 
+  function openLightbox(src, alt) {
+    const overlay = document.getElementById("lightbox-overlay");
+    const img = document.getElementById("lightbox-image");
+    const caption = document.getElementById("lightbox-caption");
+    const marquee = document.getElementById("gallery-marquee");
+    if (!overlay || !img) return;
+    img.src = src;
+    img.alt = alt || "";
+    if (caption) {
+      caption.textContent = alt || "";
+      caption.hidden = !alt;
+    }
+    overlay.hidden = false;
+    if (marquee) marquee.classList.add("is-paused");
+  }
+  function closeLightbox() {
+    const overlay = document.getElementById("lightbox-overlay");
+    const marquee = document.getElementById("gallery-marquee");
+    if (!overlay) return;
+    overlay.hidden = true;
+    if (marquee) marquee.classList.remove("is-paused");
+  }
+  function initLightbox() {
+    const overlay = document.getElementById("lightbox-overlay");
+    const closeBtn = document.getElementById("lightbox-close");
+    if (!overlay || !closeBtn) return;
+    closeBtn.addEventListener("click", closeLightbox);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeLightbox();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !overlay.hidden) closeLightbox();
+    });
+  }
+
   function renderGallery() {
     const grid = document.getElementById("gallery-grid");
-    if (!grid || !cfg.galleryImages) return;
-    grid.innerHTML = cfg.galleryImages
-      .map((g) => `<div class="gallery-item"><img src="${g.src}" alt="${g.alt || ""}" loading="lazy" /></div>`)
-      .join("");
+    if (!grid) return;
+
+    // Tocar/hacer clic en una foto la agranda y pausa el carrusel
+    // mientras se ve (los videos siguen con sus controles normales).
+    grid.addEventListener("click", (e) => {
+      const img = e.target.closest(".gallery-item img");
+      if (!img) return;
+      openLightbox(img.getAttribute("src"), img.getAttribute("alt"));
+    });
+
+    // Cuando una foto tiene descripción (la que se escribe en Configuración
+    // → Galería de fotos), se ve encima de la foto misma, no solo como
+    // texto alternativo escondido — así la clienta la lee directo ahí.
+    function captionHtml(alt) {
+      return alt ? `<span class="gallery-caption">${escapeHtml(alt)}</span>` : "";
+    }
+
+    // El carrete se desliza solo en bucle infinito: duplicamos las fotos
+    // una vez para que, al llegar a la mitad, el "salto" de regreso al
+    // inicio sea invisible (la segunda copia queda oculta a lectores de
+    // pantalla para no anunciar cada foto dos veces). Sin loading="lazy":
+    // son pocas fotos (no una lista larga) y, al estar siempre en
+    // movimiento, el lazy-load solo lograba que se vieran huecos en
+    // blanco mientras cada una entraba a la vista.
+    function renderItem(g, hidden) {
+      const media =
+        g.type === "video"
+          ? `<video src="${g.src}" controls playsinline preload="metadata" aria-label="${escapeHtml(g.alt || "")}"></video>`
+          : `<img src="${g.src}" alt="${g.alt || ""}" />${captionHtml(g.alt)}`;
+      return `<div class="gallery-item"${hidden ? ' aria-hidden="true"' : ""}>${media}</div>`;
+    }
+
+    function paint(items) {
+      if (!items || items.length === 0) return;
+      grid.innerHTML = items.map((g) => renderItem(g, false)).join("") + items.map((g) => renderItem(g, true)).join("");
+
+      // Reproduce en automático (sin sonido) el video con el que el cursor
+      // se detiene encima, como vista previa; se pausa y regresa al inicio
+      // al quitar el cursor. En celular (sin cursor) el botón de play normal
+      // del video sigue funcionando igual.
+      grid.querySelectorAll(".gallery-item").forEach((item) => {
+        const video = item.querySelector("video");
+        if (!video) return;
+        item.addEventListener("mouseenter", () => {
+          video.muted = true;
+          video.play().catch(() => {});
+        });
+        item.addEventListener("mouseleave", () => {
+          video.pause();
+          video.currentTime = 0;
+        });
+      });
+    }
+
+    // Se pinta de inmediato con lo que ya está en config.json — el
+    // carrete no espera ninguna llamada de red para empezar a moverse.
+    // Las fotos y videos del panel (Configuración → Galería de fotos) se
+    // piden aparte y, si llegan, reemplazan todo el contenido; si la
+    // llamada tarda, falla o la tabla todavía no existe, la sección ya
+    // está funcionando desde el primer segundo con lo que había.
+    paint(cfg.galleryImages || []);
+
+    fetch("/api/list-gallery")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (!body || !Array.isArray(body.photos)) return;
+        const items = body.photos.map((p) => ({
+          src: p.url,
+          alt: p.alt || "",
+          type: p.mediaType === "video" ? "video" : undefined,
+        }));
+        paint(items);
+      })
+      .catch(() => {});
+  }
+
+  function renderTransformationReel() {
+    const reel = cfg.transformationReel;
+    const section = document.getElementById("transformacion");
+    if (!section || !reel || !reel.show) return;
+    document.getElementById("reel-title").textContent = reel.title || "";
+    document.getElementById("reel-caption").textContent = reel.caption || "";
+    const video = document.getElementById("reel-video");
+    video.src = reel.videoSrc;
+    section.hidden = false;
   }
 
   function renderContact() {
@@ -379,22 +443,34 @@
     }
   }
 
+  function moneyDigits(str) {
+    const digits = (str || "").replace(/[^\d]/g, "");
+    return digits ? Number(digits) : 0;
+  }
+
   function renderServices() {
     const grid = document.getElementById("services-grid");
     grid.innerHTML = cfg.services
-      .map(
-        (s) => `
-        <div class="service-card">
+      .map((s) => {
+        const savings = s.originalPrice ? moneyDigits(s.originalPrice) - moneyDigits(s.price) : 0;
+        return `
+        <div class="service-card${s.badge ? " has-badge" : ""}">
+          ${s.badge ? `<span class="service-card-badge">${s.badge}</span>` : ""}
           <h3>${s.name}</h3>
           <p>${s.description}</p>
           <div class="service-meta">
             <span>${s.price}</span>
             <span>${s.duration} min aprox.</span>
           </div>
-          <p class="service-deposit">Anticipo para reservar: ${formatMoney(s.depositAmount)}</p>
+          ${
+            s.originalPrice && savings > 0
+              ? `<p class="service-savings"><s>${s.originalPrice.replace(" MXN", "")} por separado</s> · <strong>Ahorras $${savings.toLocaleString("es-MX")}</strong></p>`
+              : ""
+          }
+          <p class="service-deposit">Reserva con ${formatMoney(s.depositAmount)}</p>
           <button type="button" class="btn btn-outline btn-sm" data-book-service="${s.id}">Reservar</button>
-        </div>`
-      )
+        </div>`;
+      })
       .join("");
 
     grid.querySelectorAll("[data-book-service]").forEach((btn) => {
@@ -414,9 +490,75 @@
       .join("");
   }
 
-  function renderTestimonials() {
+  const TESTIMONIALS_PER_PAGE = 6;
+
+  function testimonialCardHtml(t) {
+    return `
+      <div class="testimonial-card">
+        <div class="testimonial-stars" aria-hidden="true">${"★".repeat(Math.round(t.stars) || 5)}</div>
+        <p class="testimonial-quote">“${escapeHtml(t.quote)}”</p>
+        <p class="testimonial-author">${escapeHtml(t.author)}${t.date ? `<span class="testimonial-date"> · ${escapeHtml(t.date)}</span>` : ""}</p>
+        ${
+          t.photos.length
+            ? `<div class="testimonial-photos">${t.photos
+                .map((src) => `<img src="${src}" alt="Foto del trabajo, reseña de ${escapeHtml(t.author)}" loading="lazy">`)
+                .join("")}</div>`
+            : ""
+        }
+      </div>`;
+  }
+
+  function renderTestimonialPage(items, page) {
     const grid = document.getElementById("testimonial-grid");
-    const items = cfg.testimonials || [];
+    const pagination = document.getElementById("testimonial-pagination");
+    const pageCount = document.getElementById("testimonial-page-count");
+    const prevBtn = document.getElementById("testimonial-prev");
+    const nextBtn = document.getElementById("testimonial-next");
+    const totalPages = Math.ceil(items.length / TESTIMONIALS_PER_PAGE);
+    const start = page * TESTIMONIALS_PER_PAGE;
+    const pageItems = items.slice(start, start + TESTIMONIALS_PER_PAGE);
+
+    grid.innerHTML = pageItems.map(testimonialCardHtml).join("");
+    grid.querySelectorAll(".testimonial-photos img").forEach((img) => {
+      img.addEventListener("click", () => openLightbox(img.getAttribute("src"), img.getAttribute("alt")));
+    });
+
+    if (totalPages > 1) {
+      pagination.hidden = false;
+      pageCount.textContent = `${page + 1} / ${totalPages}`;
+      prevBtn.disabled = page === 0;
+      nextBtn.disabled = page === totalPages - 1;
+    } else {
+      pagination.hidden = true;
+    }
+  }
+
+  async function renderTestimonials() {
+    const grid = document.getElementById("testimonial-grid");
+
+    // Fuente principal: reseñas reales de Google Maps de 4-5 estrellas.
+    // Si Google no responde o no hay ninguna todavía, cae de vuelta a los
+    // testimonios manuales que la dueña carga en el panel de Contenido.
+    let items = [];
+    try {
+      const res = await fetch("/.netlify/functions/google-reviews");
+      if (res.ok) {
+        const data = await res.json();
+        items = (data.reviews || []).map((r) => ({ quote: r.quote, author: r.author, stars: r.rating, date: "", photos: [] }));
+      }
+    } catch (err) {
+      // Sin conexión con Google: seguimos con el respaldo manual de abajo.
+    }
+    if (items.length === 0) {
+      items = (cfg.testimonials || []).map((t) => ({
+        quote: t.quote,
+        author: t.author,
+        stars: t.stars || 5,
+        date: t.date || "",
+        photos: Array.isArray(t.photos) ? t.photos : [],
+      }));
+    }
+
     if (items.length === 0) {
       grid.outerHTML = `
         <div class="testimonial-empty" id="testimonial-grid">
@@ -425,16 +567,25 @@
         </div>`;
       return;
     }
-    grid.innerHTML = items
-      .map(
-        (t) => `
-        <div class="testimonial-card">
-          <div class="testimonial-stars" aria-hidden="true">★★★★★</div>
-          <p class="testimonial-quote">“${t.quote}”</p>
-          <p class="testimonial-author">${t.author}</p>
-        </div>`
-      )
-      .join("");
+
+    let page = 0;
+    renderTestimonialPage(items, page);
+    const prevBtn = document.getElementById("testimonial-prev");
+    const nextBtn = document.getElementById("testimonial-next");
+    prevBtn.addEventListener("click", () => {
+      if (page > 0) {
+        page -= 1;
+        renderTestimonialPage(items, page);
+        grid.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+    nextBtn.addEventListener("click", () => {
+      if (page < Math.ceil(items.length / TESTIMONIALS_PER_PAGE) - 1) {
+        page += 1;
+        renderTestimonialPage(items, page);
+        grid.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
   }
 
   function renderFAQ() {
@@ -553,6 +704,12 @@
         payOnlineBtn: document.getElementById("pay-online-btn"),
         payOnlineHint: document.getElementById("pay-online-hint"),
         mpReturnBanner: document.getElementById("mp-return-banner"),
+        waitlistBox: document.getElementById("waitlist-box"),
+        waitlistForm: document.getElementById("waitlist-form"),
+        wlName: document.getElementById("wl-name"),
+        wlPhone: document.getElementById("wl-phone"),
+        wlSubmit: document.getElementById("wl-submit"),
+        wlHint: document.getElementById("wl-hint"),
       };
     }
 
@@ -596,6 +753,10 @@
       els.slotGrid.innerHTML = "";
       els.slotStatus.textContent = "Buscando horarios disponibles…";
       els.slotStatus.classList.remove("is-error");
+      els.waitlistBox.hidden = true;
+      els.waitlistForm.hidden = false;
+      els.wlHint.textContent = "";
+      els.wlHint.classList.remove("is-error", "is-success");
 
       fetch(`/api/availability?date=${encodeURIComponent(date)}&serviceId=${encodeURIComponent(state.service.id)}`)
         .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
@@ -610,6 +771,9 @@
     }
 
     function renderSlotGrid(slots, closedReason) {
+      const hasAvailable = slots.some((s) => s.available);
+      els.waitlistBox.hidden = hasAvailable;
+
       if (slots.length === 0) {
         els.slotGrid.innerHTML = "";
         els.slotStatus.textContent = closedReason
@@ -641,6 +805,55 @@
       state.slot = slot;
       goToStep(3);
       renderBookingSummary();
+    }
+
+    function joinWaitlist(e) {
+      e.preventDefault();
+      els.wlHint.textContent = "";
+      els.wlHint.classList.remove("is-error", "is-success");
+
+      const name = els.wlName.value.trim();
+      const phone = digitsOnly(els.wlPhone.value);
+      if (!name) {
+        els.wlHint.textContent = "Escribe tu nombre.";
+        els.wlHint.classList.add("is-error");
+        return;
+      }
+      if (phone.length < 10) {
+        els.wlHint.textContent = "Escribe un WhatsApp válido (10 dígitos).";
+        els.wlHint.classList.add("is-error");
+        return;
+      }
+
+      els.wlSubmit.disabled = true;
+      els.wlSubmit.textContent = "Anotando…";
+
+      fetch("/api/join-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          phone,
+          date: state.date,
+          serviceId: state.service ? state.service.id : null,
+          serviceName: state.service ? state.service.name : null,
+        }),
+      })
+        .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+        .then(({ ok, body }) => {
+          if (!ok) throw new Error(body.message || "No se pudo guardar tu lugar en la lista de espera.");
+          els.wlHint.textContent = "¡Listo! Te avisamos por WhatsApp si se libera un espacio ese día.";
+          els.wlHint.classList.add("is-success");
+          els.waitlistForm.hidden = true;
+        })
+        .catch((err) => {
+          els.wlHint.textContent = err.message || "No se pudo guardar tu lugar. Intenta de nuevo.";
+          els.wlHint.classList.add("is-error");
+        })
+        .finally(() => {
+          els.wlSubmit.disabled = false;
+          els.wlSubmit.textContent = "Anotarme en la lista de espera";
+        });
     }
 
     function renderBookingSummary() {
@@ -918,6 +1131,8 @@
         promoCheckTimer = setTimeout(checkPromoCode, 500);
       });
 
+      els.waitlistForm.addEventListener("submit", joinWaitlist);
+
       els.copyClabe.addEventListener("click", () => {
         const clabe = els.transferClabe.textContent;
         navigator.clipboard
@@ -947,9 +1162,10 @@
     renderBrand();
     renderAnnouncement();
     initPromoPopup();
-    initPwaInstallBanner();
     renderFounder();
+    initLightbox();
     renderGallery();
+    renderTransformationReel();
     renderContact();
     renderSocialLinks();
     renderWhatsappButtons();
@@ -983,9 +1199,7 @@
       });
   });
 
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    });
-  }
+  // El registro del service worker vive en js/pwa-install.js (compartido
+  // con tarjeta.html), para que quede activo sin importar por dónde
+  // entre la clienta primero.
 })();

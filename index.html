@@ -121,8 +121,31 @@
   <div class="container">
     <p class="section-eyebrow">Galería</p>
     <h2 class="section-title">Nuestro trabajo</h2>
-    <div class="gallery-grid reveal-stagger" id="gallery-grid">
+  </div>
+  <div class="gallery-marquee" id="gallery-marquee">
+    <div class="gallery-grid" id="gallery-grid">
       <!-- generado por script.js -->
+    </div>
+  </div>
+</section>
+
+<!-- Foto ampliada de la galería: pausa el carrusel mientras está abierta. -->
+<div class="lightbox-overlay" id="lightbox-overlay" hidden>
+  <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Cerrar">✕</button>
+  <div class="lightbox-content">
+    <img class="lightbox-image" id="lightbox-image" src="" alt="" />
+    <p class="lightbox-caption" id="lightbox-caption" hidden></p>
+  </div>
+</div>
+
+<!-- REEL ANTES Y DESPUÉS (oculto hasta activarse desde config.json) -->
+<section class="section section-alt reel-section" id="transformacion" hidden>
+  <div class="container reel-container">
+    <p class="section-eyebrow" id="reel-eyebrow">Transformación</p>
+    <h2 class="section-title" id="reel-title"></h2>
+    <p class="reel-caption" id="reel-caption"></p>
+    <div class="reel-video-wrap">
+      <video id="reel-video" controls playsinline preload="metadata"></video>
     </div>
   </div>
 </section>
@@ -158,6 +181,16 @@
         </div>
         <div class="slot-grid" id="slot-grid"></div>
         <p class="slot-status" id="slot-status">Elige una fecha para ver los horarios disponibles.</p>
+
+        <div class="waitlist-box" id="waitlist-box" hidden>
+          <p class="waitlist-intro">¿Esta fecha no tiene horarios? Anótate y te avisamos por WhatsApp si se libera un espacio.</p>
+          <form class="waitlist-form" id="waitlist-form">
+            <input type="text" id="wl-name" placeholder="Tu nombre" required />
+            <input type="tel" id="wl-phone" placeholder="Tu WhatsApp (10 dígitos)" required />
+            <button type="submit" class="btn btn-outline btn-sm" id="wl-submit">Anotarme en la lista de espera</button>
+          </form>
+          <p class="waitlist-hint" id="wl-hint"></p>
+        </div>
       </div>
 
       <!-- Paso 3: datos del cliente -->
@@ -267,6 +300,11 @@
     <p class="section-eyebrow">Testimonios</p>
     <h2 class="section-title">Lo que dicen nuestras clientas</h2>
     <div class="testimonial-grid reveal-stagger" id="testimonial-grid"><!-- generado por script.js --></div>
+    <div class="testimonial-pagination" id="testimonial-pagination" hidden>
+      <button type="button" class="testimonial-page-btn" id="testimonial-prev" aria-label="Reseñas anteriores">‹</button>
+      <span class="testimonial-page-count" id="testimonial-page-count"></span>
+      <button type="button" class="testimonial-page-btn" id="testimonial-next" aria-label="Más reseñas">›</button>
+    </div>
   </div>
 </section>
 
@@ -377,5 +415,6 @@
 </svg>
 
 <script src="js/script.js"></script>
+<script src="js/pwa-install.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 
 function badRequest(message) {
   return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message }) };
@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "clientas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

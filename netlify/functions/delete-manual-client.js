@@ -2,7 +2,7 @@
 // tiene citas reales en bookings, sigue apareciendo en la lista de
 // clientas por esas citas — esto solo quita la nota/contacto agregado a mano.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -10,7 +10,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "clientas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

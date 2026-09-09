@@ -18,16 +18,95 @@
     "date": "8 de agosto de 2026"
   },
 
+  "transformationReel": {
+    "show": false,
+    "title": "Mira la transformación",
+    "caption": "Antes y después reales de nuestras clientas en Origen Brows & Hair Studio.",
+    "videoSrc": "assets/gallery-video-1.mov"
+  },
+
   "promoPopup": {
     "show": true,
-    "eyebrow": "Gran apertura",
+    "eyebrow": "Oferta especial",
     "title": "15% de descuento en tu primera cita",
-    "message": "Por nuestra gran apertura, agenda tu primera cita y recibe 15% de descuento en cualquier servicio.",
+    "message": "Agenda tu primera cita y recibe 15% de descuento en cualquier servicio. Además, nuestras tarifas actuales están vigentes solo por tiempo limitado — asegura tu precio antes del cambio a tarifario regular.",
     "ctaLabel": "Agenda tu cita",
     "expiresOn": "2026-08-31"
   },
 
-  "testimonials": [],
+  "testimonials": [
+    {
+      "quote": "Excelente servicio. La profesional es muy meticulosa y sabe exactamente qué forma favorece según el rostro. La higiene es impecable y el ambiente es muy relajante. 100% recomendado.",
+      "author": "Janette Gastélum",
+      "stars": 5,
+      "date": "septiembre 2026"
+    },
+    {
+      "quote": "Me encantó el servicio, la chica súper linda y amable. El diseño de mi cejas muy bonito. Te dan masaje, y parches de colágeno.",
+      "author": "Miriel Bernal Serrano",
+      "stars": 5,
+      "date": "septiembre 2026",
+      "photos": ["assets/testimonials/miriel-1.jpg", "assets/testimonials/miriel-2.jpg"]
+    },
+    {
+      "quote": "Hermoso trabajo me encantó, el ambiente es muy relajante te hacen sentir súper bien, son muy amables y elijo el lugar para mis cejas mil veces.",
+      "author": "Valentina Espinosa",
+      "stars": 5,
+      "date": "septiembre 2026",
+      "photos": ["assets/testimonials/valentina-1.jpg", "assets/testimonials/valentina-2.jpg"]
+    },
+    {
+      "quote": "Me encantó, excelente trabajo y trato, sin duda un lugar al cual volvería.",
+      "author": "Fernanda Diego Castillo",
+      "stars": 5,
+      "date": "septiembre 2026"
+    },
+    {
+      "quote": "Es un studio donde te hacen el diseño personalizado, no te depilan sin que autorices, te consienten con aromaterapia y te pone parches de colágeno al final para que tu piel se vaya hidratada y luminosa. La verdad es un servicio muy completo y de calidad.",
+      "author": "Yazale Serrano Martinez",
+      "stars": 5,
+      "date": "septiembre 2026",
+      "photos": ["assets/testimonials/yazale-1.jpg", "assets/testimonials/yazale-2.jpg"]
+    },
+    {
+      "quote": "Me encantó la atención, es excelente, lo mejor es que ayudan al cuidado de la piel con sus productos de calidad, y en cuanto al lugar es muy bonito y cómodo.",
+      "author": "Alejandra Hernandez Serrano",
+      "stars": 5,
+      "date": "septiembre 2026",
+      "photos": ["assets/testimonials/alejandra-1.jpg"]
+    },
+    {
+      "quote": "Excelente servicio. Excelente ambiente. Es un trato muy personalizado, recomiendo el studio y sobre todo la calidad de trabajo y productos. Gracias infinitas por el trato y la atención recibida.",
+      "author": "Yoselin Ayala",
+      "stars": 5,
+      "date": "agosto 2026",
+      "photos": ["assets/testimonials/yoselin-1.jpg"]
+    },
+    {
+      "quote": "Lo recomiendo totalmente si quieres que tus cejas luzcan perfectas y naturales. Me encantó el resultado y la atención que te brindan, te hacen sentir muy a gusto.",
+      "author": "Viridiana Medina",
+      "stars": 5,
+      "date": "agosto 2026"
+    },
+    {
+      "quote": "Me encantaron mis cejas, 100% recomendada. Mon te hace el diseño de acuerdo a tu tipo de cara, súper profesional y el lugar me encanta.",
+      "author": "Nan Lugo",
+      "stars": 5,
+      "date": "agosto 2026"
+    },
+    {
+      "quote": "Su atención siempre es muy agradable, quedamos de acuerdo en lo que me haría para que fuera acorde a mis rasgos. Quedé muy satisfecha con el resultado, me encantó la remodelación.",
+      "author": "Tokki Likethis",
+      "stars": 5,
+      "date": "agosto 2026",
+      "photos": ["assets/testimonials/tokki-1.jpg", "assets/testimonials/tokki-2.jpg"]
+    }
+  ],
+
+  "reviews": {
+    "googlePlaceId": "ChIJxU4nlAD90YURF83FOaw97Hs",
+    "minRating": 4
+  },
 
   "contactChannel": {
     "channel": "instagram",
@@ -39,8 +118,8 @@
   "email": "origenbrowsmx@gmail.com",
 
   "address": "Ote. 253 299-Loc B, Agrícola Oriental, Iztacalco, 08500 Ciudad de México, CDMX",
-  "mapEmbedUrl": "https://www.google.com/maps?q=Ote.+253+299-Loc+B%2C+Agr%C3%ADcola+Oriental%2C+Iztacalco%2C+08500+Ciudad+de+M%C3%A9xico%2C+CDMX&output=embed",
-  "mapsUrl": "https://maps.app.goo.gl/ZtdFQhjycvTQiRYC8?g_st=ic",
+  "mapEmbedUrl": "https://www.google.com/maps?q=ORIGEN+BROWS%2C+Agr%C3%ADcola+Oriental%2C+Iztacalco%2C+Ciudad+de+M%C3%A9xico&output=embed",
+  "mapsUrl": "https://maps.app.goo.gl/qAjp9Hb4xWFJ5anR8",
 
   "hours": [
     { "day": "Lunes", "time": "Cerrado" },
@@ -70,15 +149,23 @@
 
   "galleryImages": [
     { "src": "assets/gallery-2.jpg", "alt": "Origen Brows & Hair Studio" },
-    { "src": "assets/gallery-3.jpg", "alt": "Origen Brows & Hair Studio" }
+    { "src": "assets/gallery-3.jpg", "alt": "Origen Brows & Hair Studio" },
+    { "src": "assets/gallery-4.jpg", "alt": "Diseño de cejas en Origen Brows & Hair Studio" },
+    { "src": "assets/gallery-5.jpg", "alt": "Productos profesionales InLei usados en Origen Brows" },
+    { "src": "assets/gallery-6.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" },
+    { "src": "assets/gallery-7.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" },
+    { "type": "video", "src": "assets/gallery-video-1.mov", "alt": "Video de trabajo en Origen Brows & Hair Studio" },
+    { "type": "video", "src": "assets/gallery-video-2.mov", "alt": "Video de trabajo en Origen Brows & Hair Studio" },
+    { "type": "video", "src": "assets/gallery-video-3.mp4", "alt": "Video de trabajo en Origen Brows & Hair Studio" }
   ],
 
   "services": [
     {
       "id": "disenando-tu-origen",
       "name": "Diseñando tu ORIGEN",
+      "badge": "Esencial",
       "description": "Solo diseño con visagismo + epilación con hilo.",
-      "price": "$220 MXN",
+      "price": "$349 MXN",
       "duration": 40,
       "depositAmount": 200
     },
@@ -86,15 +173,16 @@
       "id": "brow-tint-shape",
       "name": "Brow Tint & Shape",
       "description": "Diseño + hilo + tinte híbrido (Élan/Bronsun).",
-      "price": "$350 MXN",
+      "price": "$450 MXN",
       "duration": 50,
       "depositAmount": 200
     },
     {
       "id": "korean-lash-lifting",
       "name": "Korean Lash Lifting",
+      "badge": "Efecto Top",
       "description": "Levantamiento coreano + tinte negro + botox/keratina.",
-      "price": "$550 MXN",
+      "price": "$750 MXN",
       "duration": 75,
       "depositAmount": 200
     },
@@ -102,23 +190,26 @@
       "id": "luxury-brow-lamination",
       "name": "Luxury Brow Lamination",
       "description": "Diseño + hilo + laminado italiano + nutrición/botox.",
-      "price": "$480 MXN",
+      "price": "$649 MXN",
       "duration": 75,
       "depositAmount": 200
     },
     {
       "id": "luxury-lamination-tint",
       "name": "Luxury Lamination + Tint",
-      "description": "Laminado completo + tinte híbrido + botox.",
-      "price": "$580 MXN",
+      "badge": "Favorito",
+      "description": "Laminado completo + tinte híbrido (Maxymova, Bronsun e InLei) + botox.",
+      "price": "$749 MXN",
       "duration": 90,
       "depositAmount": 200
     },
     {
       "id": "combo-full-look",
       "name": "Combo Full Look Origen",
+      "badge": "Más recomendado",
       "description": "Luxury Brow Lamination + Korean Lash Lifting.",
-      "price": "$980 MXN",
+      "price": "$1,250 MXN",
+      "originalPrice": "$1,399 MXN",
       "duration": 120,
       "depositAmount": 300
     },
@@ -127,16 +218,19 @@
       "name": "Botox Capilar",
       "description": "Tratamiento capilar restaurador. Precio sujeto a valoración previa.",
       "price": "Valoración previa",
-      "duration": 120,
-      "depositAmount": 300
+      "duration": 180,
+      "depositAmount": 300,
+      "fixedSlots": { "weekday": ["10:00", "15:00"], "saturday": ["09:00", "14:00"] }
     },
     {
       "id": "keratina-alisante",
       "name": "Keratina Alisante",
+      "badge": "Glow up",
       "description": "Keratina premium alisante. Precio sujeto a valoración previa.",
       "price": "Valoración previa",
-      "duration": 150,
-      "depositAmount": 300
+      "duration": 180,
+      "depositAmount": 300,
+      "fixedSlots": { "weekday": ["10:00", "15:00"], "saturday": ["09:00", "14:00"] }
     },
     {
       "id": "servicio-especial",

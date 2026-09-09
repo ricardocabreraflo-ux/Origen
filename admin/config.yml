@@ -59,6 +59,9 @@ collections:
             fields:
               - { label: "Reseña", name: "quote", widget: "text" }
               - { label: "Autora", name: "author", widget: "string" }
+              - { label: "Estrellas (1 a 5)", name: "stars", widget: "number", value_type: "int", min: 1, max: 5, default: 5, required: false }
+              - { label: "Fecha (texto libre, ej. \"septiembre 2026\")", name: "date", widget: "string", required: false }
+              - { label: "Fotos del trabajo (opcional)", name: "photos", widget: "list", field: { label: "Foto", name: "photo", widget: "image" }, required: false, allow_add: true }
 
           - label: "Canal de contacto principal (botones \"Escríbenos\")"
             name: "contactChannel"

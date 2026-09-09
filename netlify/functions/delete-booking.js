@@ -4,7 +4,7 @@
 // normales — por eso el panel pide confirmación explícita antes de llamar
 // este endpoint.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 const { deleteCalendarEvent } = require("./_lib/googleCalendar");
 
 exports.handler = async (event, context) => {
@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

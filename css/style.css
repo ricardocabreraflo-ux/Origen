@@ -40,6 +40,7 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
+[hidden] { display: none !important; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
@@ -411,6 +412,26 @@ img { max-width: 100%; display: block; }
   padding-top: 14px;
   margin-bottom: 18px;
 }
+.service-savings {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  margin: -10px 0 12px;
+}
+.service-savings s { color: rgba(111, 101, 88, 0.7); }
+.service-savings strong { color: var(--color-accent-dark); font-weight: 700; }
+.service-card.has-badge { position: relative; padding-top: 44px; }
+.service-card-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 7px 16px 7px 18px;
+  border-radius: 0 var(--radius) 0 14px;
+}
 .service-deposit {
   font-size: 0.78rem;
   color: var(--color-muted);
@@ -460,19 +481,115 @@ img { max-width: 100%; display: block; }
 .founder-credit { font-size: 0.88rem; color: var(--color-muted); }
 .founder-credit strong { color: var(--color-dark); }
 
-/* Gallery */
+/* Gallery — carrete horizontal que se desliza solo */
+.gallery-marquee {
+  overflow: hidden;
+}
 .gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  display: flex;
+  width: max-content;
   gap: 18px;
+  animation: gallery-scroll 50s linear infinite;
+}
+.gallery-marquee:hover .gallery-grid,
+.gallery-marquee:focus-within .gallery-grid,
+.gallery-marquee.is-paused .gallery-grid { animation-play-state: paused; }
+@keyframes gallery-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-grid { animation: none; }
 }
 .gallery-item {
+  position: relative;
+  flex: 0 0 260px;
   aspect-ratio: 4/5;
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--color-cream);
 }
-.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
+.gallery-item img,
+.gallery-item video { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
+.gallery-item img { cursor: zoom-in; }
+.gallery-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 28px 14px 12px;
+  background: linear-gradient(0deg, rgba(20, 17, 14, 0.82) 0%, rgba(20, 17, 14, 0) 100%);
+  color: #fff;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  pointer-events: none;
+}
+
+/* Foto ampliada al tocar/hacer clic en una foto de la galería. */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(20, 17, 14, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.lightbox-overlay[hidden] { display: none; }
+.lightbox-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: min(900px, 100%);
+}
+.lightbox-image {
+  max-width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.lightbox-caption {
+  margin: 0;
+  color: #fff;
+  text-align: center;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+.lightbox-caption[hidden] { display: none; }
+.lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-close:hover { background: rgba(255, 255, 255, 0.22); }
+
+/* Reel antes y después */
+.reel-container { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.reel-caption { color: var(--color-muted); max-width: 560px; margin: 0 auto 32px; }
+.reel-video-wrap {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 9/16;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-cream);
+  box-shadow: var(--shadow-soft, 0 12px 30px rgba(0,0,0,0.12));
+}
+.reel-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ---------------------------------------------------------
    Reserva por pasos
@@ -606,6 +723,31 @@ img { max-width: 100%; display: block; }
 }
 .slot-status { font-size: 0.88rem; color: var(--color-muted); min-height: 1.4em; }
 .slot-status.is-error { color: #a13a2f; }
+
+.waitlist-box {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--color-accent);
+  background: var(--color-cream-soft);
+}
+.waitlist-intro { margin: 0 0 12px; font-size: 0.88rem; color: var(--color-dark); }
+.waitlist-form { display: flex; flex-wrap: wrap; gap: 10px; }
+.waitlist-form input {
+  flex: 1 1 180px;
+  font-family: var(--font-body);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(33,29,25,0.15);
+  font-size: 0.9rem;
+  background: var(--color-white);
+  color: var(--color-dark);
+}
+.waitlist-form input:focus { outline: none; border-color: var(--color-accent-dark); }
+.waitlist-form button { flex: 1 1 100%; }
+.waitlist-hint { font-size: 0.85rem; color: var(--color-muted); min-height: 1.2em; margin: 10px 0 0; }
+.waitlist-hint.is-error { color: #a13a2f; }
+.waitlist-hint.is-success { color: #1f6b34; }
 
 /* Paso 3: datos del cliente */
 .booking-summary {
@@ -858,6 +1000,40 @@ img { max-width: 100%; display: block; }
 .testimonial-stars { color: var(--color-accent-dark); font-size: 0.9rem; margin-bottom: 12px; letter-spacing: 2px; }
 .testimonial-quote { font-style: italic; color: var(--color-dark); margin-bottom: 16px; }
 .testimonial-author { font-size: 0.85rem; color: var(--color-muted); font-weight: 600; }
+.testimonial-date { font-weight: 400; color: var(--color-muted); opacity: 0.75; }
+
+.testimonial-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 32px;
+}
+.testimonial-page-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(33,29,25,0.18);
+  background: var(--color-white);
+  color: var(--color-dark);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.testimonial-page-btn:hover:not(:disabled) { background: var(--color-accent-dark); color: var(--color-white); }
+.testimonial-page-btn:disabled { opacity: 0.35; cursor: default; }
+.testimonial-page-count { font-size: 0.85rem; color: var(--color-muted); min-width: 3.5em; text-align: center; }
+.testimonial-photos { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.testimonial-photos img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.testimonial-photos img:hover { transform: scale(1.06); }
 
 .testimonial-empty {
   border: 1.5px dashed rgba(33,29,25,0.18);
@@ -1015,7 +1191,10 @@ img { max-width: 100%; display: block; }
   .transfer-row span:last-child { text-align: left; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  /* Antes el corte era en 768px, pero el menú de escritorio (logo + 7
+     enlaces + botón) necesita ~850px para no desbordarse — con 768px
+     quedaba roto en tablets reales (iPad en vertical: 768-834px). */
   .main-nav, .nav-cta { display: none; }
   .hamburger { display: flex; }
   .main-nav.open {
@@ -1044,11 +1223,11 @@ img { max-width: 100%; display: block; }
 .admin-shell[hidden] { display: none; }
 
 .admin-sidebar {
-  width: 220px;
+  width: 76px;
   flex-shrink: 0;
   background: var(--color-primary);
   color: var(--color-white);
-  padding: 28px 16px;
+  padding: 28px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1056,16 +1235,80 @@ img { max-width: 100%; display: block; }
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 240ms cubic-bezier(.4,0,.2,1);
+}
+.admin-sidebar:focus-within,
+.admin-sidebar.is-pinned {
+  width: 226px;
+}
+/* El expandido "al pasar el mouse" solo debe pasar con mouse/trackpad real —
+   en pantallas táctiles el :hover se puede quedar "atorado" después de tocar
+   un enlace, dejando el menú abierto encima del contenido. */
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover { width: 226px; }
+}
+.sidebar-pin {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 22px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: var(--color-white);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.admin-sidebar:focus-within .sidebar-pin,
+.admin-sidebar.is-pinned .sidebar-pin {
+  display: flex;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-pin { display: flex; }
 }
 .sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-heading);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--color-white);
-  padding: 0 12px 20px;
+  padding: 0 4px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.14);
   margin-bottom: 12px;
 }
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  object-fit: cover;
+  background: var(--color-cream);
+}
+.sidebar-brand-text {
+  white-space: nowrap;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.admin-sidebar:focus-within .sidebar-brand-text,
+.admin-sidebar.is-pinned .sidebar-brand-text {
+  width: auto;
+  opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-brand-text { width: auto; opacity: 1; }
+}
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; min-height: 0; flex: 1; }
+/* Botón de ayuda: pegado al fondo del riel, justo arriba de la sesión activa. */
+.sidebar-help { margin-top: auto; }
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -1081,36 +1324,281 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
   text-align: left;
   width: 100%;
+  min-width: 0;
   transition: background 140ms ease, color 140ms ease;
 }
 .sidebar-link:hover { background: rgba(255,255,255,0.08); color: var(--color-white); }
 .sidebar-link.is-active { background: var(--color-accent); color: var(--color-primary-dark); font-weight: 600; }
-.sidebar-logout { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.14); padding-top: 16px; }
+.sidebar-icon { flex-shrink: 0; width: 20px; text-align: center; font-size: 1.05rem; }
+.sidebar-label {
+  white-space: nowrap;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.admin-sidebar:focus-within .sidebar-label,
+.admin-sidebar.is-pinned .sidebar-label {
+  opacity: 1;
+  position: static;
+  pointer-events: auto;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-label { opacity: 1; position: static; pointer-events: auto; }
+}
+/* Quién tiene la sesión abierta: las iniciales se ven siempre, aunque el
+   riel esté angosto; el nombre/correo solo aparece al expandirse, igual
+   que las demás etiquetas del menú. */
 .sidebar-user {
   margin-top: auto;
-  padding: 0 12px 10px;
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.5);
-  word-break: break-all;
+  padding: 14px 12px 0;
+  border-top: 1px solid rgba(255,255,255,0.14);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
-.sidebar-user span { display: block; color: rgba(255,255,255,0.85); font-weight: 600; }
-.sidebar-user + .sidebar-logout { margin-top: 0; }
+.sidebar-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.sidebar-avatar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-user .sidebar-label {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: normal;
+  color: rgba(255,255,255,0.5);
+  min-width: 0;
+  overflow: hidden;
+}
+.sidebar-user .sidebar-label strong { display: block; color: rgba(255,255,255,0.85); font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+
+/* Globo verde con el número de administradoras con sesión activa ahora
+   mismo (mandaron un "heartbeat" en los últimos 90s). Se oculta hasta
+   tener una respuesta real del servidor, para no mostrar un número falso. */
+.sidebar-active-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 50%;
+  background: #3fb950;
+  border: 2px solid var(--color-primary);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-avatar-wrap { cursor: pointer; }
+/* position: fixed (con top/left puestos por JS al abrir) para que no se
+   recorte contra el overflow-x: hidden del riel angosto del sidebar. */
+.presence-popover {
+  position: fixed;
+  background: var(--color-cream-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  min-width: 190px;
+  z-index: 60;
+}
+.presence-popover::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  bottom: 14px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-cream-soft);
+  transform: rotate(45deg);
+}
+.presence-popover-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  margin-bottom: 8px;
+}
+.presence-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.presence-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--color-dark);
+}
+.presence-list .presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3fb950;
+  flex-shrink: 0;
+}
+.presence-list .presence-empty { color: var(--color-muted); }
+
+/* Botón de cerrar sesión: color distinto (no el dorado de "activo") para
+   que no se confunda con un enlace más del menú. */
+.sidebar-logout {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(196, 108, 79, 0.16);
+  color: #e8b199;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  transition: background 140ms ease, color 140ms ease;
+}
+.sidebar-logout:hover { background: rgba(196, 108, 79, 0.28); color: #f4c3af; }
+
+/* Submenús (Citas → Bloqueos/Horario especial, Finanzas → Gastos/Inversiones/Contabilidad) */
+.sidebar-group-head { display: flex; align-items: center; gap: 2px; }
+.sidebar-group-head .sidebar-link { flex: 1; }
+.sidebar-chev-btn {
+  flex-shrink: 0;
+  width: 0;
+  height: 26px;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: opacity 120ms ease;
+}
+.sidebar-chev-btn:hover { color: var(--color-white); }
+.admin-sidebar:focus-within .sidebar-chev-btn,
+.admin-sidebar.is-pinned .sidebar-chev-btn {
+  width: 26px;
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:hover .sidebar-chev-btn { width: 26px; opacity: 1; pointer-events: auto; }
+}
+.sidebar-chev-btn .sidebar-chev { transition: transform 200ms ease; display: inline-block; }
+.sidebar-group.is-open .sidebar-chev-btn .sidebar-chev { transform: rotate(90deg); }
+.sidebar-sub {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 200ms cubic-bezier(.4,0,.2,1);
+}
+.sidebar-sub > div { overflow: hidden; }
+.sidebar-group.is-open .sidebar-sub { grid-template-rows: 1fr; }
+/* En pantallas táctiles no hay :hover real (puede quedar "atorado" después
+   de un toque), así que ahí el submenú depende solo de focus-within/is-pinned.
+   En mouse/trackpad sí se suma :hover, para poder previsualizar el submenú
+   con solo pasar el cursor. */
+@media not all and (hover: hover) {
+  .admin-sidebar:not(:focus-within):not(.is-pinned) .sidebar-sub { grid-template-rows: 0fr !important; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-sidebar:not(:hover):not(:focus-within):not(.is-pinned) .sidebar-sub { grid-template-rows: 0fr !important; }
+}
+.sidebar-sublink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 38px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.68);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sidebar-sublink:hover { color: var(--color-white); }
 
 .admin-shell .admin-wrap { flex: 1; min-width: 0; }
 
+/* Panel de Ayuda: los tutoriales se ven incrustados aquí mismo (un iframe
+   a las páginas de admin/ayuda/*.html), sin navegar a otra pestaña. */
+.ayuda-panel { display: flex; flex-direction: column; }
+.ayuda-panel-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.ayuda-panel-bar strong { font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark); }
+.ayuda-panel-close {
+  display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid rgba(33,29,25,0.15);
+  background: var(--color-white); color: var(--color-dark); padding: 8px 14px; border-radius: 100px;
+  cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; transition: border-color 140ms ease;
+}
+.ayuda-panel-close:hover { border-color: var(--color-primary); }
+.ayuda-panel iframe {
+  width: 100%; height: calc(100vh - 160px); min-height: 480px; border: 0;
+  border-radius: var(--radius); box-shadow: var(--shadow); background: var(--color-white);
+}
+
 @media (max-width: 720px) {
-  .admin-shell { flex-direction: column; }
-  .admin-sidebar {
-    width: 100%;
-    height: auto;
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    padding: 14px 16px;
+  /* La columna lateral se queda igual que en computadora: angosta, pegada
+     a la izquierda, de arriba a abajo. Como no hay cursor para pasar por
+     encima, tocar el logo abre/cierra el menú (el pin de arriba no cabe
+     bien junto al logo en un espacio tan angosto, así que se oculta y el
+     logo hace su trabajo). */
+  .admin-shell { overflow-x: hidden; }
+  .admin-sidebar { width: 60px; padding: 20px 6px; }
+  /* Al expandirse en celular no hay espacio para "empujar" el contenido sin
+     que se corte, así que el menú abierto flota encima (como un cajón) con
+     un fondo oscuro detrás; tocar ese fondo o el logo lo vuelve a cerrar. */
+  .admin-sidebar.is-pinned {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 172px;
+    z-index: 60;
+    box-shadow: 6px 0 24px rgba(0, 0, 0, 0.35);
   }
-  .sidebar-brand { display: none; }
-  .sidebar-link { width: auto; padding: 8px 12px; font-size: 0.85rem; }
-  .sidebar-logout { margin-top: 0; border-top: none; margin-left: auto; }
+  .sidebar-backdrop { display: none; }
+  .admin-sidebar.is-pinned + .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 50;
+  }
+  .sidebar-pin { display: none !important; }
+  .sidebar-brand { padding-right: 0; cursor: pointer; }
+  .sidebar-link { padding: 10px 6px; }
+  .sidebar-sublink { padding: 8px 8px 8px 26px; gap: 6px; font-size: 0.76rem; }
+
+  .admin-shell .admin-wrap { min-width: 0; width: 100%; margin: 0; }
 }

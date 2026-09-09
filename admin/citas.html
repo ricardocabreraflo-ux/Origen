@@ -2,33 +2,91 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Citas · Origen Brows & Hair Studio</title>
 <meta name="robots" content="noindex" />
+<link rel="manifest" href="../manifest-admin.json" />
+<meta name="theme-color" content="#211b15" />
+<link rel="apple-touch-icon" href="../assets/icon-admin-192.png" />
 <link rel="stylesheet" href="../css/style.css" />
 <style>
+  [hidden] { display: none !important; }
   body { background: var(--color-cream-soft); }
   .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 100px; }
   .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
   .admin-header h1 { font-size: 1.8rem; margin: 0; }
   #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
   #login-gate .btn { margin-top: 16px; }
-  .admin-filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; max-width: 100%; overflow-x: auto; }
   .admin-filters select, .admin-filters input {
     padding: 10px 14px; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.15);
     font-family: var(--font-body); background: var(--color-white);
   }
   table.bookings-table { width: 100%; border-collapse: collapse; background: var(--color-white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
   .bookings-table th, .bookings-table td { padding: 14px 16px; text-align: left; font-size: 0.88rem; border-bottom: 1px solid rgba(33,29,25,0.08); vertical-align: top; }
+  .booking-row { cursor: pointer; transition: background 120ms ease; }
+  .booking-row:hover, .booking-row:active { background: var(--color-cream-soft); }
   .bookings-table th { background: var(--color-cream); font-weight: 600; color: var(--color-dark); }
   .status-pill { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
   .status-pending { background: #f4e3c1; color: #7a5b12; }
   .status-confirmed { background: #d3ead8; color: #1f6b34; }
   .status-cancelled, .status-expired { background: #eee; color: #777; }
+  .paid-toggle {
+    border: none; background: none; cursor: pointer; font-size: 1.15rem;
+    line-height: 1; padding: 4px; border-radius: 8px; color: var(--color-muted);
+  }
+  .paid-toggle:hover { background: rgba(33,29,25,0.06); }
+  .paid-toggle:disabled { cursor: wait; opacity: 0.6; }
   .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+
+  @media (max-width: 640px) {
+    .row-actions {
+      width: 100%;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .row-actions::-webkit-scrollbar { display: none; }
+    .row-actions .btn { flex-shrink: 0; white-space: nowrap; }
+    .admin-header .row-actions .btn {
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 0.85rem;
+    }
+  }
+  /* Calendario de mes arriba de la lista: panorama de citas por día,
+     independiente de los filtros de la tabla hasta que se toca un día. */
+  .citas-calendar { margin-bottom: 22px; }
+  .citas-calendar-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .citas-calendar-header strong { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 600; flex: 1; text-align: center; min-width: 140px; }
+  .citas-calendar-weekdays, .citas-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .citas-calendar-weekdays span { text-align: center; font-size: 0.68rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .citas-calendar-grid button {
+    aspect-ratio: 1 / 0.86; border-radius: 10px; border: 1.5px solid rgba(33,29,25,0.1);
+    background: var(--color-white); cursor: pointer; color: var(--color-dark); padding: 6px;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+    font-family: var(--font-body); font-size: 0.78rem; min-width: 0;
+  }
+  .citas-calendar-grid button:disabled { visibility: hidden; }
+  .citas-calendar-grid button.is-closed { background: repeating-linear-gradient(135deg, var(--color-cream), var(--color-cream) 6px, #f1ebdf 6px, #f1ebdf 12px); color: var(--color-muted); }
+  .citas-calendar-grid button.is-selected { border-color: var(--color-primary); border-width: 2px; }
+  .citas-calendar-grid button.is-today .cc-daynum { text-decoration: underline; }
+  .cc-daynum { font-family: var(--font-heading); font-weight: 600; font-size: 0.95rem; }
+  .cc-dots { display: flex; gap: 3px; flex-wrap: wrap; }
+  .cc-dot { width: 6px; height: 6px; border-radius: 50%; background: #1f6b34; }
+  .cc-dot.pending { background: #7a5b12; }
+  .cc-rev { font-size: 0.64rem; color: var(--color-accent-dark); font-weight: 700; }
+  @media (max-width: 640px) {
+    .citas-calendar-grid button { font-size: 0.68rem; padding: 4px; }
+    .cc-rev { display: none; }
+  }
+
   #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
   .table-scroll { overflow-x: auto; }
+  .bookings-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 18px; font-size: 0.88rem; color: var(--color-dark); }
 
   .manual-overlay {
     position: fixed; inset: 0; background: rgba(20, 17, 14, 0.55);
@@ -42,11 +100,31 @@
   }
   .manual-modal h2 { font-size: 1.3rem; margin: 0 0 4px; }
   .manual-modal .section-note { margin: 0 0 20px; }
+  .actions-modal { position: relative; }
+  .actions-close {
+    position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
+    border-radius: 50%; border: none; background: var(--color-cream); color: var(--color-dark);
+    font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .action-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .action-item {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    background: var(--color-cream-soft); border: 1.5px solid rgba(33,29,25,0.1); border-radius: 14px;
+    padding: 14px 16px; font-family: var(--font-body); font-size: 0.95rem; font-weight: 600;
+    color: var(--color-dark); cursor: pointer; transition: background 140ms ease;
+  }
+  .action-item:active { background: var(--color-cream); }
+  .action-item .action-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .action-item.is-primary { background: var(--color-primary); color: var(--color-white); border-color: var(--color-primary); }
+  .action-item.is-danger { color: #a13a2f; border-color: rgba(161,58,47,0.35); }
   .manual-form { display: flex; flex-direction: column; gap: 14px; }
   .manual-form label { font-size: 0.85rem; font-weight: 600; color: var(--color-dark); }
-  .manual-form select, .manual-form input, .manual-form textarea {
+  .manual-form select, .manual-form input:not([type="radio"]):not([type="checkbox"]), .manual-form textarea {
     width: 100%; margin-top: 4px; padding: 10px 12px; border-radius: 10px;
     border: 1.5px solid rgba(33,29,25,0.15); font-family: var(--font-body); background: var(--color-cream-soft);
+  }
+  .manual-form input[type="radio"], .manual-form input[type="checkbox"] {
+    width: 18px; height: 18px; flex-shrink: 0; margin: 0; padding: 0;
   }
   .manual-slot-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
   .manual-slot-grid button {
@@ -56,8 +134,61 @@
   .manual-slot-grid button:disabled { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
   .manual-slot-grid button.is-selected { background: var(--color-primary); color: var(--color-white); border-color: var(--color-primary); }
   .manual-payment-options { display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; font-weight: 400; }
-  .manual-payment-options label { display: flex; align-items: flex-start; gap: 8px; font-weight: 400; }
+  .manual-payment-options label {
+    display: flex; align-items: flex-start; gap: 10px; font-weight: 400;
+    padding: 10px 14px; border-radius: 12px; border: 1.5px solid rgba(33,29,25,0.15);
+    background: var(--color-white); cursor: pointer; transition: border-color 150ms ease, background 150ms ease;
+  }
+  .manual-payment-options label:has(input:checked) {
+    border-color: var(--color-primary); background: var(--color-cream);
+  }
+  .manual-payment-options input[type="radio"] { accent-color: var(--color-primary); }
   .manual-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+  .checkbox-option {
+    display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; font-weight: 400;
+    padding: 10px 14px; border-radius: 12px; border: 1.5px solid rgba(33,29,25,0.15); background: var(--color-white);
+  }
+  .checkbox-option input { accent-color: var(--color-primary); }
+
+  .field-row { display: flex; gap: 12px; }
+  .field-row > div { flex: 1; }
+  .form-hint-note { font-size: 0.8rem; color: var(--color-muted); margin: -8px 0 0; }
+
+  .blocks-list { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+  .blocks-list li {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px; background: var(--color-cream-soft);
+    border: 1.5px solid rgba(33,29,25,0.1); font-size: 0.85rem;
+  }
+  .blocks-list li button { flex-shrink: 0; padding: 4px 10px; font-size: 0.75rem; }
+  .blocks-empty { color: var(--color-muted); font-size: 0.85rem; margin: 0 0 20px; }
+  .waitlist-entries li { align-items: flex-start; }
+  .waitlist-entries .wl-info { display: flex; flex-direction: column; gap: 2px; }
+  .waitlist-entries .wl-info .wl-date { font-weight: 700; }
+  .waitlist-entries .wl-info .wl-meta { color: var(--color-muted); font-size: 0.78rem; }
+  .waitlist-entries .wl-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .blocks-modal { max-width: 640px; }
+  .blocks-calendar { margin-bottom: 18px; }
+  .blocks-calendar-header { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
+  .blocks-calendar-header strong { min-width: 160px; text-align: center; }
+  .blocks-calendar-weekdays, .blocks-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .blocks-calendar-weekdays span { text-align: center; font-size: 0.72rem; color: var(--color-muted); font-weight: 600; }
+  .blocks-calendar-grid button {
+    aspect-ratio: 1; border-radius: 8px; border: 1.5px solid rgba(33,29,25,0.1);
+    background: var(--color-white); font-size: 0.82rem; cursor: pointer; color: var(--color-dark);
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .blocks-calendar-grid button:disabled { visibility: hidden; }
+  .blocks-calendar-grid button.is-selected { border-color: var(--color-primary); border-width: 2px; }
+  .blocks-calendar-grid button.is-full { background: #e6c9c0; color: #6b2f22; font-weight: 600; }
+  .blocks-calendar-grid button.is-partial { background: #f0dcc0; color: #7a4a12; font-weight: 600; }
+  .blocks-calendar-grid button.is-today { text-decoration: underline; }
+  .blocks-calendar-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 0.75rem; color: var(--color-muted); }
+  .blocks-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
+  .blocks-dot.is-full { background: #e6c9c0; }
+  .blocks-dot.is-partial { background: #f0dcc0; }
 </style>
 </head>
 <body>
@@ -71,26 +202,89 @@
 
 <div class="admin-shell" id="admin-shell" hidden>
   <nav class="admin-sidebar">
-    <div class="sidebar-brand">Origen · Panel</div>
-    <a class="sidebar-link is-active" href="citas.html">📅 Citas</a>
-    <a class="sidebar-link" href="clientas.html">👥 Clientas</a>
-    <a class="sidebar-link" href="lealtad.html">🎁 Lealtad</a>
-    <a class="sidebar-link" href="promos.html">🏷️ Promos</a>
-    <a class="sidebar-link" href="sorteos.html">🎉 Sorteos</a>
-    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
-    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
-    <a class="sidebar-link" href="index.html">✏️ Contenido</a>
+    <div class="sidebar-brand">
+      <img class="sidebar-logo" src="../assets/logo-mark.jpg" alt="Origen Brows &amp; Hair Studio" />
+      <span class="sidebar-brand-text">Origen · Panel</span>
+    </div>
+    <div class="sidebar-nav">
+    <button type="button" class="sidebar-pin" title="Fijar menú abierto">📌</button>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link is-active" href="citas.html"><span class="sidebar-icon">📅</span><span class="sidebar-label">Citas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Citas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="citas.html#bloqueos">🚫 Bloqueos de horario</a>
+        <a class="sidebar-sublink" href="citas.html#horario-especial">🔓 Horario especial</a>
+        <a class="sidebar-sublink" href="citas.html#lista-espera">⏳ Lista de espera</a>
+      </div></div>
+    </div>
+    <a class="sidebar-link" href="clientas.html"><span class="sidebar-icon">👥</span><span class="sidebar-label">Clientas</span></a>
+    <a class="sidebar-link" href="lealtad.html"><span class="sidebar-icon">🎁</span><span class="sidebar-label">Lealtad</span></a>
+    <a class="sidebar-link" href="promos.html"><span class="sidebar-icon">🏷️</span><span class="sidebar-label">Promos</span></a>
+    <a class="sidebar-link" href="sorteos.html"><span class="sidebar-icon">🎉</span><span class="sidebar-label">Sorteos</span></a>
+    <a class="sidebar-link" href="reportes.html"><span class="sidebar-icon">📊</span><span class="sidebar-label">Reportes</span></a>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link" href="finanzas.html"><span class="sidebar-icon">💰</span><span class="sidebar-label">Finanzas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Finanzas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="finanzas.html#gastos-fijos">Gastos fijos</a>
+        <a class="sidebar-sublink" href="finanzas.html#inversiones">Inversiones</a>
+        <a class="sidebar-sublink" href="finanzas.html#contabilidad">Contabilidad</a>
+      </div></div>
+    </div>
+      <a class="sidebar-link" href="configuracion.html"><span class="sidebar-icon">⚙️</span><span class="sidebar-label">Configuración</span></a>
+      <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
+    <div class="sidebar-group sidebar-help" data-group>
+      <div class="sidebar-group-head">
+        <button type="button" class="sidebar-link"><span class="sidebar-icon">❓</span><span class="sidebar-label">Ayuda</span></button>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar tutoriales"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="ayuda/citas.html">📅 Citas</a>
+        <a class="sidebar-sublink" href="ayuda/clientas.html">👥 Clientas</a>
+        <a class="sidebar-sublink" href="ayuda/lealtad.html">🎁 Lealtad</a>
+        <a class="sidebar-sublink" href="ayuda/reportes.html">📊 Reportes</a>
+        <a class="sidebar-sublink" href="ayuda/finanzas.html">💰 Finanzas</a>
+      </div></div>
+    </div>
+    </div>
     <div class="sidebar-user" id="sidebar-user"></div>
-    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+    <div class="presence-popover" id="presence-popover" hidden>
+      <div class="presence-popover-title">Conectadas ahora</div>
+      <ul class="presence-list" id="presence-list"></ul>
+    </div>
+    <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
   </nav>
+  <div class="sidebar-backdrop"></div>
   <div class="admin-wrap" id="admin-wrap">
+  <div id="admin-wrap-content">
   <div class="admin-header">
     <h1>Citas</h1>
     <div class="row-actions">
       <button class="btn btn-primary btn-sm" id="manual-open-btn">+ Agendar manualmente</button>
+      <button class="btn btn-outline btn-sm" id="direct-open-btn">🕓 Registrar cita directa</button>
+      <button class="btn btn-outline btn-sm" id="blocks-open-btn">🚫 Bloqueos de horario</button>
+      <button class="btn btn-outline btn-sm" id="openings-open-btn">🔓 Abrir horario especial</button>
+      <button class="btn btn-outline btn-sm" id="waitlist-open-btn">⏳ Lista de espera</button>
       <button class="btn btn-outline btn-sm" id="export-btn">Exportar clientas (CSV)</button>
       <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
     </div>
+  </div>
+
+  <div class="citas-calendar">
+    <div class="citas-calendar-header">
+      <button type="button" class="btn btn-outline btn-sm" id="cc-prev">‹</button>
+      <strong id="cc-month-label"></strong>
+      <button type="button" class="btn btn-outline btn-sm" id="cc-next">›</button>
+      <button type="button" class="btn btn-outline btn-sm" id="cc-clear-btn">Ver todo el mes</button>
+    </div>
+    <div class="citas-calendar-weekdays">
+      <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+    </div>
+    <div class="citas-calendar-grid" id="cc-grid"></div>
   </div>
 
   <div class="admin-filters">
@@ -119,14 +313,25 @@
           <th>Cliente</th>
           <th>Servicio</th>
           <th>Fecha / horario</th>
+          <th>Precio de lista</th>
           <th>Anticipo</th>
           <th>Monto cobrado</th>
+          <th>Descuento</th>
           <th>Estado</th>
-          <th>Acciones</th>
+          <th>Pagado</th>
         </tr>
       </thead>
       <tbody id="bookings-tbody"></tbody>
     </table>
+  </div>
+  </div>
+
+  <div class="ayuda-panel" id="ayuda-panel" hidden>
+    <div class="ayuda-panel-bar">
+      <strong>❓ Ayuda</strong>
+      <button type="button" class="ayuda-panel-close" id="ayuda-panel-close" aria-label="Cerrar ayuda">✕ Cerrar</button>
+    </div>
+    <iframe id="ayuda-frame" title="Tutorial del panel"></iframe>
   </div>
   </div>
 </div>
@@ -170,6 +375,7 @@
         <div class="manual-payment-options">
           <label><input type="radio" name="mb-payment" value="transfer" checked /> Transferencia — queda pendiente hasta que llegue el comprobante (le mandamos WhatsApp pidiéndolo)</label>
           <label><input type="radio" name="mb-payment" value="cash" /> Efectivo — ya se cobró, confirmar la cita de una vez</label>
+          <label><input type="radio" name="mb-payment" value="card" /> Tarjeta (terminal en el estudio) — ya se cobró, confirmar la cita de una vez</label>
         </div>
       </div>
       <div class="manual-actions">
@@ -178,6 +384,268 @@
       </div>
       <p class="form-hint" id="mb-hint"></p>
     </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="direct-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Registrar cita directa</h2>
+    <p class="section-note">Para anotar una cita que ya se hizo (aunque no se haya agendado en el sistema) o llevar el control con fecha, hora, monto y duración libres. No se le manda ningún WhatsApp a la clienta.</p>
+    <form class="manual-form" id="direct-form">
+      <div>
+        <label for="db-service">Servicio</label>
+        <select id="db-service" required></select>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="db-date">Fecha (puede ser pasada)</label>
+          <input type="date" id="db-date" required />
+        </div>
+        <div>
+          <label for="db-time">Hora</label>
+          <input type="time" id="db-time" required />
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="db-duration">Duración (minutos)</label>
+          <input type="number" id="db-duration" min="5" step="5" required />
+        </div>
+        <div>
+          <label for="db-amount">Monto cobrado (MXN)</label>
+          <input type="number" id="db-amount" min="0" step="1" required />
+        </div>
+      </div>
+      <p class="form-hint-note">Ambos vienen prellenados según el servicio — cámbialos si hubo descuento o si duró distinto (útil para el Servicio Especial).</p>
+      <div>
+        <label for="db-name">Nombre de la clienta</label>
+        <input type="text" id="db-name" required />
+      </div>
+      <div>
+        <label for="db-phone">Teléfono</label>
+        <input type="tel" id="db-phone" required placeholder="Ej. 55 1234 5678" />
+      </div>
+      <div>
+        <label for="db-email">Correo (opcional)</label>
+        <input type="email" id="db-email" placeholder="tu@correo.com" />
+      </div>
+      <div>
+        <label for="db-notes">Notas (opcional)</label>
+        <textarea id="db-notes" rows="2"></textarea>
+      </div>
+      <div>
+        <label>Forma de pago</label>
+        <div class="manual-payment-options">
+          <label><input type="radio" name="db-payment" value="cash" checked /> Efectivo</label>
+          <label><input type="radio" name="db-payment" value="card" /> Tarjeta</label>
+          <label><input type="radio" name="db-payment" value="transfer" /> Transferencia</label>
+        </div>
+      </div>
+      <label class="checkbox-option">
+        <input type="checkbox" id="db-notify-loyalty" checked />
+        <span>Avisar por WhatsApp su estado de lealtad actualizado</span>
+      </label>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="db-submit">Registrar cita</button>
+        <button type="button" class="btn btn-outline" id="direct-cancel-btn">Cancelar</button>
+      </div>
+      <p class="form-hint" id="db-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="blocks-overlay" hidden>
+  <div class="manual-modal blocks-modal">
+    <h2>Bloqueos de horario</h2>
+    <p class="section-note">Cierra un día completo o solo una parte (ej. "cerrado de 2 a 4pm") para que no se puedan agendar citas ahí. Los días bloqueados se muestran resaltados y también se sincronizan con Google Calendar.</p>
+
+    <div class="blocks-calendar">
+      <div class="blocks-calendar-header">
+        <button type="button" class="btn btn-outline btn-sm" id="bc-prev">←</button>
+        <strong id="bc-month-label"></strong>
+        <button type="button" class="btn btn-outline btn-sm" id="bc-next">→</button>
+      </div>
+      <div class="blocks-calendar-weekdays">
+        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div class="blocks-calendar-grid" id="bc-grid"></div>
+      <div class="blocks-calendar-legend">
+        <span><i class="blocks-dot is-full"></i> Día completo</span>
+        <span><i class="blocks-dot is-partial"></i> Solo un horario</span>
+      </div>
+    </div>
+
+    <div id="bc-day-detail">
+      <p class="blocks-empty" id="blocks-empty">Selecciona un día del calendario para ver o quitar sus bloqueos.</p>
+      <ul class="blocks-list" id="blocks-list"></ul>
+    </div>
+
+    <form class="manual-form" id="block-form">
+      <div class="field-row">
+        <div>
+          <label for="bl-date">Desde</label>
+          <input type="date" id="bl-date" required />
+        </div>
+        <div>
+          <label for="bl-end-date">Hasta (opcional, para varios días)</label>
+          <input type="date" id="bl-end-date" />
+        </div>
+      </div>
+      <div>
+        <label style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="bl-full-day" checked style="width:auto;margin:0;" /> Bloquear el/los día(s) completo(s)
+        </label>
+      </div>
+      <div class="field-row" id="bl-range-fields" hidden>
+        <div>
+          <label for="bl-start">Desde (hora)</label>
+          <input type="time" id="bl-start" />
+        </div>
+        <div>
+          <label for="bl-end">Hasta (hora)</label>
+          <input type="time" id="bl-end" />
+        </div>
+      </div>
+      <div>
+        <label for="bl-label">Motivo (opcional)</label>
+        <input type="text" id="bl-label" placeholder="Ej. Cita médica, día festivo…" />
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="bl-submit">Agregar bloqueo</button>
+        <button type="button" class="btn btn-outline" id="blocks-close-btn">Cerrar</button>
+      </div>
+      <p class="form-hint" id="bl-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="openings-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Abrir horario especial</h2>
+    <p class="section-note">Abre un hueco para que te puedan agendar en un día que normalmente está cerrado (ej. domingo), o fuera de tu horario fijo. Solo aplica ese día, para el rango de horas que elijas — el resto de tu horario normal no cambia.</p>
+
+    <div id="op-list-wrap">
+      <p class="blocks-empty" id="openings-empty">No tienes horarios especiales abiertos.</p>
+      <ul class="blocks-list" id="openings-list"></ul>
+    </div>
+
+    <form class="manual-form" id="opening-form">
+      <div>
+        <label for="op-date">Fecha</label>
+        <input type="date" id="op-date" required />
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="op-start">Desde (hora)</label>
+          <input type="time" id="op-start" required />
+        </div>
+        <div>
+          <label for="op-end">Hasta (hora)</label>
+          <input type="time" id="op-end" required />
+        </div>
+      </div>
+      <div>
+        <label for="op-label">Nota (opcional)</label>
+        <input type="text" id="op-label" placeholder="Ej. Cita especial para Fulanita" />
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="op-submit">Abrir horario</button>
+        <button type="button" class="btn btn-outline" id="openings-close-btn">Cerrar</button>
+      </div>
+      <p class="form-hint" id="op-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="waitlist-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Lista de espera</h2>
+    <p class="section-note">Clientas que pidieron que se les avise si se libera un espacio en una fecha que les salió llena o cerrada. "Avisar" les manda un WhatsApp — necesitas tener aprobada la plantilla "espacio_liberado_origen" en Meta.</p>
+
+    <div id="wl-list-wrap">
+      <p class="blocks-empty" id="waitlist-empty">Nadie está en la lista de espera por ahora.</p>
+      <ul class="blocks-list waitlist-entries" id="waitlist-entries"></ul>
+    </div>
+
+    <div class="manual-actions">
+      <button type="button" class="btn btn-outline" id="waitlist-close-btn">Cerrar</button>
+    </div>
+    <p class="form-hint" id="waitlist-hint"></p>
+  </div>
+</div>
+
+<div class="manual-overlay" id="edit-overlay" hidden>
+  <div class="manual-modal">
+    <h2>Editar cita</h2>
+    <p class="section-note">Corrige servicio, fecha, hora, datos de la clienta o el monto. No se le manda ningún WhatsApp por estos cambios.</p>
+    <form class="manual-form" id="edit-form">
+      <div>
+        <label for="eb-service">Servicio</label>
+        <select id="eb-service" required></select>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="eb-date">Fecha</label>
+          <input type="date" id="eb-date" required />
+        </div>
+        <div>
+          <label for="eb-time">Hora</label>
+          <input type="time" id="eb-time" required />
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="eb-duration">Duración (minutos)</label>
+          <input type="number" id="eb-duration" min="5" step="5" required />
+        </div>
+        <div>
+          <label for="eb-amount">Monto cobrado (MXN)</label>
+          <input type="number" id="eb-amount" min="0" step="1" required />
+        </div>
+      </div>
+      <div>
+        <label for="eb-discount">% de descuento (opcional)</label>
+        <input type="number" id="eb-discount" min="0" max="100" step="1" placeholder="Ej. 15 — recalcula el monto según el precio de lista" />
+      </div>
+      <div>
+        <label for="eb-payment">Cómo se pagó</label>
+        <select id="eb-payment" required>
+          <option value="cash">Efectivo</option>
+          <option value="bank_transfer">Transferencia</option>
+          <option value="mercado_pago">Tarjeta</option>
+        </select>
+      </div>
+      <div>
+        <label for="eb-name">Nombre de la clienta</label>
+        <input type="text" id="eb-name" required />
+      </div>
+      <div>
+        <label for="eb-phone">Teléfono</label>
+        <input type="tel" id="eb-phone" required />
+      </div>
+      <div>
+        <label for="eb-email">Correo (opcional)</label>
+        <input type="email" id="eb-email" />
+      </div>
+      <div>
+        <label for="eb-notes">Notas (opcional)</label>
+        <textarea id="eb-notes" rows="2"></textarea>
+      </div>
+      <div class="manual-actions">
+        <button type="submit" class="btn btn-primary" id="eb-submit">Guardar cambios</button>
+        <button type="button" class="btn btn-outline" id="edit-cancel-btn">Cancelar</button>
+      </div>
+      <p class="form-hint" id="eb-hint"></p>
+    </form>
+  </div>
+</div>
+
+<div class="manual-overlay" id="actions-overlay" hidden>
+  <div class="manual-modal actions-modal">
+    <button type="button" class="actions-close" id="actions-close-btn" aria-label="Cerrar">✕</button>
+    <h2 id="actions-title">Cita</h2>
+    <p class="section-note" id="actions-subtitle">Selecciona una acción.</p>
+    <div class="action-list" id="actions-list"></div>
   </div>
 </div>
 
@@ -213,6 +681,118 @@
   }
 
   let lastLoadedBookings = [];
+  let currentPage = 1;
+  const PAGE_SIZE = 10;
+
+  // Calendario de mes arriba de la tabla: panorama de citas por día,
+  // independiente de los filtros de la tabla hasta que se toca un día
+  // (entonces sí filtra la tabla, igual que si se hubiera elegido la fecha
+  // a mano en el filtro de siempre).
+  const ccGrid = document.getElementById("cc-grid");
+  const ccMonthLabel = document.getElementById("cc-month-label");
+  let citasCalendarMonth = new Date();
+  citasCalendarMonth.setDate(1);
+  const citasCalendarCache = {};
+
+  function citasCalendarMonthStr() {
+    return `${citasCalendarMonth.getFullYear()}-${String(citasCalendarMonth.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  async function fetchMonthBookingsForCalendar(monthStr) {
+    if (citasCalendarCache[monthStr]) return citasCalendarCache[monthStr];
+    const headers = await authHeaders();
+    const res = await fetch(`/api/list-bookings?month=${monthStr}`, { headers });
+    const body = await res.json();
+    const bookings = res.ok ? body.bookings || [] : [];
+    citasCalendarCache[monthStr] = bookings;
+    return bookings;
+  }
+
+  function isClosedWeekday(dateObj, businessHours) {
+    const map = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    const hours = businessHours && businessHours[map[dateObj.getDay()]];
+    return !hours || !hours.open || !hours.close;
+  }
+
+  async function renderCitasCalendar() {
+    const config = await loadSiteConfig();
+    const businessHours = config.businessHours || {};
+    const year = citasCalendarMonth.getFullYear();
+    const month = citasCalendarMonth.getMonth();
+    const monthStr = citasCalendarMonthStr();
+    const monthLabel = citasCalendarMonth.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+    ccMonthLabel.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+    const bookings = await fetchMonthBookingsForCalendar(monthStr);
+    const byDate = {};
+    bookings.forEach((b) => {
+      if (b.status === "cancelled" || b.status === "expired") return;
+      (byDate[b.booking_date] = byDate[b.booking_date] || []).push(b);
+    });
+
+    const firstDay = new Date(year, month, 1);
+    const startOffset = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = todayISO();
+
+    let cells = "";
+    for (let i = 0; i < startOffset; i++) cells += `<button type="button" disabled></button>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const closed = isClosedWeekday(new Date(year, month, day), businessHours);
+      const dayBookings = byDate[dateStr] || [];
+      const classes = [
+        closed ? "is-closed" : "",
+        dateStr === filterDate.value ? "is-selected" : "",
+        dateStr === today ? "is-today" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      let inner = `<span class="cc-daynum">${day}</span>`;
+      if (dayBookings.length) {
+        const dots = dayBookings
+          .slice(0, 8)
+          .map((b) => `<span class="cc-dot${b.status === "pending" ? " pending" : ""}"></span>`)
+          .join("");
+        const revenue = dayBookings.reduce((sum, b) => {
+          if (b.status === "confirmed" && !b.revenue_exempt && b.total_amount !== null && b.total_amount !== undefined) {
+            return sum + Number(b.total_amount);
+          }
+          return sum;
+        }, 0);
+        inner += `<span class="cc-dots">${dots}</span>`;
+        if (revenue > 0) inner += `<span class="cc-rev">$${revenue.toLocaleString("es-MX")}</span>`;
+      }
+      cells += `<button type="button" class="${classes}" data-date="${dateStr}">${inner}</button>`;
+    }
+    ccGrid.innerHTML = cells;
+  }
+
+  function refreshCitasCalendar() {
+    delete citasCalendarCache[citasCalendarMonthStr()];
+    renderCitasCalendar();
+  }
+
+  ccGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-date]");
+    if (!btn) return;
+    filterDate.value = btn.getAttribute("data-date");
+    filterMonth.value = "";
+    loadBookings();
+  });
+  document.getElementById("cc-prev").addEventListener("click", () => {
+    citasCalendarMonth.setMonth(citasCalendarMonth.getMonth() - 1);
+    renderCitasCalendar();
+  });
+  document.getElementById("cc-next").addEventListener("click", () => {
+    citasCalendarMonth.setMonth(citasCalendarMonth.getMonth() + 1);
+    renderCitasCalendar();
+  });
+  document.getElementById("cc-clear-btn").addEventListener("click", () => {
+    filterMonth.value = citasCalendarMonthStr();
+    filterDate.value = "";
+    loadBookings();
+  });
 
   async function loadBookings() {
     loadingState.hidden = false;
@@ -237,39 +817,94 @@
 
     const bookings = body.bookings || [];
     lastLoadedBookings = bookings;
+    currentPage = 1;
+    refreshCitasCalendar();
     if (bookings.length === 0) {
       emptyState.textContent = "No hay citas con esos filtros.";
       emptyState.hidden = false;
       return;
     }
 
+    renderPage();
+    table.hidden = false;
+  }
+
+  function renderPage() {
+    const totalPages = Math.max(1, Math.ceil(lastLoadedBookings.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageBookings = lastLoadedBookings.slice(start, start + PAGE_SIZE);
+    renderTable(pageBookings);
+    renderPager(totalPages);
+  }
+
+  function renderPager(totalPages) {
+    let pager = document.getElementById("bookings-pager");
+    if (!pager) {
+      pager = document.createElement("div");
+      pager.id = "bookings-pager";
+      pager.className = "bookings-pager";
+      table.insertAdjacentElement("afterend", pager);
+    }
+    if (totalPages <= 1) {
+      pager.innerHTML = "";
+      return;
+    }
+    pager.innerHTML = `
+      <button type="button" class="btn btn-outline btn-sm" id="pager-prev" ${currentPage === 1 ? "disabled" : ""}>← Anterior</button>
+      <span>Página ${currentPage} de ${totalPages}</span>
+      <button type="button" class="btn btn-outline btn-sm" id="pager-next" ${currentPage === totalPages ? "disabled" : ""}>Siguiente →</button>
+    `;
+    document.getElementById("pager-prev").addEventListener("click", () => {
+      currentPage -= 1;
+      renderPage();
+    });
+    document.getElementById("pager-next").addEventListener("click", () => {
+      currentPage += 1;
+      renderPage();
+    });
+  }
+
+  // "Precio de lista" y "Descuento" salen de price_label, que guarda el
+  // precio del servicio vigente cuando se creó o se editó por última vez
+  // esta cita — no el precio de hoy — así que el % de descuento mostrado
+  // siempre es el real de ese momento, sin importar si los precios
+  // cambiaron después.
+  function formatDiscountCell(b) {
+    if (b.reward_redemption) return '<span style="color:var(--color-muted)">🎁 Canje de lealtad</span>';
+    const listPrice = parsePriceLabel(b.price_label);
+    if (!listPrice || b.total_amount === null || b.total_amount === undefined) {
+      return '<span style="color:var(--color-muted)">—</span>';
+    }
+    const pct = Math.round(((listPrice - Number(b.total_amount)) / listPrice) * 100);
+    if (pct <= 0) return '<span style="color:var(--color-muted)">Sin descuento</span>';
+    return `<span class="status-pill" style="background:#f0dcc0;color:#7a4a12;">-${pct}%</span>`;
+  }
+
+  const PAYMENT_METHOD_BADGE = {
+    cash: '<span class="status-pill" style="background:#dcefd8;color:#2f6b2a;margin-top:4px;">💵 Efectivo</span>',
+    bank_transfer: '<span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🏦 Transferencia</span>',
+    mercado_pago: '<span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Tarjeta</span>',
+  };
+  function paymentMethodBadge(b) {
+    return PAYMENT_METHOD_BADGE[b.payment_method] || "";
+  }
+
+  function renderTable(bookings) {
     tbody.innerHTML = bookings
       .map(
         (b) => `
-        <tr data-id="${b.id}">
-          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${b.payment_method === "mercado_pago" ? '<br/><span class="status-pill" style="background:#d6e4f0;color:#1a4a73;margin-top:4px;">💳 Pagado con tarjeta</span>' : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
+        <tr data-id="${b.id}" class="booking-row">
+          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
           <td>${b.service_name}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
+          <td>${b.price_label || '<span style="color:var(--color-muted)">—</span>'}</td>
           <td>$${b.deposit_amount} MXN</td>
-          <td>${b.total_amount !== null && b.total_amount !== undefined ? `$${b.total_amount} MXN` : '<span style="color:var(--color-muted)">Sin capturar</span>'}<br/><button class="btn btn-outline btn-sm" data-action="edit-amount" style="margin-top:4px;padding:2px 8px;font-size:0.72rem;">Editar monto</button></td>
+          <td>${b.total_amount !== null && b.total_amount !== undefined ? `$${b.total_amount} MXN` : '<span style="color:var(--color-muted)">Sin capturar</span>'}</td>
+          <td>${formatDiscountCell(b)}</td>
           <td><span class="status-pill status-${b.status}">${STATUS_LABEL[b.status] || b.status}</span></td>
-          <td>
-            <div class="row-actions">
-              ${
-                b.status === "pending"
-                  ? `<button class="btn btn-primary btn-sm" data-action="confirm">Confirmar depósito</button>
-                     <button class="btn btn-outline btn-sm" data-action="cancel">Cancelar</button>`
-                  : b.status === "confirmed"
-                    ? `<button class="btn btn-outline btn-sm" data-action="cancel">Cancelar</button>`
-                    : b.status === "expired"
-                      ? `<button class="btn btn-primary btn-sm" data-action="reactivate">Reactivar (ya llegó el depósito)</button>`
-                      : ""
-              }
-              <button class="btn btn-outline btn-sm" data-action="toggle-revenue" data-revenue-exempt="${b.revenue_exempt}">${b.revenue_exempt ? "Quitar marca de sin ingreso" : "Marcar sin ingreso"}</button>
-              <button class="btn btn-outline btn-sm" data-action="delete" style="color:#a13a2f;border-color:#a13a2f;">Eliminar</button>
-            </div>
-          </td>
+          <td><button type="button" class="paid-toggle" data-paid-id="${b.id}" data-paid="${b.paid ? "1" : "0"}" title="${b.paid ? "Marcar como no pagado" : "Marcar como pagado"}" aria-pressed="${b.paid ? "true" : "false"}">${b.paid ? "✅" : "☐"}</button></td>
         </tr>`
       )
       .join("");
@@ -283,25 +918,131 @@
     reactivate: "/api/reactivate-booking",
     "toggle-revenue": "/api/mark-no-revenue",
     delete: "/api/delete-booking",
-    "edit-amount": "/api/set-total-amount",
   };
 
-  tbody.addEventListener("click", async (e) => {
-    const btn = e.target.closest("button[data-action]");
-    if (!btn) return;
-    const row = btn.closest("tr");
-    const id = row.getAttribute("data-id");
-    const action = btn.getAttribute("data-action");
-    const endpoint = ACTION_ENDPOINT[action];
+  /* ---------------------------------------------------------
+     Modal de acciones por cita (se abre al dar clic en una fila)
+  --------------------------------------------------------- */
+  const actionsOverlay = document.getElementById("actions-overlay");
+  const actionsTitle = document.getElementById("actions-title");
+  const actionsSubtitle = document.getElementById("actions-subtitle");
+  const actionsList = document.getElementById("actions-list");
+  let currentActionsBooking = null;
 
+  function actionItemHtml(action, icon, label, extraClass, extraAttrs) {
+    return `<button type="button" class="action-item${extraClass ? " " + extraClass : ""}" data-action="${action}" ${extraAttrs || ""}>
+      <span class="action-icon">${icon}</span><span>${label}</span>
+    </button>`;
+  }
+
+  function openActionsModal(booking) {
+    currentActionsBooking = booking;
+    actionsTitle.textContent = booking.reservation_code;
+    actionsSubtitle.textContent = `${booking.customer_name} · ${booking.customer_phone}`;
+
+    let items = "";
+    if (booking.status === "pending") {
+      items += actionItemHtml("confirm", "✅", "Confirmar depósito", "is-primary");
+      items += actionItemHtml("cancel", "🚫", "Cancelar cita");
+    } else if (booking.status === "confirmed") {
+      items += actionItemHtml("cancel", "🚫", "Cancelar cita");
+    } else if (booking.status === "expired") {
+      items += actionItemHtml("reactivate", "✅", "Reactivar (ya llegó el depósito)", "is-primary");
+    }
+    items += actionItemHtml("edit-booking", "✏️", "Editar cita");
+    items += actionItemHtml("thank-you", "🙏", "Agradecer visita");
+    items += actionItemHtml(
+      "toggle-revenue",
+      "🎟️",
+      booking.revenue_exempt ? "Quitar marca de sin ingreso" : "Marcar sin ingreso",
+      null,
+      `data-revenue-exempt="${booking.revenue_exempt}"`
+    );
+    items += actionItemHtml("delete", "🗑️", "Eliminar cita", "is-danger");
+
+    actionsList.innerHTML = items;
+    actionsOverlay.hidden = false;
+  }
+
+  function closeActionsModal() {
+    actionsOverlay.hidden = true;
+    currentActionsBooking = null;
+  }
+
+  document.getElementById("actions-close-btn").addEventListener("click", closeActionsModal);
+
+  tbody.addEventListener("click", async (e) => {
+    const paidBtn = e.target.closest(".paid-toggle");
+    if (paidBtn) {
+      const id = paidBtn.getAttribute("data-paid-id");
+      const nextPaid = paidBtn.getAttribute("data-paid") !== "1";
+      paidBtn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/mark-paid", { method: "POST", headers, body: JSON.stringify({ id, paid: nextPaid }) });
+        if (!res.ok) throw new Error();
+        paidBtn.setAttribute("data-paid", nextPaid ? "1" : "0");
+        paidBtn.setAttribute("aria-pressed", nextPaid ? "true" : "false");
+        paidBtn.title = nextPaid ? "Marcar como no pagado" : "Marcar como pagado";
+        paidBtn.textContent = nextPaid ? "✅" : "☐";
+        const booking = lastLoadedBookings.find((b) => b.id === id);
+        if (booking) booking.paid = nextPaid;
+      } catch {
+        alert("No se pudo actualizar. Intenta de nuevo.");
+      } finally {
+        paidBtn.disabled = false;
+      }
+      return;
+    }
+
+    const row = e.target.closest("tr[data-id]");
+    if (!row) return;
+    const booking = lastLoadedBookings.find((b) => b.id === row.getAttribute("data-id"));
+    if (booking) openActionsModal(booking);
+  });
+
+  actionsList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn || !currentActionsBooking) return;
+    const booking = currentActionsBooking;
+    const id = booking.id;
+    const action = btn.getAttribute("data-action");
+
+    if (action === "edit-booking") {
+      closeActionsModal();
+      openEditModal(booking);
+      return;
+    }
+    if (action === "thank-you") {
+      if (!window.confirm(`¿Enviar mensaje de agradecimiento por WhatsApp a ${booking.customer_name}?`)) return;
+      btn.disabled = true;
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/send-thank-you", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ phone: booking.customer_phone, name: booking.customer_name }),
+      });
+      const body = await res.json();
+      btn.disabled = false;
+      alert(res.ok ? "Mensaje enviado." : body.message || "No se pudo enviar el mensaje.");
+      return;
+    }
+
+    const endpoint = ACTION_ENDPOINT[action];
     let extraPayload = {};
     if (action === "delete") {
-      const code = row.querySelector("td")?.textContent.trim().split("\n")[0] || "";
       const confirmed = window.confirm(
-        `¿Eliminar PERMANENTEMENTE la cita ${code}?\n\nEsta acción no se puede deshacer y borra el registro completo. Para una cancelación normal, usa "Cancelar" en vez de esto.`
+        `¿Eliminar PERMANENTEMENTE la cita ${booking.reservation_code}?\n\nEsta acción no se puede deshacer y borra el registro completo. Para una cancelación normal, usa "Cancelar" en vez de esto.`
       );
       if (!confirmed) return;
       const pin = window.prompt("Escribe el PIN de seguridad para eliminar esta cita:");
+      if (pin === null) return; // canceló el prompt
+      extraPayload = { pin };
+    }
+    if (action === "cancel") {
+      const confirmed = window.confirm(`¿Cancelar la cita ${booking.reservation_code}?`);
+      if (!confirmed) return;
+      const pin = window.prompt("Escribe el PIN de seguridad para cancelar esta cita:");
       if (pin === null) return; // canceló el prompt
       extraPayload = { pin };
     }
@@ -315,12 +1056,6 @@
         extraPayload = { revenueExempt: false };
       }
     }
-    if (action === "edit-amount") {
-      const current = btn.parentElement.textContent.match(/[\d.]+/);
-      const input = window.prompt("¿Cuánto se cobró en total por esta cita? (deja vacío para borrar el monto)", current ? current[0] : "");
-      if (input === null) return; // canceló el prompt
-      extraPayload = { totalAmount: input.trim() === "" ? null : input.trim() };
-    }
 
     btn.disabled = true;
     const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
@@ -329,6 +1064,7 @@
     if (!res.ok) {
       alert(body.message || "No se pudo completar la acción.");
     }
+    closeActionsModal();
     loadBookings();
   });
 
@@ -472,13 +1208,657 @@
     }
   });
 
+  /* ---------------------------------------------------------
+     Registrar cita directa (fecha libre, incl. pasada; hora,
+     monto y duración editables a mano)
+  --------------------------------------------------------- */
+  const directOverlay = document.getElementById("direct-overlay");
+  const directForm = document.getElementById("direct-form");
+  const dbService = document.getElementById("db-service");
+  const dbDate = document.getElementById("db-date");
+  const dbTime = document.getElementById("db-time");
+  const dbDuration = document.getElementById("db-duration");
+  const dbAmount = document.getElementById("db-amount");
+  const dbName = document.getElementById("db-name");
+  const dbPhone = document.getElementById("db-phone");
+  const dbEmail = document.getElementById("db-email");
+  const dbNotes = document.getElementById("db-notes");
+  const dbNotifyLoyalty = document.getElementById("db-notify-loyalty");
+  const dbSubmit = document.getElementById("db-submit");
+  const dbHint = document.getElementById("db-hint");
+
+  function parsePriceLabel(priceLabel) {
+    if (!priceLabel) return 0;
+    const match = String(priceLabel).replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function fillDirectDefaultsFromService() {
+    const cfg = siteConfig;
+    if (!cfg) return;
+    const service = (cfg.services || []).find((s) => s.id === dbService.value);
+    if (!service) return;
+    dbDuration.value = service.duration;
+    dbAmount.value = parsePriceLabel(service.price);
+  }
+
+  async function openDirectModal() {
+    dbHint.textContent = "";
+    directForm.reset();
+
+    const cfg = await loadSiteConfig();
+    dbService.innerHTML = (cfg.services || [])
+      .map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`)
+      .join("");
+
+    const maxAdvanceMonths = (cfg.booking && cfg.booking.maxAdvanceMonths) || 2;
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + maxAdvanceMonths);
+    dbDate.setAttribute("max", maxDate.toISOString().split("T")[0]);
+    dbDate.value = new Date().toISOString().split("T")[0];
+
+    fillDirectDefaultsFromService();
+    directOverlay.hidden = false;
+  }
+
+  function closeDirectModal() {
+    directOverlay.hidden = true;
+  }
+
+  document.getElementById("direct-open-btn").addEventListener("click", openDirectModal);
+  document.getElementById("direct-cancel-btn").addEventListener("click", closeDirectModal);
+  dbService.addEventListener("change", fillDirectDefaultsFromService);
+
+  directForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    dbHint.textContent = "";
+    dbHint.classList.remove("is-error");
+
+    const paymentMethod = directForm.querySelector('input[name="db-payment"]:checked').value;
+
+    dbSubmit.disabled = true;
+    dbSubmit.textContent = "Registrando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/admin-create-booking", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          serviceId: dbService.value,
+          date: dbDate.value,
+          startTime: dbTime.value,
+          customerName: dbName.value.trim(),
+          customerPhone: dbPhone.value.trim(),
+          customerEmail: dbEmail.value.trim(),
+          notes: dbNotes.value.trim(),
+          paymentMethod,
+          directEntry: true,
+          totalAmount: dbAmount.value,
+          durationMinutes: dbDuration.value,
+          notifyLoyalty: dbNotifyLoyalty.checked,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo registrar la cita.");
+
+      closeDirectModal();
+      loadBookings();
+    } catch (err) {
+      dbHint.textContent = err.message || "No se pudo registrar la cita. Intenta de nuevo.";
+      dbHint.classList.add("is-error");
+    } finally {
+      dbSubmit.disabled = false;
+      dbSubmit.textContent = "Registrar cita";
+    }
+  });
+
+  /* ---------------------------------------------------------
+     Bloqueos de horario — vista de calendario
+  --------------------------------------------------------- */
+  const blocksOverlay = document.getElementById("blocks-overlay");
+  const blocksList = document.getElementById("blocks-list");
+  const blocksEmpty = document.getElementById("blocks-empty");
+  const blockForm = document.getElementById("block-form");
+  const blDate = document.getElementById("bl-date");
+  const blEndDate = document.getElementById("bl-end-date");
+  const blFullDay = document.getElementById("bl-full-day");
+  const blRangeFields = document.getElementById("bl-range-fields");
+  const blStart = document.getElementById("bl-start");
+  const blEnd = document.getElementById("bl-end");
+  const blLabel = document.getElementById("bl-label");
+  const blSubmit = document.getElementById("bl-submit");
+  const blHint = document.getElementById("bl-hint");
+  const bcGrid = document.getElementById("bc-grid");
+  const bcMonthLabel = document.getElementById("bc-month-label");
+
+  let allBlocks = [];
+  let calendarMonth = new Date();
+  calendarMonth.setDate(1);
+  let selectedDate = null;
+
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function formatBlockDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  }
+
+  async function loadBlocks() {
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-blocks", { headers });
+    const body = await res.json();
+    allBlocks = res.ok ? body.blocks || [] : [];
+    renderCalendar();
+    renderDayDetail();
+  }
+
+  function renderCalendar() {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const monthLabel = calendarMonth.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+    bcMonthLabel.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+    const firstDay = new Date(year, month, 1);
+    // lunes=0 ... domingo=6, para que la rejilla empiece en lunes.
+    const startOffset = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = todayISO();
+
+    const blocksByDate = {};
+    allBlocks.forEach((b) => {
+      (blocksByDate[b.block_date] = blocksByDate[b.block_date] || []).push(b);
+    });
+
+    let cells = "";
+    for (let i = 0; i < startOffset; i++) cells += `<button type="button" disabled></button>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const dayBlocks = blocksByDate[dateStr] || [];
+      const hasFullDay = dayBlocks.some((b) => !b.start_time);
+      const classes = [
+        dateStr === selectedDate ? "is-selected" : "",
+        hasFullDay ? "is-full" : dayBlocks.length > 0 ? "is-partial" : "",
+        dateStr === today ? "is-today" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const title = dayBlocks.length
+        ? dayBlocks.map((b) => (b.start_time ? `${b.start_time.slice(0, 5)}-${b.end_time.slice(0, 5)}` : "Día completo") + (b.label ? ` (${b.label})` : "")).join(" · ")
+        : "";
+      cells += `<button type="button" class="${classes}" data-date="${dateStr}" title="${title}">${day}</button>`;
+    }
+    bcGrid.innerHTML = cells;
+  }
+
+  function renderDayDetail() {
+    if (!selectedDate) {
+      blocksEmpty.textContent = "Selecciona un día del calendario para ver o quitar sus bloqueos.";
+      blocksEmpty.hidden = false;
+      blocksList.innerHTML = "";
+      return;
+    }
+    const dayBlocks = allBlocks.filter((b) => b.block_date === selectedDate);
+    if (dayBlocks.length === 0) {
+      blocksEmpty.textContent = `Sin bloqueos el ${formatBlockDate(selectedDate)}.`;
+      blocksEmpty.hidden = false;
+      blocksList.innerHTML = "";
+      return;
+    }
+    blocksEmpty.hidden = true;
+    blocksList.innerHTML = dayBlocks
+      .map((b) => {
+        const range = b.start_time && b.end_time ? `${b.start_time.slice(0, 5)} – ${b.end_time.slice(0, 5)}` : "Día completo";
+        return `<li data-id="${b.id}">
+          <span><strong>${formatBlockDate(b.block_date)}</strong> · ${range}${b.label ? ` · ${b.label}` : ""}</span>
+          <button type="button" class="btn btn-outline btn-sm" data-block-delete="${b.id}">Eliminar</button>
+        </li>`;
+      })
+      .join("");
+  }
+
+  bcGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-date]");
+    if (!btn) return;
+    selectedDate = btn.getAttribute("data-date");
+    blDate.value = selectedDate;
+    renderCalendar();
+    renderDayDetail();
+  });
+
+  document.getElementById("bc-prev").addEventListener("click", () => {
+    calendarMonth.setMonth(calendarMonth.getMonth() - 1);
+    renderCalendar();
+  });
+  document.getElementById("bc-next").addEventListener("click", () => {
+    calendarMonth.setMonth(calendarMonth.getMonth() + 1);
+    renderCalendar();
+  });
+
+  blocksList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-block-delete]");
+    if (!btn) return;
+    if (!window.confirm("¿Eliminar este bloqueo? El horario vuelve a quedar disponible.")) return;
+    btn.disabled = true;
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/delete-block", { method: "POST", headers, body: JSON.stringify({ id: btn.getAttribute("data-block-delete") }) });
+    loadBlocks();
+  });
+
+  function openBlocksModal() {
+    blHint.textContent = "";
+    blockForm.reset();
+    blFullDay.checked = true;
+    blRangeFields.hidden = true;
+    calendarMonth = new Date();
+    calendarMonth.setDate(1);
+    selectedDate = null;
+    blocksOverlay.hidden = false;
+    loadBlocks();
+  }
+
+  function closeBlocksModal() {
+    blocksOverlay.hidden = true;
+  }
+
+  document.getElementById("blocks-open-btn").addEventListener("click", openBlocksModal);
+  document.getElementById("blocks-close-btn").addEventListener("click", closeBlocksModal);
+  blFullDay.addEventListener("change", () => {
+    blRangeFields.hidden = blFullDay.checked;
+  });
+
+  blockForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    blHint.textContent = "";
+    blHint.classList.remove("is-error");
+
+    if (!blFullDay.checked && (!blStart.value || !blEnd.value)) {
+      blHint.textContent = "Indica la hora de inicio y fin, o marca 'Bloquear el/los día(s) completo(s)'.";
+      blHint.classList.add("is-error");
+      return;
+    }
+    if (blEndDate.value && blEndDate.value < blDate.value) {
+      blHint.textContent = "La fecha 'Hasta' debe ser igual o posterior a 'Desde'.";
+      blHint.classList.add("is-error");
+      return;
+    }
+
+    blSubmit.disabled = true;
+    blSubmit.textContent = "Guardando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/save-block", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          date: blDate.value,
+          endDate: blEndDate.value || undefined,
+          startTime: blFullDay.checked ? null : blStart.value,
+          endTime: blFullDay.checked ? null : blEnd.value,
+          label: blLabel.value.trim(),
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar el bloqueo.");
+
+      selectedDate = blDate.value;
+      blockForm.reset();
+      blFullDay.checked = true;
+      blRangeFields.hidden = true;
+      loadBlocks();
+    } catch (err) {
+      blHint.textContent = err.message || "No se pudo guardar el bloqueo. Intenta de nuevo.";
+      blHint.classList.add("is-error");
+    } finally {
+      blSubmit.disabled = false;
+      blSubmit.textContent = "Agregar bloqueo";
+    }
+  });
+
+  /* ---------------------------------------------------------
+     Abrir horario especial (lo contrario de un bloqueo)
+  --------------------------------------------------------- */
+  const openingsOverlay = document.getElementById("openings-overlay");
+  const openingsList = document.getElementById("openings-list");
+  const openingsEmpty = document.getElementById("openings-empty");
+  const openingForm = document.getElementById("opening-form");
+  const opDate = document.getElementById("op-date");
+  const opStart = document.getElementById("op-start");
+  const opEnd = document.getElementById("op-end");
+  const opLabel = document.getElementById("op-label");
+  const opSubmit = document.getElementById("op-submit");
+  const opHint = document.getElementById("op-hint");
+
+  function formatOpeningDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  }
+
+  async function loadOpenings() {
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-openings", { headers });
+    const body = await res.json();
+    const openings = res.ok ? body.openings || [] : [];
+
+    if (openings.length === 0) {
+      openingsEmpty.hidden = false;
+      openingsList.innerHTML = "";
+      return;
+    }
+    openingsEmpty.hidden = true;
+    openingsList.innerHTML = openings
+      .map(
+        (o) => `<li data-id="${o.id}">
+          <span><strong>${formatOpeningDate(o.opening_date)}</strong> · ${o.start_time.slice(0, 5)} – ${o.end_time.slice(0, 5)}${o.label ? ` · ${o.label}` : ""}</span>
+          <button type="button" class="btn btn-outline btn-sm" data-opening-delete="${o.id}">Eliminar</button>
+        </li>`
+      )
+      .join("");
+  }
+
+  openingsList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-opening-delete]");
+    if (!btn) return;
+    if (!window.confirm("¿Cerrar este horario especial? Ese día/hora deja de poder agendarse.")) return;
+    btn.disabled = true;
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/delete-opening", { method: "POST", headers, body: JSON.stringify({ id: btn.getAttribute("data-opening-delete") }) });
+    loadOpenings();
+  });
+
+  function openOpeningsModal() {
+    opHint.textContent = "";
+    openingForm.reset();
+    openingsOverlay.hidden = false;
+    loadOpenings();
+  }
+
+  function closeOpeningsModal() {
+    openingsOverlay.hidden = true;
+  }
+
+  document.getElementById("openings-open-btn").addEventListener("click", openOpeningsModal);
+  document.getElementById("openings-close-btn").addEventListener("click", closeOpeningsModal);
+
+  openingForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    opHint.textContent = "";
+    opHint.classList.remove("is-error");
+
+    if (opStart.value >= opEnd.value) {
+      opHint.textContent = "La hora de inicio debe ser antes que la hora de fin.";
+      opHint.classList.add("is-error");
+      return;
+    }
+
+    opSubmit.disabled = true;
+    opSubmit.textContent = "Guardando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/save-opening", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          date: opDate.value,
+          startTime: opStart.value,
+          endTime: opEnd.value,
+          label: opLabel.value.trim(),
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar el horario especial.");
+
+      openingForm.reset();
+      loadOpenings();
+    } catch (err) {
+      opHint.textContent = err.message || "No se pudo guardar el horario especial. Intenta de nuevo.";
+      opHint.classList.add("is-error");
+    } finally {
+      opSubmit.disabled = false;
+      opSubmit.textContent = "Abrir horario";
+    }
+  });
+
+  /* ---------------------------------------------------------
+     Lista de espera
+  --------------------------------------------------------- */
+  const waitlistOverlay = document.getElementById("waitlist-overlay");
+  const waitlistEntriesList = document.getElementById("waitlist-entries");
+  const waitlistEmpty = document.getElementById("waitlist-empty");
+  const waitlistHint = document.getElementById("waitlist-hint");
+
+  function formatWaitlistDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  }
+
+  async function loadWaitlist() {
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-waitlist", { headers });
+    const body = await res.json();
+    const entries = res.ok ? body.entries || [] : [];
+
+    if (entries.length === 0) {
+      waitlistEmpty.hidden = false;
+      waitlistEntriesList.innerHTML = "";
+      return;
+    }
+    waitlistEmpty.hidden = true;
+    waitlistEntriesList.innerHTML = entries
+      .map((w) => {
+        const metaBits = [w.customer_phone, w.service_name, w.notes].filter(Boolean).join(" · ");
+        const statusBadge =
+          w.status === "notified"
+            ? '<span class="status-pill status-confirmed">Ya se le avisó</span>'
+            : '<span class="status-pill status-pending">En espera</span>';
+        return `<li data-id="${w.id}">
+          <div class="wl-info">
+            <span class="wl-date">${formatWaitlistDate(w.preferred_date)} · ${w.customer_name}</span>
+            <span class="wl-meta">${metaBits}</span>
+            <span>${statusBadge}</span>
+          </div>
+          <div class="wl-actions">
+            ${w.status !== "notified" ? `<button type="button" class="btn btn-outline btn-sm" data-waitlist-notify="${w.id}">Avisar</button>` : ""}
+            <button type="button" class="btn btn-outline btn-sm" data-waitlist-delete="${w.id}">Eliminar</button>
+          </div>
+        </li>`;
+      })
+      .join("");
+  }
+
+  waitlistEntriesList.addEventListener("click", async (e) => {
+    const notifyBtn = e.target.closest("button[data-waitlist-notify]");
+    const deleteBtn = e.target.closest("button[data-waitlist-delete]");
+
+    if (notifyBtn) {
+      const id = notifyBtn.getAttribute("data-waitlist-notify");
+      notifyBtn.disabled = true;
+      notifyBtn.textContent = "Enviando…";
+      waitlistHint.textContent = "";
+      waitlistHint.classList.remove("is-error");
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/notify-waitlist", { method: "POST", headers, body: JSON.stringify({ id }) });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || "No se pudo avisar por WhatsApp.");
+        loadWaitlist();
+      } catch (err) {
+        waitlistHint.textContent = err.message || "No se pudo avisar por WhatsApp.";
+        waitlistHint.classList.add("is-error");
+        notifyBtn.disabled = false;
+        notifyBtn.textContent = "Avisar";
+      }
+      return;
+    }
+
+    if (deleteBtn) {
+      if (!window.confirm("¿Quitar a esta persona de la lista de espera?")) return;
+      const id = deleteBtn.getAttribute("data-waitlist-delete");
+      deleteBtn.disabled = true;
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      await fetch("/api/delete-waitlist", { method: "POST", headers, body: JSON.stringify({ id }) });
+      loadWaitlist();
+    }
+  });
+
+  function openWaitlistModal() {
+    waitlistHint.textContent = "";
+    waitlistOverlay.hidden = false;
+    loadWaitlist();
+  }
+
+  function closeWaitlistModal() {
+    waitlistOverlay.hidden = true;
+  }
+
+  document.getElementById("waitlist-open-btn").addEventListener("click", openWaitlistModal);
+  document.getElementById("waitlist-close-btn").addEventListener("click", closeWaitlistModal);
+
+  /* ---------------------------------------------------------
+     Editar cita
+  --------------------------------------------------------- */
+  const editOverlay = document.getElementById("edit-overlay");
+  const editForm = document.getElementById("edit-form");
+  const ebService = document.getElementById("eb-service");
+  const ebDate = document.getElementById("eb-date");
+  const ebTime = document.getElementById("eb-time");
+  const ebDuration = document.getElementById("eb-duration");
+  const ebAmount = document.getElementById("eb-amount");
+  const ebDiscount = document.getElementById("eb-discount");
+  const ebPayment = document.getElementById("eb-payment");
+  const ebName = document.getElementById("eb-name");
+  const ebPhone = document.getElementById("eb-phone");
+  const ebEmail = document.getElementById("eb-email");
+  const ebNotes = document.getElementById("eb-notes");
+  const ebSubmit = document.getElementById("eb-submit");
+  const ebHint = document.getElementById("eb-hint");
+  let editingBookingId = null;
+  // Monto sobre el que se calcula el % de descuento: el monto que ya tenía
+  // guardado la cita (no el precio de lista actual del servicio, que puede
+  // haber cambiado desde que se agendó y haría que un "descuento" terminara
+  // subiendo el monto en vez de bajarlo).
+  let editDiscountBase = 0;
+  let editAmountEditedManually = false;
+
+  async function openEditModal(booking) {
+    ebHint.textContent = "";
+    const cfg = await loadSiteConfig();
+    ebService.innerHTML = (cfg.services || [])
+      .map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`)
+      .join("");
+
+    editingBookingId = booking.id;
+    ebService.value = booking.service_id;
+    ebDate.value = booking.booking_date;
+    ebTime.value = booking.start_time.slice(0, 5);
+    const startMin = toMinutesLocal(booking.start_time.slice(0, 5));
+    const endMin = toMinutesLocal(booking.end_time.slice(0, 5));
+    ebDuration.value = endMin - startMin;
+    const hasAmount = booking.total_amount !== null && booking.total_amount !== undefined;
+    ebAmount.value = hasAmount ? booking.total_amount : "";
+    const service = (cfg.services || []).find((s) => s.id === booking.service_id);
+    editDiscountBase = hasAmount ? Number(booking.total_amount) : parsePriceLabel(service && service.price);
+    editAmountEditedManually = false;
+    ebDiscount.value = "";
+    ebPayment.value = booking.payment_method || "bank_transfer";
+    ebName.value = booking.customer_name || "";
+    ebPhone.value = booking.customer_phone || "";
+    ebEmail.value = booking.customer_email || "";
+    ebNotes.value = booking.notes || "";
+
+    editOverlay.hidden = false;
+  }
+
+  function toMinutesLocal(hhmm) {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
+  }
+
+  function closeEditModal() {
+    editOverlay.hidden = true;
+    editingBookingId = null;
+  }
+
+  document.getElementById("edit-cancel-btn").addEventListener("click", closeEditModal);
+
+  // Si la administradora teclea el monto a mano, el % de descuento ya no
+  // se lo vuelve a pisar (útil sobre todo si cambia el monto después de
+  // haber puesto un descuento).
+  ebAmount.addEventListener("input", () => {
+    editAmountEditedManually = true;
+  });
+
+  // Al escribir un % de descuento, recalcula el monto sobre lo que la cita
+  // ya tenía guardado (editDiscountBase) — no sobre el precio de lista
+  // actual del servicio, que puede haber cambiado desde que se agendó.
+  ebDiscount.addEventListener("input", () => {
+    if (editAmountEditedManually) return;
+    const pct = Number(ebDiscount.value);
+    if (!Number.isFinite(pct) || pct < 0 || pct > 100) return;
+    ebAmount.value = Math.round(editDiscountBase * (1 - pct / 100));
+  });
+
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    ebHint.textContent = "";
+    ebHint.classList.remove("is-error");
+
+    ebSubmit.disabled = true;
+    ebSubmit.textContent = "Guardando…";
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/edit-booking", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          id: editingBookingId,
+          serviceId: ebService.value,
+          date: ebDate.value,
+          startTime: ebTime.value,
+          customerName: ebName.value.trim(),
+          customerPhone: ebPhone.value.trim(),
+          customerEmail: ebEmail.value.trim(),
+          notes: ebNotes.value.trim(),
+          totalAmount: ebAmount.value,
+          durationMinutes: ebDuration.value,
+          paymentMethod: ebPayment.value,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar la cita.");
+
+      closeEditModal();
+      loadBookings();
+    } catch (err) {
+      ebHint.textContent = err.message || "No se pudo guardar la cita. Intenta de nuevo.";
+      ebHint.classList.add("is-error");
+    } finally {
+      ebSubmit.disabled = false;
+      ebSubmit.textContent = "Guardar cambios";
+    }
+  });
+
   filterStatus.addEventListener("change", loadBookings);
   filterDate.addEventListener("change", () => {
-    if (filterDate.value) filterMonth.value = "";
+    if (filterDate.value) {
+      filterMonth.value = "";
+      const [y, m, d] = filterDate.value.split("-").map(Number);
+      citasCalendarMonth = new Date(y, m - 1, 1);
+    }
     loadBookings();
   });
   filterMonth.addEventListener("change", () => {
-    if (filterMonth.value) filterDate.value = "";
+    if (filterMonth.value) {
+      filterDate.value = "";
+      const [y, m] = filterMonth.value.split("-").map(Number);
+      citasCalendarMonth = new Date(y, m - 1, 1);
+    }
     loadBookings();
   });
   document.getElementById("refresh-btn").addEventListener("click", loadBookings);
@@ -515,22 +1895,229 @@
   document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
   document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
 
+  // Riel del menú: fijarlo abierto con el pin, y desplegar/cerrar los
+  // submenús de Citas y Finanzas con el botón de flecha.
+  document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
+    const backdrop = sidebar.nextElementSibling;
+    const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
+    sidebar.addEventListener("click", (e) => {
+      const pinBtn = e.target.closest(".sidebar-pin");
+      const brandBtn = e.target.closest(".sidebar-brand");
+      if (pinBtn || brandBtn) {
+        sidebar.classList.toggle("is-pinned");
+        return;
+      }
+      const chevBtn = e.target.closest(".sidebar-chev-btn");
+      const groupToggle = e.target.closest(".sidebar-group-head .sidebar-link:not([href])");
+      if (chevBtn || groupToggle) {
+        (chevBtn || groupToggle).closest("[data-group]").classList.toggle("is-open");
+        return;
+      }
+      if (isMobile() && e.target.closest(".sidebar-link, .sidebar-sublink")) {
+        sidebar.classList.remove("is-pinned");
+      }
+    });
+    if (backdrop && backdrop.classList.contains("sidebar-backdrop")) {
+      backdrop.addEventListener("click", () => sidebar.classList.remove("is-pinned"));
+    }
+  });
+
+  // Panel de Ayuda: los tutoriales se abren aquí mismo, en un iframe que
+  // reemplaza el contenido normal de la página — no se navega a otra
+  // pestaña. El botón "Volver al panel" de esas páginas, cuando detecta
+  // que está incrustado, en vez de navegar le avisa a esta página (por
+  // postMessage) que lo cierre.
+  (function () {
+    const wrapContent = document.getElementById("admin-wrap-content");
+    const panel = document.getElementById("ayuda-panel");
+    const frame = document.getElementById("ayuda-frame");
+    const closeBtn = document.getElementById("ayuda-panel-close");
+    if (!wrapContent || !panel || !frame) return;
+
+    function openAyuda(url) {
+      frame.src = url;
+      wrapContent.hidden = true;
+      panel.hidden = false;
+      panel.scrollIntoView({ behavior: "instant", block: "start" });
+    }
+    function closeAyuda() {
+      panel.hidden = true;
+      wrapContent.hidden = false;
+      frame.src = "about:blank";
+    }
+
+    document.querySelectorAll(".sidebar-help .sidebar-sublink").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        openAyuda(link.getAttribute("href"));
+        // El enlace se queda con el foco al tocarlo, y eso por sí solo ya
+        // mantiene expandido el riel angosto (:focus-within) — sin esto, en
+        // celular el menú se queda abierto encima del panel de Ayuda.
+        link.blur();
+        const sidebarEl = document.querySelector(".admin-sidebar");
+        if (sidebarEl) sidebarEl.classList.remove("is-pinned");
+      });
+    });
+    if (closeBtn) closeBtn.addEventListener("click", closeAyuda);
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.source === "origen-ayuda" && e.data.type === "close") closeAyuda();
+    });
+  })();
+
+  function initialsFromUser(user) {
+    const fullName = (user.user_metadata && user.user_metadata.full_name) || "";
+    if (fullName.trim()) {
+      return fullName.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+    }
+    const local = (user.email || "").split("@")[0];
+    const parts = local.split(/[._-]+/).filter(Boolean);
+    return (parts.length >= 2 ? parts[0][0] + parts[1][0] : local.slice(0, 2)).toUpperCase();
+  }
   function renderSidebarUser() {
     const el = document.getElementById("sidebar-user");
     const user = window.netlifyIdentity.currentUser();
-    if (el && user) el.innerHTML = `Sesión activa<span>${user.email}</span>`;
+    if (!el || !user) return;
+    el.innerHTML = `<span class="sidebar-avatar-wrap"><span class="sidebar-avatar">${initialsFromUser(user)}</span><span class="sidebar-active-count" id="presence-count" hidden></span></span><span class="sidebar-label">Sesión activa<br><strong>${user.email}</strong></span>`;
+  }
+
+  function renderPresenceList(active) {
+    const list = document.getElementById("presence-list");
+    const badge = document.getElementById("presence-count");
+    if (!list || !badge) return;
+    const user = window.netlifyIdentity.currentUser();
+    const selfEmail = user && user.email;
+    if (!active || !active.length) {
+      badge.hidden = true;
+      list.innerHTML = '<li class="presence-empty">No se pudo cargar</li>';
+      return;
+    }
+    badge.hidden = false;
+    badge.textContent = String(active.length);
+    list.innerHTML = active
+      .map((a) => {
+        const label = a.full_name || (a.email || "").split("@")[0];
+        return `<li><span class="presence-dot"></span>${label}${a.email === selfEmail ? " (tú)" : ""}</li>`;
+      })
+      .join("");
+  }
+
+  const ALL_SECTIONS = ["citas", "clientas", "lealtad", "reportes", "finanzas", "contenido", "configuracion"];
+  const SECTION_BY_HREF = {
+    "citas.html": "citas",
+    "clientas.html": "clientas",
+    "lealtad.html": "lealtad",
+    "reportes.html": "reportes",
+    "finanzas.html": "finanzas",
+    "index.html": "contenido",
+    "configuracion.html": "configuracion",
+  };
+  function getUserRole(user) {
+    const roles = user.app_metadata && user.app_metadata.roles;
+    return Array.isArray(roles) && roles.length ? roles[0] : "administrador";
+  }
+  function getUserSections(user) {
+    if (getUserRole(user) === "administrador") return ALL_SECTIONS;
+    const sections = user.app_metadata && user.app_metadata.sections;
+    return Array.isArray(sections) ? sections : [];
+  }
+  function showAccessDenied() {
+    const wrap = document.getElementById("admin-wrap-content") || document.getElementById("admin-wrap");
+    if (wrap) {
+      wrap.innerHTML = '<div style="padding:80px 24px;text-align:center;max-width:420px;margin:0 auto;"><h1 style="font-size:1.6rem;">Sin acceso</h1><p class="section-note">Tu cuenta no tiene permiso para ver esta sección. Pide a una administradora que te lo active desde Configuración &rarr; Usuarios y permisos.</p></div>';
+    }
+  }
+  // Oculta del menú las secciones que esta cuenta no puede ver, y bloquea la
+  // página si la sección propia tampoco está permitida. Devuelve false
+  // cuando hay que detenerse (no cargar los datos de la página).
+  function applySectionAccess(pageSection) {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return true;
+    const sections = getUserSections(user);
+    document.querySelectorAll(".admin-sidebar .sidebar-link[href]").forEach((link) => {
+      const href = link.getAttribute("href").split("#")[0];
+      const section = SECTION_BY_HREF[href];
+      if (!section) return;
+      const target = link.closest("[data-group]") || link;
+      target.hidden = !sections.includes(section);
+    });
+    if (pageSection && !sections.includes(pageSection)) {
+      showAccessDenied();
+      return false;
+    }
+    return true;
+  }
+
+  let presenceTimer = null;
+  async function sendHeartbeat() {
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/heartbeat", { method: "POST", headers });
+      if (!res.ok) return;
+      const data = await res.json();
+      renderPresenceList(data.active);
+    } catch {}
+  }
+  function startPresence() {
+    sendHeartbeat();
+    if (presenceTimer) clearInterval(presenceTimer);
+    presenceTimer = setInterval(sendHeartbeat, 30000);
+    const avatarWrap = document.querySelector("#sidebar-user .sidebar-avatar-wrap");
+    const popover = document.getElementById("presence-popover");
+    if (!avatarWrap || !popover) return;
+    avatarWrap.onclick = (e) => {
+      e.stopPropagation();
+      if (!popover.hidden) {
+        popover.hidden = true;
+        return;
+      }
+      popover.hidden = false;
+      const rect = avatarWrap.getBoundingClientRect();
+      const sidebar = avatarWrap.closest(".admin-sidebar");
+      const sidebarRight = sidebar ? sidebar.getBoundingClientRect().right : rect.right;
+      popover.style.top = `${Math.max(8, rect.bottom - popover.offsetHeight)}px`;
+      popover.style.left = `${sidebarRight + 14}px`;
+    };
+    if (!startPresence.docClickBound) {
+      startPresence.docClickBound = true;
+      document.addEventListener("click", (e) => {
+        if (!popover.hidden && !popover.contains(e.target) && !e.target.closest(".sidebar-avatar-wrap")) {
+          popover.hidden = true;
+        }
+      });
+    }
   }
 
   function showAdmin() {
     loginGate.hidden = true;
     adminShell.hidden = false;
     renderSidebarUser();
+    startPresence();
+    if (!applySectionAccess("citas")) return;
     loadBookings();
+
+    // Los submenús del menú lateral (Bloqueos de horario / Horario
+    // especial / Lista de espera) llegan aquí como citas.html#bloqueos,
+    // citas.html#horario-especial o citas.html#lista-espera y abren el
+    // modal correspondiente solo.
+    if (location.hash === "#bloqueos") openBlocksModal();
+    else if (location.hash === "#horario-especial") openOpeningsModal();
+    else if (location.hash === "#lista-espera") openWaitlistModal();
   }
   function showLogin() {
     loginGate.hidden = false;
     adminShell.hidden = true;
   }
+
+  // Cuando la app vuelve a primer plano (regresas de otra app, o el
+  // celular la "despertó" en vez de recargarla desde cero), se vuelve a
+  // cargar la información para no quedarse con datos viejos sin tener que
+  // cerrar y volver a abrir la app a mano.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !adminShell.hidden) loadBookings();
+  });
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted && !adminShell.hidden) loadBookings();
+  });
 
   if (!window.netlifyIdentity) {
     document.getElementById("login-btn").hidden = true;

@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Configuración · Origen Brows &amp; Hair Studio</title>
+<meta name="robots" content="noindex" />
+<link rel="manifest" href="../manifest-admin.json" />
+<meta name="theme-color" content="#211b15" />
+<link rel="apple-touch-icon" href="../assets/icon-admin-192.png" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  [hidden] { display: none !important; }
+  body { background: var(--color-cream-soft); }
+  .admin-wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 100px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-header h1 { font-size: 1.8rem; margin: 0; }
+  #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
+  #login-gate .btn { margin-top: 16px; }
+
+  .card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 24px; }
+  .card h2 { font-size: 1.1rem; margin: 0 0 6px; }
+  .card .section-note { margin: 0 0 16px; }
+
+  #gallery-loading, #gallery-empty { text-align: center; padding: 30px 20px; color: var(--color-muted); }
+  .gallery-manager-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .gallery-manager-item { border: 1.5px solid rgba(33,29,25,0.1); border-radius: 12px; overflow: hidden; background: var(--color-cream-soft); }
+  .gallery-manager-item .thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: rgba(33,29,25,0.05); }
+  .gallery-manager-item .thumb-wrap { position: relative; }
+  .gallery-manager-item .thumb-play {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.55); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 0.8rem; pointer-events: none;
+  }
+  .gallery-manager-item .item-body { padding: 8px 10px 10px; }
+  .gallery-manager-item input[type="text"] {
+    width: 100%; padding: 6px 8px; border-radius: 6px; border: 1.5px solid rgba(33,29,25,0.15);
+    font-family: var(--font-body); font-size: 0.76rem; background: var(--color-white); margin-bottom: 6px;
+  }
+  .gallery-manager-item .item-actions { display: flex; align-items: center; gap: 4px; }
+  .gallery-manager-item .item-actions button {
+    border: 1.5px solid rgba(33,29,25,0.15); background: var(--color-white); border-radius: 6px;
+    width: 26px; height: 26px; cursor: pointer; font-size: 0.8rem; line-height: 1; flex-shrink: 0;
+  }
+  .gallery-manager-item .item-actions button:disabled { opacity: 0.35; cursor: default; }
+  .gallery-manager-item .item-actions .del-btn { margin-left: auto; color: #a13a2f; border-color: rgba(161,58,47,0.35); }
+
+  .table-scroll { overflow-x: auto; }
+  table.users-table { width: 100%; border-collapse: collapse; }
+  .users-table th, .users-table td { padding: 12px 10px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid rgba(33,29,25,0.08); vertical-align: top; }
+  .users-table th { color: var(--color-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .users-table select, .users-table input[type="text"] {
+    padding: 7px 10px; border-radius: 8px; border: 1.5px solid rgba(33,29,25,0.15);
+    font-family: var(--font-body); background: var(--color-cream-soft);
+  }
+  .users-table input[type="text"] { margin-top: 6px; width: 100%; }
+  table.mini-section-table { border-collapse: collapse; }
+  .mini-section-table th, .mini-section-table td { padding: 3px 8px; text-align: center; font-size: 0.76rem; }
+  .mini-section-table td:first-child, .mini-section-table th:first-child { text-align: left; padding-left: 0; }
+  .mini-section-table th { color: var(--color-muted); font-weight: 600; font-size: 0.66rem; text-transform: uppercase; }
+  .mini-section-table input[type="checkbox"] { width: 15px; height: 15px; margin: 0; }
+  .user-save-hint { font-size: 0.76rem; color: var(--color-muted); margin-top: 4px; }
+  .user-save-hint.is-ok { color: #2f6b2a; }
+  .user-save-hint.is-error { color: #a13a2f; }
+  #users-empty, #users-loading { text-align: center; padding: 40px 20px; color: var(--color-muted); }
+  #users-denied { text-align: center; padding: 40px 20px; color: var(--color-muted); }
+</style>
+</head>
+<body>
+
+<div id="login-gate">
+  <p class="section-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Configuración</h1>
+  <p class="section-note">Inicia sesión para administrar usuarios y contenido.</p>
+  <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
+</div>
+
+<div class="admin-shell" id="admin-shell" hidden>
+  <nav class="admin-sidebar">
+    <div class="sidebar-brand">
+      <img class="sidebar-logo" src="../assets/logo-mark.jpg" alt="Origen Brows &amp; Hair Studio" />
+      <span class="sidebar-brand-text">Origen · Panel</span>
+    </div>
+    <div class="sidebar-nav">
+    <button type="button" class="sidebar-pin" title="Fijar menú abierto">📌</button>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link" href="citas.html"><span class="sidebar-icon">📅</span><span class="sidebar-label">Citas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Citas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="citas.html#bloqueos">🚫 Bloqueos de horario</a>
+        <a class="sidebar-sublink" href="citas.html#horario-especial">🔓 Horario especial</a>
+        <a class="sidebar-sublink" href="citas.html#lista-espera">⏳ Lista de espera</a>
+      </div></div>
+    </div>
+    <a class="sidebar-link" href="clientas.html"><span class="sidebar-icon">👥</span><span class="sidebar-label">Clientas</span></a>
+    <a class="sidebar-link" href="lealtad.html"><span class="sidebar-icon">🎁</span><span class="sidebar-label">Lealtad</span></a>
+    <a class="sidebar-link" href="reportes.html"><span class="sidebar-icon">📊</span><span class="sidebar-label">Reportes</span></a>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link" href="finanzas.html"><span class="sidebar-icon">💰</span><span class="sidebar-label">Finanzas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Finanzas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="finanzas.html#gastos-fijos">Gastos fijos</a>
+        <a class="sidebar-sublink" href="finanzas.html#inversiones">Inversiones</a>
+        <a class="sidebar-sublink" href="finanzas.html#contabilidad">Contabilidad</a>
+      </div></div>
+    </div>
+      <a class="sidebar-link is-active" href="configuracion.html"><span class="sidebar-icon">⚙️</span><span class="sidebar-label">Configuración</span></a>
+      <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
+    <div class="sidebar-group sidebar-help" data-group>
+      <div class="sidebar-group-head">
+        <button type="button" class="sidebar-link"><span class="sidebar-icon">❓</span><span class="sidebar-label">Ayuda</span></button>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar tutoriales"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="ayuda/citas.html">📅 Citas</a>
+        <a class="sidebar-sublink" href="ayuda/clientas.html">👥 Clientas</a>
+        <a class="sidebar-sublink" href="ayuda/lealtad.html">🎁 Lealtad</a>
+        <a class="sidebar-sublink" href="ayuda/reportes.html">📊 Reportes</a>
+        <a class="sidebar-sublink" href="ayuda/finanzas.html">💰 Finanzas</a>
+      </div></div>
+    </div>
+    </div>
+    <div class="sidebar-user" id="sidebar-user"></div>
+    <div class="presence-popover" id="presence-popover" hidden>
+      <div class="presence-popover-title">Conectadas ahora</div>
+      <ul class="presence-list" id="presence-list"></ul>
+    </div>
+    <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
+  </nav>
+  <div class="sidebar-backdrop"></div>
+  <div class="admin-wrap" id="admin-wrap">
+  <div id="admin-wrap-content">
+  <div class="admin-header">
+    <h1>Configuración</h1>
+  </div>
+
+  <div class="card" id="gallery-card">
+    <h2>Galería de fotos</h2>
+    <p class="section-note">Fotos de trabajos realizados que se muestran en la página principal. Usa las flechas para ordenarlas — el primer lugar es el que aparece primero en el carrusel.</p>
+    <div class="row-actions" style="margin-bottom:16px;">
+      <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+        + Subir foto o video
+        <input type="file" id="gallery-upload-input" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" multiple hidden />
+      </label>
+      <span class="form-hint" id="gallery-upload-hint"></span>
+    </div>
+    <div id="gallery-loading">Cargando…</div>
+    <div id="gallery-empty" hidden>Todavía no hay fotos.</div>
+    <div class="gallery-manager-grid" id="gallery-manager-grid" hidden></div>
+  </div>
+
+  <div class="card" id="users-card">
+    <h2>Usuarios y permisos</h2>
+    <p class="section-note">Elige el rol de cada cuenta y qué secciones del panel puede ver. Una cuenta <strong>Administradora</strong> siempre ve todo. El cambio aplica la próxima vez que esa persona inicie sesión.</p>
+    <div id="users-loading">Cargando…</div>
+    <div id="users-denied" hidden>Solo una cuenta administradora puede ver y editar usuarios.</div>
+    <div id="users-empty" hidden>No se pudo cargar la lista de usuarios.</div>
+    <div class="table-scroll">
+      <table class="users-table" id="users-table" hidden>
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th>Rol</th>
+            <th>Secciones que puede ver</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+
+  <div class="ayuda-panel" id="ayuda-panel" hidden>
+    <div class="ayuda-panel-bar">
+      <strong>❓ Ayuda</strong>
+      <button type="button" class="ayuda-panel-close" id="ayuda-panel-close" aria-label="Cerrar ayuda">✕ Cerrar</button>
+    </div>
+    <iframe id="ayuda-frame" title="Tutorial del panel"></iframe>
+  </div>
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const SECTION_LABEL = {
+    citas: "Citas",
+    clientas: "Clientas",
+    lealtad: "Lealtad",
+    reportes: "Reportes",
+    finanzas: "Finanzas",
+    contenido: "Contenido",
+    configuracion: "Configuración",
+  };
+  const ROLE_LABEL = { administrador: "Administradora", manager: "Manager", vendedor: "Vendedora" };
+
+  const loginGate = document.getElementById("login-gate");
+  const adminShell = document.getElementById("admin-shell");
+  const usersLoading = document.getElementById("users-loading");
+  const usersDenied = document.getElementById("users-denied");
+  const usersEmpty = document.getElementById("users-empty");
+  const usersTable = document.getElementById("users-table");
+  const usersTbody = document.getElementById("users-tbody");
+
+  async function authHeaders() {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return {};
+    const token = await user.jwt();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  const PRESET_ROLES = ["administrador", "manager", "vendedor"];
+
+  function sectionChecksHtml(currentSections, currentReadOnly, isAdminRole) {
+    const rows = Object.keys(SECTION_LABEL)
+      .map((s) => {
+        const viewChecked = isAdminRole || currentSections.includes(s);
+        const roChecked = !isAdminRole && currentReadOnly.includes(s);
+        return `
+          <tr>
+            <td>${SECTION_LABEL[s]}</td>
+            <td><input type="checkbox" data-section="${s}" data-kind="view" ${viewChecked ? "checked" : ""} ${isAdminRole ? "disabled" : ""} /></td>
+            <td><input type="checkbox" data-section="${s}" data-kind="readonly" ${roChecked ? "checked" : ""} ${isAdminRole || !viewChecked ? "disabled" : ""} /></td>
+          </tr>`;
+      })
+      .join("");
+    return `<table class="mini-section-table"><thead><tr><th></th><th>Ver</th><th>Solo lectura</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function rowHtml(u) {
+    const isAdminRole = u.role === "administrador";
+    const isPreset = PRESET_ROLES.includes(u.role);
+    return `
+      <tr data-user-id="${u.id}">
+        <td><strong>${u.fullName || u.email}</strong>${u.fullName ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${u.email}</span>` : ""}</td>
+        <td>
+          <select data-field="role-preset">
+            <option value="administrador" ${u.role === "administrador" ? "selected" : ""}>Administradora</option>
+            <option value="manager" ${u.role === "manager" ? "selected" : ""}>Manager</option>
+            <option value="vendedor" ${u.role === "vendedor" ? "selected" : ""}>Vendedora</option>
+            <option value="__custom__" ${!isPreset ? "selected" : ""}>Personalizado…</option>
+          </select>
+          <input type="text" data-field="role-custom" placeholder="Nombre del rol" maxlength="40" value="${!isPreset ? u.role : ""}" ${isPreset ? "hidden" : ""} />
+        </td>
+        <td><div class="section-checks" data-field="sections">${sectionChecksHtml(u.sections, u.readOnlySections || [], isAdminRole)}</div></td>
+        <td>
+          <button type="button" class="btn btn-outline btn-sm" data-action="save">Guardar</button>
+          <p class="user-save-hint" hidden></p>
+        </td>
+      </tr>`;
+  }
+
+  function refreshRowRoleState(row) {
+    const preset = row.querySelector('select[data-field="role-preset"]').value;
+    const customInput = row.querySelector('input[data-field="role-custom"]');
+    customInput.hidden = preset !== "__custom__";
+    const isAdminRole = preset === "administrador";
+    row.querySelectorAll('.section-checks input[data-kind="view"]').forEach((cb) => {
+      cb.disabled = isAdminRole;
+      if (isAdminRole) cb.checked = true;
+      refreshReadOnlyCheckboxState(cb, isAdminRole);
+    });
+  }
+
+  // El checkbox "solo lectura" de una sección solo tiene sentido si esa
+  // sección está marcada "Ver" y la cuenta no es administradora.
+  function refreshReadOnlyCheckboxState(viewCheckbox, isAdminRole) {
+    const section = viewCheckbox.getAttribute("data-section");
+    const table = viewCheckbox.closest("table");
+    const roCheckbox = table.querySelector(`input[data-kind="readonly"][data-section="${section}"]`);
+    if (!roCheckbox) return;
+    roCheckbox.disabled = isAdminRole || !viewCheckbox.checked;
+    if (isAdminRole || !viewCheckbox.checked) roCheckbox.checked = false;
+  }
+
+  /* ---------------------------------------------------------
+     Galería de fotos
+  --------------------------------------------------------- */
+  const galleryLoading = document.getElementById("gallery-loading");
+  const galleryEmpty = document.getElementById("gallery-empty");
+  const galleryGrid = document.getElementById("gallery-manager-grid");
+  const galleryUploadInput = document.getElementById("gallery-upload-input");
+  const galleryUploadHint = document.getElementById("gallery-upload-hint");
+  let galleryPhotos = [];
+  let galleryReadOnly = false;
+
+  function galleryThumbHtml(photo) {
+    return photo.mediaType === "video"
+      ? `<div class="thumb-wrap"><video class="thumb" src="${photo.url}" muted playsinline preload="metadata"></video><span class="thumb-play">▶</span></div>`
+      : `<img class="thumb" src="${photo.url}" alt="${photo.alt || ""}" loading="lazy" />`;
+  }
+
+  function galleryItemHtml(photo, index, total) {
+    if (galleryReadOnly) {
+      return `
+        <div class="gallery-manager-item" data-photo-id="${photo.id}">
+          ${galleryThumbHtml(photo)}
+          <div class="item-body">
+            <p style="margin:0;font-size:0.78rem;color:var(--color-muted);">${photo.alt || "Sin descripción"}</p>
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="gallery-manager-item" data-photo-id="${photo.id}">
+        ${galleryThumbHtml(photo)}
+        <div class="item-body">
+          <input type="text" data-field="alt" placeholder="Descripción (opcional)" value="${(photo.alt || "").replace(/"/g, "&quot;")}" />
+          <div class="item-actions">
+            <button type="button" data-action="left" ${index === 0 ? "disabled" : ""} title="Mover a la izquierda">←</button>
+            <button type="button" data-action="right" ${index === total - 1 ? "disabled" : ""} title="Mover a la derecha">→</button>
+            <button type="button" class="del-btn" data-action="delete" title="Borrar">✕</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderGalleryGrid() {
+    galleryGrid.innerHTML = galleryPhotos.map((p, i) => galleryItemHtml(p, i, galleryPhotos.length)).join("");
+  }
+
+  async function loadGallery() {
+    galleryLoading.hidden = false;
+    galleryEmpty.hidden = true;
+    galleryGrid.hidden = true;
+    try {
+      const res = await fetch("/api/list-gallery");
+      const body = await res.json();
+      galleryLoading.hidden = true;
+      if (!res.ok) {
+        galleryEmpty.textContent = "No se pudo cargar la galería.";
+        galleryEmpty.hidden = false;
+        return;
+      }
+      galleryPhotos = body.photos || [];
+      if (!galleryPhotos.length) {
+        galleryEmpty.textContent = "Todavía no hay fotos.";
+        galleryEmpty.hidden = false;
+        return;
+      }
+      renderGalleryGrid();
+      galleryGrid.hidden = false;
+    } catch {
+      galleryLoading.hidden = true;
+      galleryEmpty.textContent = "No se pudo cargar la galería.";
+      galleryEmpty.hidden = false;
+    }
+  }
+
+  async function saveGalleryOrder() {
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/reorder-gallery", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ orderedIds: galleryPhotos.map((p) => p.id) }),
+    });
+  }
+
+  const ALLOWED_UPLOAD_TYPES = ["image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime", "video/webm"];
+
+  async function uploadOneFile(file) {
+    if (!ALLOWED_UPLOAD_TYPES.includes(file.type)) {
+      throw new Error(`"${file.name}": formato no soportado (usa JPG, PNG, WEBP para fotos o MP4, MOV, WEBM para videos).`);
+    }
+    if (file.size > 4.5 * 1024 * 1024) {
+      throw new Error(`"${file.name}": pesa demasiado (máximo 4.5 MB, incluidos los videos — usa un clip corto o comprímelo antes de subirlo).`);
+    }
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const dataBase64 = dataUrl.split(",")[1];
+
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    const res = await fetch("/api/upload-gallery-photo", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ dataBase64, contentType: file.type, alt: "" }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(`"${file.name}": ${body.message || "no se pudo subir."}`);
+  }
+
+  // Se suben una por una (no en paralelo) para no saturar la conexión con
+  // varias fotos en base64 al mismo tiempo, y para poder mostrar cuál va.
+  galleryUploadInput.addEventListener("change", async () => {
+    const files = Array.from(galleryUploadInput.files);
+    galleryUploadInput.value = "";
+    if (!files.length) return;
+
+    galleryUploadHint.classList.remove("is-error");
+    const errors = [];
+    for (let i = 0; i < files.length; i++) {
+      galleryUploadHint.textContent = files.length > 1 ? `Subiendo ${i + 1} de ${files.length}…` : "Subiendo…";
+      try {
+        await uploadOneFile(files[i]);
+      } catch (err) {
+        errors.push(err.message || "No se pudo subir.");
+      }
+    }
+
+    await loadGallery();
+    if (errors.length) {
+      galleryUploadHint.textContent = errors.join(" ");
+      galleryUploadHint.classList.add("is-error");
+    } else {
+      galleryUploadHint.textContent = files.length > 1 ? `${files.length} fotos subidas.` : "Foto subida.";
+    }
+  });
+
+  galleryGrid.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const item = btn.closest(".gallery-manager-item");
+    const photoId = item.getAttribute("data-photo-id");
+    const index = galleryPhotos.findIndex((p) => p.id === photoId);
+    if (index === -1) return;
+    const action = btn.getAttribute("data-action");
+
+    if (action === "left" && index > 0) {
+      [galleryPhotos[index - 1], galleryPhotos[index]] = [galleryPhotos[index], galleryPhotos[index - 1]];
+      renderGalleryGrid();
+      await saveGalleryOrder();
+    } else if (action === "right" && index < galleryPhotos.length - 1) {
+      [galleryPhotos[index + 1], galleryPhotos[index]] = [galleryPhotos[index], galleryPhotos[index + 1]];
+      renderGalleryGrid();
+      await saveGalleryOrder();
+    } else if (action === "delete") {
+      if (!window.confirm("¿Borrar esta foto de la galería?")) return;
+      btn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/delete-gallery-photo", { method: "POST", headers, body: JSON.stringify({ id: photoId }) });
+        if (!res.ok) throw new Error();
+        galleryPhotos.splice(index, 1);
+        renderGalleryGrid();
+        if (!galleryPhotos.length) {
+          galleryEmpty.textContent = "Todavía no hay fotos.";
+          galleryEmpty.hidden = false;
+          galleryGrid.hidden = true;
+        }
+      } catch {
+        alert("No se pudo borrar la foto. Intenta de nuevo.");
+        btn.disabled = false;
+      }
+    }
+  });
+
+  // Guarda la descripción al salir del campo (blur), no en cada tecla.
+  galleryGrid.addEventListener(
+    "blur",
+    async (e) => {
+      if (!e.target.matches('input[data-field="alt"]')) return;
+      const item = e.target.closest(".gallery-manager-item");
+      const photoId = item.getAttribute("data-photo-id");
+      const photo = galleryPhotos.find((p) => p.id === photoId);
+      const alt = e.target.value.trim();
+      if (!photo || photo.alt === alt) return;
+      photo.alt = alt;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        await fetch("/api/update-gallery-photo", { method: "POST", headers, body: JSON.stringify({ id: photoId, alt }) });
+      } catch {}
+    },
+    true
+  );
+
+  async function loadUsers() {
+    usersLoading.hidden = false;
+    usersDenied.hidden = true;
+    usersEmpty.hidden = true;
+    usersTable.hidden = true;
+
+    try {
+      const headers = await authHeaders();
+      const res = await fetch("/api/list-admin-users", { headers });
+      usersLoading.hidden = true;
+      if (res.status === 401 || res.status === 403) {
+        usersDenied.hidden = false;
+        return;
+      }
+      if (!res.ok) {
+        usersEmpty.hidden = false;
+        return;
+      }
+      const body = await res.json();
+      const users = body.users || [];
+      if (!users.length) {
+        usersEmpty.hidden = false;
+        return;
+      }
+      usersTbody.innerHTML = users.map(rowHtml).join("");
+      usersTable.hidden = false;
+    } catch {
+      usersLoading.hidden = true;
+      usersEmpty.hidden = false;
+    }
+  }
+
+  usersTbody.addEventListener("change", (e) => {
+    // Ojo: el checkbox de una sección vive dentro de la mini-tabla
+    // (.mini-section-table), que tiene sus propios <tr> — hay que buscar
+    // el <tr data-user-id> de afuera, no el más cercano a secas.
+    const row = e.target.closest("tr[data-user-id]");
+    if (!row) return;
+    if (e.target.matches('select[data-field="role-preset"]')) {
+      refreshRowRoleState(row);
+    } else if (e.target.matches('.section-checks input[data-kind="view"]')) {
+      const isAdminRole = row.querySelector('select[data-field="role-preset"]').value === "administrador";
+      refreshReadOnlyCheckboxState(e.target, isAdminRole);
+    }
+  });
+
+  usersTbody.addEventListener("click", async (e) => {
+    const btn = e.target.closest('button[data-action="save"]');
+    if (!btn) return;
+    const row = btn.closest("tr");
+    const userId = row.getAttribute("data-user-id");
+    const rolePreset = row.querySelector('select[data-field="role-preset"]').value;
+    const role = rolePreset === "__custom__" ? row.querySelector('input[data-field="role-custom"]').value.trim() : rolePreset;
+    const sections = Array.from(row.querySelectorAll('.section-checks input[data-kind="view"]:checked')).map((cb) => cb.getAttribute("data-section"));
+    const readOnlySections = Array.from(row.querySelectorAll('.section-checks input[data-kind="readonly"]:checked')).map((cb) => cb.getAttribute("data-section"));
+    const hint = row.querySelector(".user-save-hint");
+
+    if (!role) {
+      hint.textContent = "Escribe un nombre para el rol personalizado.";
+      hint.classList.add("is-error");
+      hint.hidden = false;
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Guardando…";
+    hint.hidden = true;
+    hint.classList.remove("is-ok", "is-error");
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/update-admin-user", { method: "POST", headers, body: JSON.stringify({ userId, role, sections, readOnlySections }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar.");
+      hint.textContent = "Guardado.";
+      hint.classList.add("is-ok");
+      hint.hidden = false;
+    } catch (err) {
+      hint.textContent = err.message || "No se pudo guardar.";
+      hint.classList.add("is-error");
+      hint.hidden = false;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Guardar";
+    }
+  });
+
+  document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
+  document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  // Riel del menú: fijarlo abierto con el pin, y desplegar/cerrar los
+  // submenús de Citas y Finanzas con el botón de flecha.
+  document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
+    const backdrop = sidebar.nextElementSibling;
+    const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
+    sidebar.addEventListener("click", (e) => {
+      const pinBtn = e.target.closest(".sidebar-pin");
+      const brandBtn = e.target.closest(".sidebar-brand");
+      if (pinBtn || brandBtn) {
+        sidebar.classList.toggle("is-pinned");
+        return;
+      }
+      const chevBtn = e.target.closest(".sidebar-chev-btn");
+      const groupToggle = e.target.closest(".sidebar-group-head .sidebar-link:not([href])");
+      if (chevBtn || groupToggle) {
+        (chevBtn || groupToggle).closest("[data-group]").classList.toggle("is-open");
+        return;
+      }
+      if (isMobile() && e.target.closest(".sidebar-link, .sidebar-sublink")) {
+        sidebar.classList.remove("is-pinned");
+      }
+    });
+    if (backdrop && backdrop.classList.contains("sidebar-backdrop")) {
+      backdrop.addEventListener("click", () => sidebar.classList.remove("is-pinned"));
+    }
+  });
+
+  // Panel de Ayuda: los tutoriales se abren aquí mismo, en un iframe que
+  // reemplaza el contenido normal de la página — no se navega a otra
+  // pestaña. El botón "Volver al panel" de esas páginas, cuando detecta
+  // que está incrustado, en vez de navegar le avisa a esta página (por
+  // postMessage) que lo cierre.
+  (function () {
+    const wrapContent = document.getElementById("admin-wrap-content");
+    const panel = document.getElementById("ayuda-panel");
+    const frame = document.getElementById("ayuda-frame");
+    const closeBtn = document.getElementById("ayuda-panel-close");
+    if (!wrapContent || !panel || !frame) return;
+
+    function openAyuda(url) {
+      frame.src = url;
+      wrapContent.hidden = true;
+      panel.hidden = false;
+      panel.scrollIntoView({ behavior: "instant", block: "start" });
+    }
+    function closeAyuda() {
+      panel.hidden = true;
+      wrapContent.hidden = false;
+      frame.src = "about:blank";
+    }
+
+    document.querySelectorAll(".sidebar-help .sidebar-sublink").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        openAyuda(link.getAttribute("href"));
+        link.blur();
+        const sidebarEl = document.querySelector(".admin-sidebar");
+        if (sidebarEl) sidebarEl.classList.remove("is-pinned");
+      });
+    });
+    if (closeBtn) closeBtn.addEventListener("click", closeAyuda);
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.source === "origen-ayuda" && e.data.type === "close") closeAyuda();
+    });
+  })();
+
+  function initialsFromUser(user) {
+    const fullName = (user.user_metadata && user.user_metadata.full_name) || "";
+    if (fullName.trim()) {
+      return fullName.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+    }
+    const local = (user.email || "").split("@")[0];
+    const parts = local.split(/[._-]+/).filter(Boolean);
+    return (parts.length >= 2 ? parts[0][0] + parts[1][0] : local.slice(0, 2)).toUpperCase();
+  }
+  function renderSidebarUser() {
+    const el = document.getElementById("sidebar-user");
+    const user = window.netlifyIdentity.currentUser();
+    if (!el || !user) return;
+    el.innerHTML = `<span class="sidebar-avatar-wrap"><span class="sidebar-avatar">${initialsFromUser(user)}</span><span class="sidebar-active-count" id="presence-count" hidden></span></span><span class="sidebar-label">Sesión activa<br><strong>${user.email}</strong></span>`;
+  }
+
+  function renderPresenceList(active) {
+    const list = document.getElementById("presence-list");
+    const badge = document.getElementById("presence-count");
+    if (!list || !badge) return;
+    const user = window.netlifyIdentity.currentUser();
+    const selfEmail = user && user.email;
+    if (!active || !active.length) {
+      badge.hidden = true;
+      list.innerHTML = '<li class="presence-empty">No se pudo cargar</li>';
+      return;
+    }
+    badge.hidden = false;
+    badge.textContent = String(active.length);
+    list.innerHTML = active
+      .map((a) => {
+        const label = a.full_name || (a.email || "").split("@")[0];
+        return `<li><span class="presence-dot"></span>${label}${a.email === selfEmail ? " (tú)" : ""}</li>`;
+      })
+      .join("");
+  }
+
+  const ALL_SECTIONS = ["citas", "clientas", "lealtad", "reportes", "finanzas", "contenido", "configuracion"];
+  const SECTION_BY_HREF = {
+    "citas.html": "citas",
+    "clientas.html": "clientas",
+    "lealtad.html": "lealtad",
+    "reportes.html": "reportes",
+    "finanzas.html": "finanzas",
+    "index.html": "contenido",
+    "configuracion.html": "configuracion",
+  };
+  function getUserRole(user) {
+    const roles = user.app_metadata && user.app_metadata.roles;
+    return Array.isArray(roles) && roles.length ? roles[0] : "administrador";
+  }
+  function getUserSections(user) {
+    if (getUserRole(user) === "administrador") return ALL_SECTIONS;
+    const sections = user.app_metadata && user.app_metadata.sections;
+    return Array.isArray(sections) ? sections : [];
+  }
+  function getUserReadOnlySections(user) {
+    if (getUserRole(user) === "administrador") return [];
+    const readOnly = user.app_metadata && user.app_metadata.readOnlySections;
+    return Array.isArray(readOnly) ? readOnly : [];
+  }
+  function showAccessDenied() {
+    const wrap = document.getElementById("admin-wrap-content") || document.getElementById("admin-wrap");
+    if (wrap) {
+      wrap.innerHTML = '<div style="padding:80px 24px;text-align:center;max-width:420px;margin:0 auto;"><h1 style="font-size:1.6rem;">Sin acceso</h1><p class="section-note">Tu cuenta no tiene permiso para ver esta sección. Pide a una administradora que te lo active desde Configuración &rarr; Usuarios y permisos.</p></div>';
+    }
+  }
+  function applySectionAccess(pageSection) {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return true;
+    const sections = getUserSections(user);
+    document.querySelectorAll(".admin-sidebar .sidebar-link[href]").forEach((link) => {
+      const href = link.getAttribute("href").split("#")[0];
+      const section = SECTION_BY_HREF[href];
+      if (!section) return;
+      const target = link.closest("[data-group]") || link;
+      target.hidden = !sections.includes(section);
+    });
+    if (pageSection && !sections.includes(pageSection)) {
+      showAccessDenied();
+      return false;
+    }
+    return true;
+  }
+
+  let presenceTimer = null;
+  async function sendHeartbeat() {
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/heartbeat", { method: "POST", headers });
+      if (!res.ok) return;
+      const data = await res.json();
+      renderPresenceList(data.active);
+    } catch {}
+  }
+  function startPresence() {
+    sendHeartbeat();
+    if (presenceTimer) clearInterval(presenceTimer);
+    presenceTimer = setInterval(sendHeartbeat, 30000);
+    const avatarWrap = document.querySelector("#sidebar-user .sidebar-avatar-wrap");
+    const popover = document.getElementById("presence-popover");
+    if (!avatarWrap || !popover) return;
+    avatarWrap.onclick = (e) => {
+      e.stopPropagation();
+      if (!popover.hidden) {
+        popover.hidden = true;
+        return;
+      }
+      popover.hidden = false;
+      const rect = avatarWrap.getBoundingClientRect();
+      const sidebar = avatarWrap.closest(".admin-sidebar");
+      const sidebarRight = sidebar ? sidebar.getBoundingClientRect().right : rect.right;
+      popover.style.top = `${Math.max(8, rect.bottom - popover.offsetHeight)}px`;
+      popover.style.left = `${sidebarRight + 14}px`;
+    };
+    if (!startPresence.docClickBound) {
+      startPresence.docClickBound = true;
+      document.addEventListener("click", (e) => {
+        if (!popover.hidden && !popover.contains(e.target) && !e.target.closest(".sidebar-avatar-wrap")) {
+          popover.hidden = true;
+        }
+      });
+    }
+  }
+
+  function showAdmin() {
+    loginGate.hidden = true;
+    adminShell.hidden = false;
+    renderSidebarUser();
+    startPresence();
+    if (!applySectionAccess("configuracion")) return;
+
+    const user = window.netlifyIdentity.currentUser();
+    if (getUserRole(user) !== "administrador") {
+      document.getElementById("users-card").hidden = true;
+    } else {
+      loadUsers();
+    }
+
+    const sections = getUserSections(user);
+    const galleryCard = document.getElementById("gallery-card");
+    if (!sections.includes("contenido")) {
+      galleryCard.hidden = true;
+    } else {
+      galleryReadOnly = getUserReadOnlySections(user).includes("contenido");
+      if (galleryReadOnly) {
+        const uploadLabel = galleryCard.querySelector(".row-actions label");
+        if (uploadLabel) uploadLabel.hidden = true;
+      }
+      loadGallery();
+    }
+  }
+  function showLogin() {
+    loginGate.hidden = false;
+    adminShell.hidden = true;
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !adminShell.hidden && !document.getElementById("users-card").hidden) loadUsers();
+  });
+
+  if (!window.netlifyIdentity) {
+    document.getElementById("login-btn").hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "form-hint is-error";
+    notice.textContent = "No se pudo cargar el inicio de sesión. Revisa tu conexión y recarga la página.";
+    loginGate.appendChild(notice);
+    return;
+  }
+
+  window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
+  window.netlifyIdentity.on("login", () => {
+    window.netlifyIdentity.close();
+    showAdmin();
+  });
+  window.netlifyIdentity.on("logout", showLogin);
+  window.netlifyIdentity.init();
+})();
+</script>
+</body>
+</html>

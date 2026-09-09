@@ -385,3 +385,126 @@ alter table marketing_events enable row level security;
 alter table bookings add column if not exists promo_code text;
 alter table bookings add column if not exists discount_type text check (discount_type in ('percent', 'fixed'));
 alter table bookings add column if not exists discount_value numeric;
+
+-- Bloqueos de calendario que la dueña arma desde el panel de Citas: un día
+-- completo (start_time/end_time en null) o solo un rango de horas dentro
+-- de un día que por lo demás está abierto (ej. "cerrado de 2 a 4pm").
+create table if not exists schedule_blocks (
+  id uuid primary key default gen_random_uuid(),
+  block_date date not null,
+  start_time time,
+  end_time time,
+  label text,
+  created_at timestamptz not null default now(),
+  -- id del evento en Google Calendar, para poder borrarlo si se elimina el bloqueo
+  calendar_event_id text,
+  constraint schedule_blocks_range_check check (
+    (start_time is null and end_time is null) or (start_time is not null and end_time is not null and start_time < end_time)
+  )
+);
+
+-- Por si la tabla ya existía sin esta columna (migración incremental).
+alter table schedule_blocks add column if not exists calendar_event_id text;
+
+create index if not exists schedule_blocks_date_idx on schedule_blocks (block_date);
+
+alter table schedule_blocks enable row level security;
+
+-- Aperturas especiales de horario que la dueña arma desde el panel de
+-- Citas: permite abrir un día que normalmente está cerrado (ej. domingo, o
+-- un feriado) o cambiar el horario de un día ya abierto, para un rango de
+-- horas específico fuera de lo normal. Es lo contrario de schedule_blocks.
+-- Solo puede haber una apertura especial por fecha (si ya existe, se
+-- reemplaza al guardar una nueva para la misma fecha).
+create table if not exists schedule_openings (
+  id uuid primary key default gen_random_uuid(),
+  opening_date date not null unique,
+  start_time time not null,
+  end_time time not null,
+  label text,
+  created_at timestamptz not null default now(),
+  constraint schedule_openings_range_check check (start_time < end_time)
+);
+
+create index if not exists schedule_openings_date_idx on schedule_openings (opening_date);
+
+alter table schedule_openings enable row level security;
+
+-- Lista de espera: clientas que quieren una fecha que salió sin horarios
+-- (día lleno o cerrado) y piden que se les avise si se libera un espacio.
+-- "waiting" = todavía no se le avisa; "notified" = ya se le mandó WhatsApp
+-- de que hay lugar. La administradora la elimina de la lista una vez que
+-- agenda o decide que ya no aplica.
+create table if not exists waitlist (
+  id uuid primary key default gen_random_uuid(),
+  customer_name text not null,
+  customer_phone text not null,
+  customer_email text,
+  service_id text,
+  service_name text,
+  preferred_date date not null,
+  notes text,
+  status text not null default 'waiting' check (status in ('waiting', 'notified')),
+  notified_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists waitlist_date_idx on waitlist (preferred_date);
+
+alter table waitlist enable row level security;
+
+-- Marca manual de "ya se cobró el total" (anticipo + el resto que se paga
+-- en el estudio) — la administradora la marca ella misma, no se calcula
+-- sola a partir del estado ni del monto capturado.
+alter table bookings add column if not exists paid boolean not null default false;
+
+-- Presencia de administradoras en el panel: cada pestaña abierta manda un
+-- "heartbeat" cada 30s; se considera "conectada" a quien mandó uno en los
+-- últimos 90s (ver ACTIVE_WINDOW_SECONDS en heartbeat.js).
+create table if not exists admin_presence (
+  email text primary key,
+  full_name text,
+  last_seen timestamptz not null default now()
+);
+
+alter table admin_presence enable row level security;
+
+-- Galería de fotos del panel (Configuración → Galería de fotos): bucket
+-- público para los archivos + tabla para el orden/descripción. Las 6
+-- fotos que ya estaban en data/config.json se migran aquí con su ruta
+-- absoluta tal cual (storage_path empieza con "/"), sin volver a subir
+-- el archivo — solo las fotos nuevas que se suban desde el panel quedan
+-- dentro del bucket "gallery" (storage_path relativo).
+insert into storage.buckets (id, name, public)
+values ('gallery', 'gallery', true)
+on conflict (id) do nothing;
+
+create table if not exists gallery_photos (
+  id uuid primary key default gen_random_uuid(),
+  storage_path text not null,
+  alt text,
+  sort_order int not null default 0,
+  media_type text not null default 'photo',
+  created_at timestamptz not null default now()
+);
+alter table gallery_photos enable row level security;
+
+-- Si la tabla ya existía de antes (sin esta columna), agregarla ahora.
+alter table gallery_photos add column if not exists media_type text not null default 'photo';
+alter table gallery_photos drop constraint if exists gallery_photos_media_type_check;
+alter table gallery_photos add constraint gallery_photos_media_type_check check (media_type in ('photo', 'video'));
+
+insert into gallery_photos (storage_path, alt, sort_order, media_type)
+select v.storage_path, v.alt, v.sort_order, v.media_type
+from (values
+  ('/assets/gallery-2.jpg', 'Origen Brows & Hair Studio', 0, 'photo'),
+  ('/assets/gallery-3.jpg', 'Origen Brows & Hair Studio', 1, 'photo'),
+  ('/assets/gallery-4.jpg', 'Diseño de cejas en Origen Brows & Hair Studio', 2, 'photo'),
+  ('/assets/gallery-5.jpg', 'Productos profesionales InLei usados en Origen Brows', 3, 'photo'),
+  ('/assets/gallery-6.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 4, 'photo'),
+  ('/assets/gallery-7.jpg', 'Detalle de cejas en Origen Brows & Hair Studio', 5, 'photo'),
+  ('/assets/gallery-video-1.mov', 'Video de trabajo en Origen Brows & Hair Studio', 100, 'video'),
+  ('/assets/gallery-video-2.mov', 'Video de trabajo en Origen Brows & Hair Studio', 101, 'video'),
+  ('/assets/gallery-video-3.mp4', 'Video de trabajo en Origen Brows & Hair Studio', 102, 'video')
+) as v(storage_path, alt, sort_order, media_type)
+where not exists (select 1 from gallery_photos g where g.storage_path = v.storage_path);

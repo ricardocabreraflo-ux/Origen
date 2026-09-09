@@ -2,9 +2,12 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Administrar contenido · Origen Brows & Hair Studio</title>
   <meta name="robots" content="noindex" />
+  <link rel="manifest" href="../manifest-admin.json" />
+  <meta name="theme-color" content="#211b15" />
+  <link rel="apple-touch-icon" href="../assets/icon-admin-192.png" />
 </head>
 <body>
   <!-- Enlace fijo de regreso al panel (Citas/Lealtad/Reportes/Finanzas). Decap
@@ -15,13 +18,44 @@
   <!-- Maneja el inicio de sesión (invitaciones, "olvidé mi contraseña", etc.) -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script>
+    // Mismo criterio de permisos que el resto del panel (ver
+    // configuracion.html): una cuenta sin rol asignado ve todo (por
+    // compatibilidad con cuentas ya existentes); si tiene rol, solo entra
+    // aquí si "contenido" está entre sus secciones permitidas.
+    //
+    // Importante: esto NO llama a netlifyIdentity.init() — Decap CMS ya lo
+    // hace solo al montar su backend de git-gateway. Llamarlo dos veces
+    // (una aquí y otra desde Decap) hacía que el modal de inicio de
+    // sesión se abriera y cerrara en bucle. Por eso Decap se sigue
+    // cargando siempre igual que antes (script normal, sin condición) y
+    // lo único que se agrega es una capa visual encima si la cuenta no
+    // tiene permiso.
+    function getUserRole(user) {
+      const roles = user.app_metadata && user.app_metadata.roles;
+      return Array.isArray(roles) && roles.length ? roles[0] : "administrador";
+    }
+    function canSeeContenido(user) {
+      if (getUserRole(user) === "administrador") return true;
+      const sections = user.app_metadata && user.app_metadata.sections;
+      return Array.isArray(sections) && sections.includes("contenido");
+    }
+    function denyContenidoAccess() {
+      if (document.getElementById("contenido-denied-overlay")) return;
+      const notice = document.createElement("div");
+      notice.id = "contenido-denied-overlay";
+      notice.style.cssText = "position:fixed;inset:0;z-index:999999;background:#211b15;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;";
+      notice.innerHTML = "<div style='max-width:420px;font-family:sans-serif;'><h1 style='font-size:1.4rem;'>Sin acceso</h1><p>Tu cuenta no tiene permiso para editar el contenido. Pide a una administradora que te lo active desde Configuración → Usuarios y permisos.</p></div>";
+      document.body.appendChild(notice);
+    }
     if (window.netlifyIdentity) {
       window.netlifyIdentity.on("init", (user) => {
         if (!user) {
           window.netlifyIdentity.on("login", () => {
             document.location.href = "/admin/";
           });
+          return;
         }
+        if (!canSeeContenido(user)) denyContenidoAccess();
       });
     }
   </script>

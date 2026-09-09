@@ -1,5 +1,5 @@
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 const { deleteCalendarEvent } = require("./_lib/googleCalendar");
 
 exports.handler = async (event, context) => {
@@ -8,7 +8,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "citas");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }
@@ -21,6 +21,17 @@ exports.handler = async (event, context) => {
   }
   if (!payload.id) {
     return { statusCode: 400, body: JSON.stringify({ error: "invalid_request", message: "Falta el id de la cita." }) };
+  }
+
+  const requiredPin = process.env.DELETE_PIN;
+  if (!requiredPin) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "server_error", message: "Falta configurar DELETE_PIN en Netlify para poder cancelar citas." }),
+    };
+  }
+  if (payload.pin !== requiredPin) {
+    return { statusCode: 403, body: JSON.stringify({ error: "invalid_pin", message: "PIN incorrecto. No se canceló la cita." }) };
   }
 
   try {

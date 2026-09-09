@@ -3,7 +3,7 @@
 // las redes sociales del negocio. Requiere Meta configurado y la
 // plantilla aprobada.
 const { getServiceClient } = require("./_lib/supabase");
-const { requireAdmin } = require("./_lib/requireAdmin");
+const { requireSectionWrite } = require("./_lib/requireAdmin");
 const { loadConfig } = require("./_lib/config");
 const { last10 } = require("./_lib/loyalty");
 const { sendWhatsAppTemplate } = require("./_lib/whatsapp");
@@ -14,7 +14,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireAdmin(context);
+    requireSectionWrite(context, "lealtad");
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

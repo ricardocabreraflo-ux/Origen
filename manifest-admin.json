@@ -1,0 +1,38 @@
+{
+  "name": "Origen Brows — Panel",
+  "short_name": "Origen Panel",
+  "description": "Panel de administración de Origen Brows & Hair Studio.",
+  "start_url": "/admin/citas.html",
+  "scope": "/admin/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f9f5ee",
+  "theme_color": "#211b15",
+  "lang": "es-MX",
+  "icons": [
+    {
+      "src": "../assets/icon-admin-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icon-admin-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icon-admin-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../assets/icon-admin-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
