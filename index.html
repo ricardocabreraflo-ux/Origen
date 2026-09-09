@@ -61,12 +61,12 @@
     <div class="container hero-content">
       <p class="eyebrow">Bienvenida / Bienvenido</p>
       <h1 id="hero-title">Belleza, cuidado y bienestar en un solo lugar</h1>
-      <p class="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
+      <p class="hero-subtitle" id="hero-subtitle">Reserva tu cita en segundos y recibe la confirmación directo por WhatsApp.</p>
       <div class="hero-actions">
         <a href="#agenda" class="btn btn-primary">Agenda tu cita</a>
         <a href="#" id="hero-whatsapp" class="btn btn-outline" target="_blank" rel="noopener">
-          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
-          Escríbenos por WhatsApp
+          <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp" id="hero-whatsapp-icon"/></svg>
+          <span id="hero-whatsapp-label">Escríbenos por WhatsApp</span>
         </a>
       </div>
     </div>
@@ -215,6 +215,11 @@
             <label for="b-notes">Notas adicionales</label>
             <textarea id="b-notes" name="notes" rows="3" placeholder="Cuéntanos algo más (opcional)"></textarea>
           </div>
+          <div class="form-row form-row-full">
+            <label for="b-promo-code">Código de promoción o de referido (opcional)</label>
+            <input type="text" id="b-promo-code" name="promoCode" placeholder="Ej. VERANO15" autocomplete="off" />
+            <p class="form-hint" id="promo-code-hint"></p>
+          </div>
           <div class="form-row form-row-full form-actions">
             <button type="submit" class="btn btn-primary" id="booking-submit">Apartar horario</button>
           </div>
@@ -228,6 +233,7 @@
         <p class="confirmation-code" id="confirmation-code"></p>
         <p id="confirmation-summary"></p>
         <p class="section-note" id="confirmation-loyalty-note" hidden></p>
+        <p class="section-note" id="confirmation-promo-note" hidden></p>
 
         <div class="confirmation-timer" id="confirmation-timer"></div>
 
@@ -264,8 +270,8 @@
 
         <div class="confirmation-actions">
           <a href="#" id="confirmation-whatsapp" class="btn btn-primary" target="_blank" rel="noopener">
-            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
-            Enviar comprobante por WhatsApp
+            <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp" id="confirmation-whatsapp-icon"/></svg>
+            <span id="confirmation-whatsapp-label">Enviar comprobante por WhatsApp</span>
           </a>
           <a href="#" id="confirmation-calendar" class="btn btn-outline" target="_blank" rel="noopener">
             <svg class="icon" viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
@@ -273,6 +279,7 @@
           </a>
           <button type="button" class="btn btn-outline" id="booking-restart">Agendar otra cita</button>
         </div>
+        <p class="form-hint" id="confirmation-contact-hint" hidden></p>
       </div>
     </div>
   </div>
@@ -298,6 +305,23 @@
       <span class="testimonial-page-count" id="testimonial-page-count"></span>
       <button type="button" class="testimonial-page-btn" id="testimonial-next" aria-label="Más reseñas">›</button>
     </div>
+  </div>
+</section>
+
+<!-- PRUEBA SOCIAL -->
+<section class="section" id="resultados">
+  <div class="container">
+    <p class="section-eyebrow">Resultados reales</p>
+    <h2 class="section-title">Antes y después</h2>
+    <div class="before-after-grid reveal-stagger" id="before-after-grid"><!-- generado por script.js --></div>
+  </div>
+</section>
+
+<section class="section section-alt" id="instagram-destacado">
+  <div class="container">
+    <p class="section-eyebrow">En redes</p>
+    <h2 class="section-title">Síguenos en Instagram</h2>
+    <div class="instagram-grid reveal-stagger" id="instagram-grid"><!-- generado por script.js --></div>
   </div>
 </section>
 
@@ -373,7 +397,7 @@
 
 <!-- BOTÓN FLOTANTE DE WHATSAPP -->
 <a href="#" id="floating-whatsapp" class="floating-whatsapp" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
-  <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg>
+  <svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp" id="floating-whatsapp-icon"/></svg>
 </a>
 
 <!-- SPRITE DE ÍCONOS SVG -->

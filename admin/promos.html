@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Promos · Origen Brows &amp; Hair Studio</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 100px; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .admin-header h1 { font-size: 1.8rem; margin: 0; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row-actions .btn { padding: 6px 14px; font-size: 0.78rem; }
+  #login-gate { max-width: 420px; margin: 100px auto; text-align: center; }
+  #login-gate .btn { margin-top: 16px; }
+
+  .card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px 26px; margin-bottom: 28px; }
+  .card h2 { font-size: 1.1rem; margin: 0 0 4px; }
+  .card .card-hint { color: var(--color-muted); font-size: 0.85rem; margin: 0 0 20px; }
+
+  .promo-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 18px; }
+  .promo-form .full { grid-column: 1 / -1; }
+  .promo-form label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--color-dark); margin-bottom: 6px; }
+  .promo-form input, .promo-form select, .promo-form textarea {
+    width: 100%;
+    font-family: var(--font-body);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(33, 29, 25, 0.15);
+    font-size: 0.9rem;
+    background: var(--color-cream-soft);
+    color: var(--color-dark);
+  }
+  .promo-form .form-actions { display: flex; gap: 10px; align-items: center; }
+  .promo-form .form-hint { margin: 0; }
+
+  table.promo-table { width: 100%; border-collapse: collapse; background: var(--color-white); }
+  .promo-table th, .promo-table td { padding: 12px 14px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid rgba(33,29,25,0.08); vertical-align: top; }
+  .promo-table th { background: var(--color-cream); font-weight: 600; color: var(--color-dark); }
+  .table-scroll { overflow-x: auto; }
+  .status-pill { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; }
+  .status-pill.is-active { background: #dcefe0; color: #2c6b3a; }
+  .status-pill.is-inactive { background: #eee; color: #777; }
+  #empty-state, #loading-state { text-align: center; padding: 40px 20px; color: var(--color-muted); }
+  code.code-chip { background: var(--color-cream); padding: 2px 7px; border-radius: 6px; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div id="login-gate">
+  <p class="section-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Promos y referidos</h1>
+  <p class="section-note">Inicia sesión para administrar tus campañas.</p>
+  <button class="btn btn-primary" id="login-btn">Iniciar sesión</button>
+</div>
+
+<div class="admin-shell" id="admin-shell" hidden>
+  <nav class="admin-sidebar">
+    <div class="sidebar-brand">Origen · Panel</div>
+    <a class="sidebar-link" href="citas.html">📅 Citas</a>
+    <a class="sidebar-link" href="clientas.html">👥 Clientas</a>
+    <a class="sidebar-link" href="lealtad.html">🎁 Lealtad</a>
+    <a class="sidebar-link is-active" href="promos.html">🏷️ Promos</a>
+    <a class="sidebar-link" href="sorteos.html">🎉 Sorteos</a>
+    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
+    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
+    <a class="sidebar-link" href="index.html">✏️ Contenido</a>
+    <div class="sidebar-user" id="sidebar-user"></div>
+    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+  </nav>
+  <div class="admin-wrap" id="admin-wrap">
+
+  <div class="admin-header">
+    <h1>Campañas de promoción</h1>
+    <div class="row-actions">
+      <button class="btn btn-outline btn-sm" id="refresh-btn">Actualizar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 id="form-title">Nueva campaña</h2>
+    <p class="card-hint">Si dejas el código vacío, se genera uno automático a partir del nombre. La landing queda en <code>/promo-&lt;slug&gt;</code> — si la clienta escribe el código directamente al agendar, tampoco necesita visitar esa página.</p>
+    <form class="promo-form" id="promo-form">
+      <input type="hidden" id="p-id" />
+      <div class="full">
+        <label for="p-name">Nombre de la campaña *</label>
+        <input type="text" id="p-name" required placeholder="Ej. Verano Origen" />
+      </div>
+      <div class="full">
+        <label for="p-description">Descripción (se muestra en la landing)</label>
+        <textarea id="p-description" rows="2" placeholder="Ej. 15% de descuento en Luxury Brow Lamination durante agosto."></textarea>
+      </div>
+      <div>
+        <label for="p-code">Código (opcional)</label>
+        <input type="text" id="p-code" placeholder="Ej. VERANO15" />
+      </div>
+      <div>
+        <label for="p-slug">Slug de la landing (opcional)</label>
+        <input type="text" id="p-slug" placeholder="Ej. verano" />
+      </div>
+      <div>
+        <label for="p-discount-type">Tipo de descuento *</label>
+        <select id="p-discount-type" required>
+          <option value="percent">Porcentaje (%)</option>
+          <option value="fixed">Monto fijo (MXN)</option>
+        </select>
+      </div>
+      <div>
+        <label for="p-discount-value">Valor del descuento *</label>
+        <input type="number" id="p-discount-value" required min="1" step="1" />
+      </div>
+      <div>
+        <label for="p-starts">Fecha de inicio (opcional)</label>
+        <input type="date" id="p-starts" />
+      </div>
+      <div>
+        <label for="p-ends">Fecha de fin (opcional)</label>
+        <input type="date" id="p-ends" />
+      </div>
+      <div>
+        <label for="p-max">Límite de usos (opcional)</label>
+        <input type="number" id="p-max" min="1" step="1" placeholder="Sin límite" />
+      </div>
+      <div>
+        <label for="p-active">Estado</label>
+        <select id="p-active">
+          <option value="true">Activa</option>
+          <option value="false">Desactivada</option>
+        </select>
+      </div>
+      <div class="full form-actions">
+        <button type="submit" class="btn btn-primary" id="promo-submit">Crear campaña</button>
+        <button type="button" class="btn btn-outline" id="promo-cancel-edit" hidden>Cancelar edición</button>
+        <p class="form-hint" id="promo-form-hint"></p>
+      </div>
+    </form>
+  </div>
+
+  <div id="loading-state">Cargando…</div>
+  <div id="empty-state" hidden>Todavía no has creado ninguna campaña.</div>
+
+  <div class="table-scroll">
+    <table class="promo-table" id="promo-table" hidden>
+      <thead>
+        <tr>
+          <th>Campaña</th>
+          <th>Código</th>
+          <th>Landing</th>
+          <th>Descuento</th>
+          <th>Vigencia</th>
+          <th>Usos</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="promo-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:36px;">
+    <h2>Referidos</h2>
+    <p class="card-hint">Cada clienta obtiene su código desde <code>/referidos.html</code>. Cuando su referida confirma su primera cita, se le genera sola una recompensa de un solo uso (aparece arriba como campaña con el nombre "Recompensa de referido — …").</p>
+    <div class="table-scroll">
+      <table class="promo-table" id="referral-table">
+        <thead>
+          <tr>
+            <th>Clienta</th>
+            <th>Código</th>
+            <th>Citas generadas</th>
+            <th>Confirmadas</th>
+            <th>Recompensas ganadas</th>
+          </tr>
+        </thead>
+        <tbody id="referral-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const loginGate = document.getElementById("login-gate");
+  const adminShell = document.getElementById("admin-shell");
+  const loadingState = document.getElementById("loading-state");
+  const emptyState = document.getElementById("empty-state");
+  const table = document.getElementById("promo-table");
+  const tbody = document.getElementById("promo-tbody");
+
+  const form = document.getElementById("promo-form");
+  const formTitle = document.getElementById("form-title");
+  const submitBtn = document.getElementById("promo-submit");
+  const cancelEditBtn = document.getElementById("promo-cancel-edit");
+  const formHint = document.getElementById("promo-form-hint");
+
+  async function authHeaders() {
+    const user = window.netlifyIdentity.currentUser();
+    if (!user) return {};
+    const token = await user.jwt();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  function formatDiscount(p) {
+    return p.discount_type === "percent" ? `${p.discount_value}%` : `$${p.discount_value} MXN`;
+  }
+
+  function formatDateRange(p) {
+    if (!p.starts_at && !p.ends_at) return "Sin fecha límite";
+    return `${p.starts_at || "…"} → ${p.ends_at || "sin fin"}`;
+  }
+
+  function resetForm() {
+    form.reset();
+    document.getElementById("p-id").value = "";
+    document.getElementById("p-discount-type").value = "percent";
+    document.getElementById("p-active").value = "true";
+    formTitle.textContent = "Nueva campaña";
+    submitBtn.textContent = "Crear campaña";
+    cancelEditBtn.hidden = true;
+  }
+
+  function fillFormForEdit(p) {
+    document.getElementById("p-id").value = p.id;
+    document.getElementById("p-name").value = p.campaign_name;
+    document.getElementById("p-description").value = p.description || "";
+    document.getElementById("p-code").value = p.code;
+    document.getElementById("p-code").disabled = true;
+    document.getElementById("p-slug").value = p.slug || "";
+    document.getElementById("p-slug").disabled = true;
+    document.getElementById("p-discount-type").value = p.discount_type;
+    document.getElementById("p-discount-value").value = p.discount_value;
+    document.getElementById("p-starts").value = p.starts_at || "";
+    document.getElementById("p-ends").value = p.ends_at || "";
+    document.getElementById("p-max").value = p.max_redemptions || "";
+    document.getElementById("p-active").value = String(p.active);
+    formTitle.textContent = `Editar "${p.campaign_name}"`;
+    submitBtn.textContent = "Guardar cambios";
+    cancelEditBtn.hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  let promosCache = [];
+
+  async function loadPromotions() {
+    loadingState.hidden = false;
+    table.hidden = true;
+    emptyState.hidden = true;
+
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-promotions", { headers });
+    const body = await res.json();
+    loadingState.hidden = true;
+
+    if (!res.ok) {
+      emptyState.textContent = "No se pudo cargar la lista de campañas.";
+      emptyState.hidden = false;
+      return;
+    }
+
+    const promotions = body.promotions || [];
+    promosCache = promotions;
+    if (promotions.length === 0) {
+      emptyState.hidden = false;
+      return;
+    }
+
+    tbody.innerHTML = promotions
+      .map(
+        (p) => `
+        <tr data-id="${p.id}">
+          <td><strong>${p.campaign_name}</strong>${p.description ? `<br/><span style="color:var(--color-muted);font-size:0.8rem;">${p.description}</span>` : ""}</td>
+          <td><code class="code-chip">${p.code}</code></td>
+          <td>${p.slug ? `<a href="/promo-${p.slug}" target="_blank" rel="noopener">/promo-${p.slug}</a>` : "—"}</td>
+          <td>${formatDiscount(p)}</td>
+          <td>${formatDateRange(p)}</td>
+          <td>${p.redemptions_count}${p.max_redemptions ? ` / ${p.max_redemptions}` : ""}</td>
+          <td><span class="status-pill ${p.active ? "is-active" : "is-inactive"}">${p.active ? "Activa" : "Desactivada"}</span></td>
+          <td class="row-actions">
+            <button class="btn btn-outline btn-sm" data-action="edit">Editar</button>
+            <button class="btn btn-outline btn-sm" data-action="toggle">${p.active ? "Desactivar" : "Activar"}</button>
+          </td>
+        </tr>`
+      )
+      .join("");
+
+    table.hidden = false;
+  }
+
+  tbody.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const row = btn.closest("tr");
+    const id = row.getAttribute("data-id");
+    const promo = promosCache.find((p) => p.id === id);
+    if (!promo) return;
+
+    if (btn.getAttribute("data-action") === "edit") {
+      fillFormForEdit(promo);
+      return;
+    }
+
+    if (btn.getAttribute("data-action") === "toggle") {
+      btn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/save-promotion", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ id: promo.id, campaignName: promo.campaign_name, discountType: promo.discount_type, discountValue: promo.discount_value, startsAt: promo.starts_at, endsAt: promo.ends_at, maxRedemptions: promo.max_redemptions, active: !promo.active }),
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || "No se pudo actualizar.");
+        await loadPromotions();
+      } catch (err) {
+        alert(err.message || "No se pudo actualizar la campaña.");
+        btn.disabled = false;
+      }
+    }
+  });
+
+  cancelEditBtn.addEventListener("click", resetForm);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    formHint.textContent = "";
+    formHint.classList.remove("is-error");
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.textContent;
+    submitBtn.textContent = "Guardando…";
+
+    const id = document.getElementById("p-id").value || undefined;
+    const payload = {
+      id,
+      campaignName: document.getElementById("p-name").value.trim(),
+      description: document.getElementById("p-description").value.trim(),
+      code: document.getElementById("p-code").value.trim(),
+      slug: document.getElementById("p-slug").value.trim(),
+      discountType: document.getElementById("p-discount-type").value,
+      discountValue: Number(document.getElementById("p-discount-value").value),
+      startsAt: document.getElementById("p-starts").value || null,
+      endsAt: document.getElementById("p-ends").value || null,
+      maxRedemptions: document.getElementById("p-max").value || null,
+      active: document.getElementById("p-active").value === "true",
+    };
+
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/save-promotion", { method: "POST", headers, body: JSON.stringify(payload) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar la campaña.");
+      resetForm();
+      document.getElementById("p-code").disabled = false;
+      document.getElementById("p-slug").disabled = false;
+      await loadPromotions();
+    } catch (err) {
+      formHint.textContent = err.message;
+      formHint.classList.add("is-error");
+    } finally {
+      submitBtn.disabled = false;
+      if (submitBtn.textContent === "Guardando…") submitBtn.textContent = originalLabel;
+    }
+  });
+
+  async function loadReferrals() {
+    const headers = await authHeaders();
+    const res = await fetch("/api/list-referrals", { headers });
+    const body = await res.json();
+    if (!res.ok) return;
+
+    const referrals = body.referrals || [];
+    document.getElementById("referral-tbody").innerHTML = referrals.length
+      ? referrals
+          .map(
+            (r) => `
+            <tr>
+              <td>${r.ownerName}<br/><span style="color:var(--color-muted);font-size:0.8rem;">${r.ownerPhone}</span></td>
+              <td><code class="code-chip">${r.code}</code></td>
+              <td>${r.referredCount}</td>
+              <td>${r.confirmedCount}</td>
+              <td>${r.rewardsGranted}</td>
+            </tr>`
+          )
+          .join("")
+      : `<tr><td colspan="5" style="text-align:center;color:var(--color-muted);">Todavía no hay clientas con código de referido.</td></tr>`;
+  }
+
+  document.getElementById("refresh-btn").addEventListener("click", () => {
+    loadPromotions();
+    loadReferrals();
+  });
+  document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
+  document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
+
+  function renderSidebarUser() {
+    const el = document.getElementById("sidebar-user");
+    const user = window.netlifyIdentity.currentUser();
+    if (el && user) el.innerHTML = `Sesión activa<span>${user.email}</span>`;
+  }
+
+  function showAdmin() {
+    loginGate.hidden = true;
+    adminShell.hidden = false;
+    renderSidebarUser();
+    loadPromotions();
+    loadReferrals();
+  }
+  function showLogin() {
+    loginGate.hidden = false;
+    adminShell.hidden = true;
+  }
+
+  if (!window.netlifyIdentity) {
+    document.getElementById("login-btn").hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "form-hint is-error";
+    notice.textContent = "No se pudo cargar el inicio de sesión. Revisa tu conexión y recarga la página.";
+    loginGate.appendChild(notice);
+    return;
+  }
+
+  window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
+  window.netlifyIdentity.on("login", () => {
+    window.netlifyIdentity.close();
+    showAdmin();
+  });
+  window.netlifyIdentity.on("logout", showLogin);
+  window.netlifyIdentity.init();
+})();
+</script>
+</body>
+</html>

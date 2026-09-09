@@ -108,6 +108,11 @@
     "minRating": 4
   },
 
+  "contactChannel": {
+    "channel": "instagram",
+    "instagramUsername": ""
+  },
+
   "whatsappNumber": "525566095405",
   "phoneDisplay": "+52 55 6609 5405",
   "email": "origenbrowsmx@gmail.com",
@@ -249,6 +254,18 @@
   "loyalty": {
     "cycleSize": 5,
     "discountPercent": 20
+  },
+
+  "referral": {
+    "rewardDiscountPercent": 15,
+    "rewardValidDays": 60
+  },
+
+  "metaPixelId": "",
+
+  "socialProof": {
+    "beforeAfter": [],
+    "instagramPosts": []
   },
 
   "bankTransfer": {
