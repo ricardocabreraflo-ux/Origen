@@ -52,15 +52,34 @@ create table if not exists bookings (
 -- Por si la tabla bookings ya existía de antes de agregar esta columna.
 alter table bookings add column if not exists reward_redemption boolean not null default false;
 
--- Servicio adicional que la clienta agregó en el momento de la cita
--- (editado desde Citas → Editar cita). total_amount sigue siendo el
--- monto cobrado por toda la visita; extra_amount es solo la porción de
--- ese total que corresponde al servicio adicional, para que Reportes
--- pueda contarlo aparte.
-alter table bookings add column if not exists extra_service_id text;
-alter table bookings add column if not exists extra_service_name text;
-alter table bookings add column if not exists extra_price_label text;
-alter table bookings add column if not exists extra_amount numeric;
+-- Servicios adicionales que la clienta agregó en el momento de la cita
+-- (editado desde Citas → Editar cita, puede haber más de uno). Cada
+-- elemento: {serviceId, serviceName, priceLabel, amount}. total_amount
+-- sigue siendo el monto cobrado por toda la visita; el "amount" de cada
+-- adicional es solo la porción de ese total que le corresponde, para que
+-- Reportes pueda contar cada servicio aparte.
+alter table bookings add column if not exists extra_services jsonb not null default '[]'::jsonb;
+
+-- Si ya existían las columnas de la versión anterior (un solo servicio
+-- adicional), migra ese dato a la lista nueva y las quita.
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_name = 'bookings' and column_name = 'extra_service_id') then
+    update bookings
+    set extra_services = jsonb_build_array(jsonb_build_object(
+      'serviceId', extra_service_id,
+      'serviceName', extra_service_name,
+      'priceLabel', extra_price_label,
+      'amount', extra_amount
+    ))
+    where extra_service_id is not null and jsonb_array_length(extra_services) = 0;
+
+    alter table bookings drop column extra_service_id;
+    alter table bookings drop column extra_service_name;
+    alter table bookings drop column extra_price_label;
+    alter table bookings drop column extra_amount;
+  end if;
+end $$;
 
 -- Cómo se pagó el anticipo: por transferencia manual (confirmada a mano
 -- por la administradora), con tarjeta a través de Mercado Pago

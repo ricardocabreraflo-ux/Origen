@@ -49,7 +49,7 @@ exports.handler = async (event, context) => {
     const supabase = getServiceClient();
     const { data: bookings, error } = await supabase
       .from("bookings")
-      .select("booking_date, status, total_amount, revenue_exempt, service_id, service_name, extra_service_id, extra_service_name, extra_amount")
+      .select("booking_date, status, total_amount, revenue_exempt, service_id, service_name, extra_services")
       .gte("booking_date", startStr)
       .lte("booking_date", endStr);
     if (error) throw error;
@@ -85,26 +85,28 @@ exports.handler = async (event, context) => {
             totalRevenue += amount;
             if (bucket) bucket.revenue += amount;
 
-            // Si la cita tiene un servicio adicional, su monto se cuenta
+            // Si la cita tiene servicios adicionales, cada uno se cuenta
             // aparte para que Reportes refleje cuántas veces se vendió cada
             // servicio (el principal se queda con el resto del total).
-            const extraAmount = b.extra_service_id ? Number(b.extra_amount || 0) : 0;
+            const extras = Array.isArray(b.extra_services) ? b.extra_services : [];
+            const extraAmountTotal = extras.reduce((sum, x) => sum + Number(x.amount || 0), 0);
+
             const svc = serviceMap.get(b.service_id) || { serviceId: b.service_id, serviceName: b.service_name, count: 0, revenue: 0 };
             svc.count += 1;
-            svc.revenue += amount - extraAmount;
+            svc.revenue += amount - extraAmountTotal;
             serviceMap.set(b.service_id, svc);
 
-            if (b.extra_service_id) {
-              const extraSvc = serviceMap.get(b.extra_service_id) || {
-                serviceId: b.extra_service_id,
-                serviceName: b.extra_service_name,
+            extras.forEach((extra) => {
+              const extraSvc = serviceMap.get(extra.serviceId) || {
+                serviceId: extra.serviceId,
+                serviceName: extra.serviceName,
                 count: 0,
                 revenue: 0,
               };
               extraSvc.count += 1;
-              extraSvc.revenue += extraAmount;
-              serviceMap.set(b.extra_service_id, extraSvc);
-            }
+              extraSvc.revenue += Number(extra.amount || 0);
+              serviceMap.set(extra.serviceId, extraSvc);
+            });
           }
         }
       }

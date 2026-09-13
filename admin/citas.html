@@ -155,6 +155,14 @@
   .field-row > div { flex: 1; }
   .form-hint-note { font-size: 0.8rem; color: var(--color-muted); margin: -8px 0 0; }
 
+  .extra-service-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .extra-service-row select { flex: 2; }
+  .extra-service-row input[type="number"] { flex: 1; min-width: 0; }
+  .extra-service-row button {
+    border: 1.5px solid rgba(161,58,47,0.35); background: var(--color-white); color: #a13a2f;
+    border-radius: 6px; width: 30px; height: 30px; flex-shrink: 0; cursor: pointer; font-size: 0.8rem;
+  }
+
   .blocks-list { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
   .blocks-list li {
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
@@ -584,17 +592,10 @@
         <select id="eb-service" required></select>
       </div>
       <div>
-        <label for="eb-extra-service">Servicio adicional (opcional)</label>
-        <select id="eb-extra-service">
-          <option value="">Ninguno</option>
-        </select>
-        <p class="form-hint">Para cuando la clienta agrega otro servicio en el momento. Suma su precio y duración al total, pero puedes corregirlos.</p>
-      </div>
-      <div class="field-row" id="eb-extra-amount-row" hidden>
-        <div>
-          <label for="eb-extra-amount">Monto del servicio adicional (MXN)</label>
-          <input type="number" id="eb-extra-amount" min="0" step="1" />
-        </div>
+        <label>Servicios adicionales (opcional)</label>
+        <div id="eb-extra-list"></div>
+        <button type="button" class="btn btn-outline btn-sm" id="eb-extra-add-btn">+ Agregar servicio</button>
+        <p class="form-hint">Para cuando la clienta agrega más servicios en el momento. Cada uno suma su precio y duración al total, pero puedes corregirlos.</p>
       </div>
       <div class="field-row">
         <div>
@@ -910,7 +911,7 @@
         <tr data-id="${b.id}" class="booking-row">
           <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
-          <td>${b.service_name}${b.extra_service_name ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">+ ${b.extra_service_name}</span>` : ""}</td>
+          <td>${b.service_name}${(Array.isArray(b.extra_services) ? b.extra_services : []).map((x) => `<br/><span style="color:var(--color-muted);font-size:0.78rem;">+ ${x.serviceName}</span>`).join("")}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
           <td>${b.price_label || '<span style="color:var(--color-muted)">—</span>'}</td>
           <td>$${b.deposit_amount} MXN</td>
@@ -1738,9 +1739,8 @@
   const editOverlay = document.getElementById("edit-overlay");
   const editForm = document.getElementById("edit-form");
   const ebService = document.getElementById("eb-service");
-  const ebExtraService = document.getElementById("eb-extra-service");
-  const ebExtraAmountRow = document.getElementById("eb-extra-amount-row");
-  const ebExtraAmount = document.getElementById("eb-extra-amount");
+  const ebExtraList = document.getElementById("eb-extra-list");
+  const ebExtraAddBtn = document.getElementById("eb-extra-add-btn");
   const ebDate = document.getElementById("eb-date");
   const ebTime = document.getElementById("eb-time");
   const ebDuration = document.getElementById("eb-duration");
@@ -1762,6 +1762,109 @@
   let editAmountEditedManually = false;
 
   let editServices = [];
+  // Cada fila: { rowId, serviceId, duration (la que se sumó al total al
+  // agregarla, para poder restarla exacto si se quita) }. El monto de
+  // cada fila vive directo en su <input>, no aquí.
+  let extraRows = [];
+  let extraRowSeq = 0;
+
+  function extraServiceOptionsHtml() {
+    return editServices.map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`).join("");
+  }
+
+  function renderExtraRow(row) {
+    const div = document.createElement("div");
+    div.className = "extra-service-row";
+    div.setAttribute("data-row-id", row.rowId);
+    const service = editServices.find((s) => s.id === row.serviceId);
+    div.innerHTML = `
+      <select data-field="service">${extraServiceOptionsHtml()}</select>
+      <input type="number" min="0" step="1" data-field="amount" placeholder="Monto" value="${row.amount}" />
+      <button type="button" title="Quitar">✕</button>
+    `;
+    div.querySelector('select[data-field="service"]').value = row.serviceId;
+    ebExtraList.appendChild(div);
+    return div;
+  }
+
+  function addExtraRow(serviceId, amount) {
+    const service = editServices.find((s) => s.id === serviceId) || editServices[0];
+    if (!service) return;
+    const rowId = `r${++extraRowSeq}`;
+    const resolvedAmount = amount !== undefined ? amount : parsePriceLabel(service.price);
+    extraRows.push({ rowId, serviceId: service.id, duration: service.duration, amount: resolvedAmount });
+    renderExtraRow({ rowId, serviceId: service.id, amount: resolvedAmount });
+
+    // Recién agregada (no al cargar una cita ya existente): suma su
+    // precio de lista y duración al total — ambos siguen editables.
+    if (amount === undefined) {
+      ebDuration.value = Number(ebDuration.value || 0) + service.duration;
+      ebAmount.value = Number(ebAmount.value || 0) + parsePriceLabel(service.price);
+      editAmountEditedManually = true;
+    }
+  }
+
+  function removeExtraRow(rowId) {
+    const idx = extraRows.findIndex((r) => r.rowId === rowId);
+    if (idx === -1) return;
+    const row = extraRows[idx];
+    const rowEl = ebExtraList.querySelector(`[data-row-id="${rowId}"]`);
+    const amountInput = rowEl && rowEl.querySelector('input[data-field="amount"]');
+    const currentAmount = amountInput ? Number(amountInput.value || 0) : row.amount;
+
+    ebDuration.value = Math.max(5, Number(ebDuration.value || 0) - row.duration);
+    ebAmount.value = Math.max(0, Number(ebAmount.value || 0) - currentAmount);
+    editAmountEditedManually = true;
+
+    extraRows.splice(idx, 1);
+    if (rowEl) rowEl.remove();
+  }
+
+  ebExtraAddBtn.addEventListener("click", () => addExtraRow(editServices[0] && editServices[0].id));
+
+  ebExtraList.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const rowEl = btn.closest(".extra-service-row");
+    if (rowEl) removeExtraRow(rowEl.getAttribute("data-row-id"));
+  });
+
+  // Cambiar el servicio de una fila ya agregada: ajusta el total por la
+  // diferencia de precio/duración entre el servicio anterior y el nuevo.
+  ebExtraList.addEventListener("change", (e) => {
+    const select = e.target.closest('select[data-field="service"]');
+    if (!select) return;
+    const rowEl = select.closest(".extra-service-row");
+    const rowId = rowEl.getAttribute("data-row-id");
+    const row = extraRows.find((r) => r.rowId === rowId);
+    if (!row) return;
+    const oldService = editServices.find((s) => s.id === row.serviceId);
+    const newService = editServices.find((s) => s.id === select.value);
+    if (!newService) return;
+
+    if (oldService) {
+      ebDuration.value = Math.max(5, Number(ebDuration.value || 0) - oldService.duration);
+      ebAmount.value = Math.max(0, Number(ebAmount.value || 0) - row.amount);
+    }
+    ebDuration.value = Number(ebDuration.value || 0) + newService.duration;
+    ebAmount.value = Number(ebAmount.value || 0) + parsePriceLabel(newService.price);
+    editAmountEditedManually = true;
+
+    row.serviceId = newService.id;
+    row.duration = newService.duration;
+    row.amount = parsePriceLabel(newService.price);
+    rowEl.querySelector('input[data-field="amount"]').value = row.amount;
+  });
+
+  // El monto de cada fila es solo para que Reportes cuente ese servicio
+  // aparte — no vuelve a tocar el total (que ya se ajustó al agregarla).
+  ebExtraList.addEventListener("input", (e) => {
+    const input = e.target.closest('input[data-field="amount"]');
+    if (!input) return;
+    const rowEl = input.closest(".extra-service-row");
+    const row = extraRows.find((r) => r.rowId === rowEl.getAttribute("data-row-id"));
+    if (row) row.amount = Number(input.value || 0);
+  });
 
   async function openEditModal(booking) {
     ebHint.textContent = "";
@@ -1770,9 +1873,6 @@
     ebService.innerHTML = editServices
       .map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`)
       .join("");
-    ebExtraService.innerHTML =
-      `<option value="">Ninguno</option>` +
-      editServices.map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`).join("");
 
     editingBookingId = booking.id;
     ebService.value = booking.service_id;
@@ -1793,40 +1893,15 @@
     ebEmail.value = booking.customer_email || "";
     ebNotes.value = booking.notes || "";
 
-    ebExtraService.value = booking.extra_service_id || "";
-    previousExtraService = booking.extra_service_id || "";
-    ebExtraAmountRow.hidden = !booking.extra_service_id;
-    ebExtraAmount.value =
-      booking.extra_amount !== null && booking.extra_amount !== undefined ? booking.extra_amount : "";
+    ebExtraList.innerHTML = "";
+    extraRows = [];
+    (Array.isArray(booking.extra_services) ? booking.extra_services : []).forEach((extra) => {
+      addExtraRow(extra.serviceId, Number(extra.amount || 0));
+    });
+    editAmountEditedManually = false;
 
     editOverlay.hidden = false;
   }
-
-  // Al elegir un servicio adicional, se suma su precio de lista al monto
-  // cobrado y su duración a la duración total (ambos siguen editables a
-  // mano después) — y se muestra el campo para anotar cuánto de ese total
-  // corresponde al servicio adicional (para que Reportes lo cuente aparte).
-  let previousExtraService = "";
-  ebExtraService.addEventListener("change", () => {
-    const extraId = ebExtraService.value;
-    const previousService = editServices.find((s) => s.id === previousExtraService);
-    const newService = editServices.find((s) => s.id === extraId);
-
-    if (previousService) {
-      ebDuration.value = Math.max(5, Number(ebDuration.value || 0) - previousService.duration);
-      ebAmount.value = Math.max(0, Number(ebAmount.value || 0) - parsePriceLabel(previousService.price));
-    }
-    if (newService) {
-      ebDuration.value = Number(ebDuration.value || 0) + newService.duration;
-      ebAmount.value = Number(ebAmount.value || 0) + parsePriceLabel(newService.price);
-      ebExtraAmount.value = parsePriceLabel(newService.price);
-      editAmountEditedManually = true;
-    } else {
-      ebExtraAmount.value = "";
-    }
-    ebExtraAmountRow.hidden = !extraId;
-    previousExtraService = extraId;
-  });
 
   function toMinutesLocal(hhmm) {
     const [h, m] = hhmm.split(":").map(Number);
@@ -1882,8 +1957,7 @@
           totalAmount: ebAmount.value,
           durationMinutes: ebDuration.value,
           paymentMethod: ebPayment.value,
-          extraServiceId: ebExtraService.value || null,
-          extraAmount: ebExtraService.value ? ebExtraAmount.value : null,
+          extraServices: extraRows.map((r) => ({ serviceId: r.serviceId, amount: r.amount })),
         }),
       });
       const body = await res.json();

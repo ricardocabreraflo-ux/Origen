@@ -48,8 +48,7 @@ exports.handler = async (event, context) => {
     totalAmount,
     durationMinutes,
     paymentMethod,
-    extraServiceId,
-    extraAmount,
+    extraServices,
   } = payload;
 
   const VALID_PAYMENT_METHODS = ["cash", "bank_transfer", "mercado_pago"];
@@ -72,8 +71,8 @@ exports.handler = async (event, context) => {
   if (durationMinutes !== undefined && (!Number.isInteger(Number(durationMinutes)) || Number(durationMinutes) <= 0)) {
     return badRequest("La duración debe ser un número de minutos mayor a 0.");
   }
-  if (extraServiceId && (extraAmount === undefined || extraAmount === null || !Number.isFinite(Number(extraAmount)) || Number(extraAmount) < 0)) {
-    return badRequest("Falta el monto del servicio adicional.");
+  if (extraServices !== undefined && !Array.isArray(extraServices)) {
+    return badRequest("Los servicios adicionales deben ser una lista.");
   }
 
   try {
@@ -81,17 +80,21 @@ exports.handler = async (event, context) => {
     const service = (config.services || []).find((s) => s.id === serviceId);
     if (!service) return badRequest("El servicio seleccionado no existe.");
 
-    let extraFields = { extra_service_id: null, extra_service_name: null, extra_price_label: null, extra_amount: null };
-    if (extraServiceId) {
-      const extraService = (config.services || []).find((s) => s.id === extraServiceId);
-      if (!extraService) return badRequest("El servicio adicional seleccionado no existe.");
-      extraFields = {
-        extra_service_id: extraService.id,
-        extra_service_name: extraService.name,
-        extra_price_label: extraService.price,
-        extra_amount: Number(extraAmount),
-      };
+    const resolvedExtraServices = [];
+    for (const extra of extraServices || []) {
+      const extraService = (config.services || []).find((s) => s.id === extra.serviceId);
+      if (!extraService) return badRequest("Un servicio adicional seleccionado ya no existe.");
+      if (!Number.isFinite(Number(extra.amount)) || Number(extra.amount) < 0) {
+        return badRequest(`Falta el monto del servicio adicional "${extraService.name}".`);
+      }
+      resolvedExtraServices.push({
+        serviceId: extraService.id,
+        serviceName: extraService.name,
+        priceLabel: extraService.price,
+        amount: Number(extra.amount),
+      });
     }
+    const extraAmountTotal = resolvedExtraServices.reduce((sum, x) => sum + x.amount, 0);
 
     const effectiveDuration = durationMinutes ? Number(durationMinutes) : service.duration;
     const endTime = toHHMM(toMinutes(startTime) + effectiveDuration);
@@ -115,8 +118,8 @@ exports.handler = async (event, context) => {
     const serviceChanged = existing.service_id !== service.id;
     const priceLabel = serviceChanged || !existing.price_label ? service.price : existing.price_label;
 
-    if (extraFields.extra_amount !== null && extraFields.extra_amount > effectiveTotalAmount) {
-      return badRequest("El monto del servicio adicional no puede ser mayor que el monto cobrado total.");
+    if (extraAmountTotal > effectiveTotalAmount) {
+      return badRequest("La suma de los montos de los servicios adicionales no puede ser mayor que el monto cobrado total.");
     }
 
     const row = {
@@ -133,7 +136,7 @@ exports.handler = async (event, context) => {
       booking_date: date,
       start_time: `${startTime}:00`,
       end_time: `${endTime}:00`,
-      ...extraFields,
+      extra_services: extraServices !== undefined ? resolvedExtraServices : existing.extra_services,
     };
 
     const { data: updated, error } = await supabase.from("bookings").update(row).eq("id", id).select().single();
