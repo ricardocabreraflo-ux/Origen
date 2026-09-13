@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sorteo · Origen Brows &amp; Hair Studio</title>
+<meta name="description" content="Participa en el sorteo de Origen Brows & Hair Studio." />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .giveaway-wrap { max-width: 480px; margin: 0 auto; padding: 60px 24px 100px; text-align: center; }
+  .giveaway-card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px 32px; margin-top: 32px; }
+  .giveaway-form { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+  .giveaway-form label { font-size: 0.88rem; font-weight: 600; color: var(--color-dark); }
+  .giveaway-form input {
+    font-family: var(--font-body);
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(33, 29, 25, 0.15);
+    font-size: 0.95rem;
+    background: var(--color-cream-soft);
+    color: var(--color-dark);
+  }
+  .giveaway-form input:focus { outline: none; border-color: var(--color-accent-dark); background: var(--color-white); }
+  .giveaway-consent { display: flex; align-items: flex-start; gap: 10px; font-size: 0.82rem; color: var(--color-muted); }
+  .giveaway-consent input { width: auto; margin-top: 3px; }
+  .giveaway-hint { font-size: 0.85rem; color: var(--color-muted); min-height: 1.2em; }
+  .giveaway-hint.is-error { color: #a13a2f; }
+  .giveaway-success { display: none; }
+  .giveaway-success.is-active { display: block; }
+  .giveaway-success .icon-big { font-size: 2.4rem; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="giveaway-wrap">
+  <p class="section-eyebrow" id="giveaway-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title" id="giveaway-title">Participa en nuestro sorteo</h1>
+  <p class="section-note" id="giveaway-note">Déjanos tus datos para entrar a la dinámica. Avisamos a la ganadora directo por WhatsApp.</p>
+
+  <div class="giveaway-card">
+    <form class="giveaway-form" id="giveaway-form">
+      <div>
+        <label for="g-name">Nombre completo *</label>
+        <input type="text" id="g-name" name="name" required placeholder="Tu nombre" />
+      </div>
+      <div>
+        <label for="g-instagram">Usuario de Instagram (opcional)</label>
+        <input type="text" id="g-instagram" name="instagram" placeholder="@tuusuario" />
+      </div>
+      <div>
+        <label for="g-whatsapp">WhatsApp *</label>
+        <input type="tel" id="g-whatsapp" name="whatsapp" required placeholder="Ej. 55 1234 5678" />
+      </div>
+      <label class="giveaway-consent">
+        <input type="checkbox" id="g-consent" required />
+        Acepto que Origen Brows me contacte por WhatsApp si resulto ganadora.
+      </label>
+      <button type="submit" class="btn btn-primary" id="giveaway-submit">Participar</button>
+      <p class="giveaway-hint" id="giveaway-hint"></p>
+    </form>
+  </div>
+
+  <div class="giveaway-card giveaway-success" id="giveaway-success">
+    <div class="icon-big">🎉</div>
+    <p class="section-title" style="font-size:1.3rem;margin-bottom:8px;">¡Ya estás participando!</p>
+    <p class="section-note" style="margin:0;">Te avisaremos por WhatsApp si resultas ganadora. Síguenos en Instagram para no perderte el resultado.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const slug = new URLSearchParams(window.location.search).get("sorteo") || "general";
+
+  fetch("data/config.json")
+    .then((res) => res.json())
+    .then((cfg) => {
+      if (cfg.name) document.getElementById("giveaway-eyebrow").textContent = cfg.name;
+    })
+    .catch(() => {});
+
+  const form = document.getElementById("giveaway-form");
+  const submitBtn = document.getElementById("giveaway-submit");
+  const hint = document.getElementById("giveaway-hint");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    hint.textContent = "";
+    hint.classList.remove("is-error");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Enviando…";
+
+    fetch("/api/save-giveaway-entry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: document.getElementById("g-name").value.trim(),
+        instagramHandle: document.getElementById("g-instagram").value.trim(),
+        whatsappPhone: document.getElementById("g-whatsapp").value.trim(),
+        giveawaySlug: slug,
+      }),
+    })
+      .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+      .then(({ ok, body }) => {
+        if (!ok) throw new Error(body.message || "No se pudo registrar tu participación.");
+        document.querySelector(".giveaway-card:not(.giveaway-success)").hidden = true;
+        document.getElementById("giveaway-success").classList.add("is-active");
+      })
+      .catch((err) => {
+        hint.textContent = err.message || "No se pudo registrar tu participación. Intenta de nuevo.";
+        hint.classList.add("is-error");
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Participar";
+      });
+  });
+})();
+</script>
+</body>
+</html>

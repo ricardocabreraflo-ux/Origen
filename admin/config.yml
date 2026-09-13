@@ -63,6 +63,17 @@ collections:
               - { label: "Fecha (texto libre, ej. \"septiembre 2026\")", name: "date", widget: "string", required: false }
               - { label: "Fotos del trabajo (opcional)", name: "photos", widget: "list", field: { label: "Foto", name: "photo", widget: "image" }, required: false, allow_add: true }
 
+          - label: "Canal de contacto principal (botones \"Escríbenos\")"
+            name: "contactChannel"
+            widget: "object"
+            hint: "Mientras tengas problemas con tu WhatsApp Business, cambia el canal a Instagram y todos los botones \"Escríbenos\" del sitio (hero, botón flotante, comprobante de pago, landings de promo) abrirán tu Instagram Direct en su lugar — vuelve a WhatsApp en cuanto lo tengas resuelto. Esto NO afecta los avisos automáticos internos (cita nueva, lealtad, referido), esos siguen intentando WhatsApp aparte y simplemente no se envían si no está configurado."
+            fields:
+              - label: "Canal"
+                name: "channel"
+                widget: "select"
+                options: [{ label: "WhatsApp", value: "whatsapp" }, { label: "Instagram Direct", value: "instagram" }]
+              - { label: "Usuario de Instagram (sin @; déjalo vacío para tomarlo de tu link de Instagram de abajo)", name: "instagramUsername", widget: "string", required: false }
+
           - { label: "WhatsApp (solo números, con código de país, ej. 52...)", name: "whatsappNumber", widget: "string", pattern: ["^[0-9]+$", "Solo números, sin espacios ni símbolos"] }
           - { label: "Teléfono que se muestra en la página", name: "phoneDisplay", widget: "string" }
           - { label: "Correo de contacto", name: "email", widget: "string" }
@@ -177,6 +188,37 @@ collections:
             fields:
               - { label: "Cada cuántas visitas confirmadas se gana la recompensa", name: "cycleSize", widget: "number", value_type: "int" }
               - { label: "Porcentaje de descuento al completar el ciclo", name: "discountPercent", widget: "number", value_type: "int" }
+
+          - label: "Programa de referidos"
+            name: "referral"
+            widget: "object"
+            hint: "El código de descuento en sí se genera solo cuando el referido confirma su primera cita — aquí solo se define cuánto y por cuánto tiempo."
+            fields:
+              - { label: "Porcentaje de descuento de la recompensa", name: "rewardDiscountPercent", widget: "number", value_type: "int" }
+              - { label: "Días de vigencia del código de recompensa", name: "rewardValidDays", widget: "number", value_type: "int" }
+
+          - { label: "ID del Pixel de Meta (Facebook/Instagram Ads)", name: "metaPixelId", widget: "string", required: false, hint: "Se saca en Meta Business → Administrador de eventos. Déjalo vacío si todavía no mides anuncios." }
+
+          - label: "Prueba social"
+            name: "socialProof"
+            widget: "object"
+            fields:
+              - label: "Antes / después (deja vacío hasta tener fotos reales, con permiso de la clienta)"
+                name: "beforeAfter"
+                widget: "list"
+                allow_add: true
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: "Foto antes", name: "beforeImage", widget: "image" }
+                  - { label: "Foto después", name: "afterImage", widget: "image" }
+                  - { label: "Servicio", name: "label", widget: "string" }
+              - label: "Posts de Instagram destacados"
+                name: "instagramPosts"
+                widget: "list"
+                allow_add: true
+                summary: "{{fields.permalink}}"
+                fields:
+                  - { label: "Enlace del post (Instagram → ⋯ → Copiar enlace)", name: "permalink", widget: "string" }
 
           - label: "Datos para transferencia (anticipo)"
             name: "bankTransfer"

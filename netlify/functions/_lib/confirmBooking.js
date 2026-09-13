@@ -9,6 +9,7 @@ const { createCalendarEvent } = require("./googleCalendar");
 const { loadConfig } = require("./config");
 const { getLoyaltyStatus, last10 } = require("./loyalty");
 const { notifyClient } = require("./notify");
+const { generatePromoCode } = require("./promoCode");
 
 class ConfirmBookingError extends Error {
   constructor(code, message) {
@@ -60,6 +61,84 @@ async function runPostConfirmSideEffects(supabase, updated) {
   } catch (loyaltyErr) {
     console.error("No se pudo procesar el aviso de lealtad", loyaltyErr);
   }
+
+  // Si esta cita es la primera de alguien que llegó por un código de
+  // referido (ver create-booking.js), aquí es cuando de verdad se le gana
+  // la recompensa a la referidora — recién se confirma el depósito, no
+  // antes, para no premiar citas que ni siquiera se paguen.
+  try {
+    await grantReferralRewardIfPending(supabase, updated);
+  } catch (referralErr) {
+    console.error("No se pudo procesar la recompensa de referido", referralErr);
+  }
+}
+
+async function grantReferralRewardIfPending(supabase, updated) {
+  const { data: redemption, error: redemptionError } = await supabase
+    .from("referral_redemptions")
+    .select("*")
+    .eq("referred_booking_id", updated.id)
+    .eq("reward_status", "pending")
+    .maybeSingle();
+  if (redemptionError) throw redemptionError;
+  if (!redemption) return;
+
+  const { data: referral, error: referralError } = await supabase
+    .from("referral_codes")
+    .select("*")
+    .eq("id", redemption.referral_code_id)
+    .maybeSingle();
+  if (referralError) throw referralError;
+  if (!referral) return;
+
+  const config = await loadConfig();
+  const referralConfig = config.referral || {};
+  const discountPercent = referralConfig.rewardDiscountPercent || 15;
+  const validDays = referralConfig.rewardValidDays || 60;
+
+  const endsAt = new Date();
+  endsAt.setDate(endsAt.getDate() + validDays);
+
+  const { data: rewardPromo, error: insertError } = await supabase
+    .from("promotions")
+    .insert({
+      code: generatePromoCode("REFERIDO"),
+      campaign_name: `Recompensa de referido — ${referral.owner_name}`,
+      description: `Por referir a ${updated.customer_name}, que ya confirmó su primera cita.`,
+      discount_type: "percent",
+      discount_value: discountPercent,
+      kind: "referral_reward",
+      starts_at: new Date().toISOString().slice(0, 10),
+      ends_at: endsAt.toISOString().slice(0, 10),
+      max_redemptions: 1,
+      reward_owner_phone: referral.owner_phone,
+      reward_owner_name: referral.owner_name,
+    })
+    .select()
+    .single();
+  if (insertError) throw insertError;
+
+  await supabase
+    .from("referral_redemptions")
+    .update({ reward_status: "granted", reward_promotion_id: rewardPromo.id })
+    .eq("id", redemption.id);
+
+  const { data: pref } = await supabase
+    .from("client_preferences")
+    .select("email, notify_channel")
+    .eq("phone", referral.owner_phone)
+    .maybeSingle();
+
+  await notifyClient(pref, referral.owner_phone, {
+    whatsappTemplate: "recompensa_referido_origen",
+    whatsappParams: [
+      { type: "text", text: referral.owner_name },
+      { type: "text", text: String(discountPercent) },
+      { type: "text", text: rewardPromo.code },
+    ],
+    emailSubject: "¡Ganaste un descuento por tu referido!",
+    emailHtml: `<p>Hola ${referral.owner_name}, tu referida ${updated.customer_name} ya confirmó su primera cita en Origen. Ganaste ${discountPercent}% de descuento en tu próxima visita — usa el código <strong>${rewardPromo.code}</strong> al agendar. Válido hasta ${endsAt.toISOString().slice(0, 10)}.</p>`,
+  });
 }
 
 async function confirmBookingById(supabase, id, extraFields = {}) {

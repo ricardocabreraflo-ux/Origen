@@ -1,39 +1,151 @@
 {
-  "name": "Origen Brows & Hair Studio",
-  "shortName": "Origen Brows",
-  "tagline": "Diseño y arquitectura de cejas, pestañas y tratamientos capilares de alta gama",
-  "logoImage": "assets/logo-mark.jpg",
-  "logoText": "Origen",
-  "logoSub": "Brows & Hair Studio",
-
-  "founder": {
-    "name": "Montserrat Lemus",
-    "bio": "Especialista con más de 6 años de experiencia consolidada en el sector de la belleza."
+  "contactChannel": {
+    "channel": "whatsapp",
+    "instagramUsername": ""
   },
-  "brandQuote": "Origen Brows no nace solo como un estudio de cejas, sino como un santuario donde cada clienta vive una transformación que realza su esencia natural a través del detalle y la excelencia.",
-
-  "opening": {
-    "show": false,
-    "message": "Gran apertura",
-    "date": "8 de agosto de 2026"
-  },
-
   "transformationReel": {
     "show": false,
     "title": "Mira la transformación",
     "caption": "Antes y después reales de nuestras clientas en Origen Brows & Hair Studio.",
     "videoSrc": "assets/gallery-video-1.mov"
   },
-
-  "promoPopup": {
-    "show": true,
-    "eyebrow": "Oferta especial",
-    "title": "15% de descuento en tu primera cita",
-    "message": "Agenda tu primera cita y recibe 15% de descuento en cualquier servicio. Además, nuestras tarifas actuales están vigentes solo por tiempo limitado — asegura tu precio antes del cambio a tarifario regular.",
-    "ctaLabel": "Agenda tu cita",
-    "expiresOn": "2026-08-31"
+  "loyalty": {
+    "cycleSize": 5,
+    "discountPercent": 20
   },
-
+  "shortName": "Origen Brows",
+  "bankTransfer": {
+    "bankName": "NU",
+    "accountHolder": "Areli Serrano",
+    "clabe": "638180000117145784",
+    "note": "Envía tu comprobante por WhatsApp para agilizar la confirmación."
+  },
+  "galleryImages": [
+    {
+      "src": "assets/gallery-2.jpg",
+      "alt": "Origen Brows & Hair Studio"
+    },
+    {
+      "src": "assets/gallery-3.jpg",
+      "alt": "Origen Brows & Hair Studio"
+    },
+    {
+      "src": "assets/gallery-4.jpg",
+      "alt": "Diseño de cejas en Origen Brows & Hair Studio"
+    },
+    {
+      "src": "assets/gallery-5.jpg",
+      "alt": "Productos profesionales InLei usados en Origen Brows"
+    },
+    {
+      "src": "assets/gallery-6.jpg",
+      "alt": "Detalle de cejas en Origen Brows & Hair Studio"
+    },
+    {
+      "src": "assets/gallery-7.jpg",
+      "alt": "Detalle de cejas en Origen Brows & Hair Studio"
+    },
+    {
+      "type": "video",
+      "src": "assets/gallery-video-1.mov",
+      "alt": "Video de trabajo en Origen Brows & Hair Studio"
+    },
+    {
+      "type": "video",
+      "src": "assets/gallery-video-2.mov",
+      "alt": "Video de trabajo en Origen Brows & Hair Studio"
+    },
+    {
+      "type": "video",
+      "src": "assets/gallery-video-3.mp4",
+      "alt": "Video de trabajo en Origen Brows & Hair Studio"
+    }
+  ],
+  "name": "Origen Brows & Hair Studio",
+  "social": {
+    "instagram": "https://www.instagram.com/origen.brows",
+    "facebook": "https://www.facebook.com/share/1J6xjM1VwE/?mibextid=wwXIfr",
+    "tiktok": "https://www.tiktok.com/@origen.brows",
+    "whatsapp": ""
+  },
+  "aboutImage": "assets/gallery-1.jpg",
+  "tagline": "Diseño y arquitectura de cejas, pestañas y tratamientos capilares de alta gama",
+  "hours": [
+    {
+      "day": "Lunes",
+      "time": "Cerrado"
+    },
+    {
+      "day": "Martes - Viernes",
+      "time": "10:00 am - 7:00 pm"
+    },
+    {
+      "day": "Sábado",
+      "time": "9:00 am - 5:00 pm"
+    },
+    {
+      "day": "Domingo",
+      "time": "Cerrado"
+    }
+  ],
+  "businessHours": {
+    "mon": {
+      "open": "",
+      "close": ""
+    },
+    "tue": {
+      "open": "10:00",
+      "close": "19:00"
+    },
+    "wed": {
+      "open": "10:00",
+      "close": "19:00"
+    },
+    "thu": {
+      "open": "10:00",
+      "close": "19:00"
+    },
+    "fri": {
+      "open": "10:00",
+      "close": "19:00"
+    },
+    "sat": {
+      "open": "09:00",
+      "close": "17:00"
+    },
+    "sun": {
+      "open": "",
+      "close": ""
+    }
+  },
+  "founder": {
+    "name": "Montserrat Lemus",
+    "bio": "Especialista con más de 6 años de experiencia consolidada en el sector de la belleza."
+  },
+  "policies": {
+    "title": "Nuestras políticas",
+    "sections": [
+      {
+        "heading": "Reserva de turnos",
+        "body": "Para confirmar tu cita es necesario un anticipo. Para Servicios Individuales (Diseño, Lash Lifting, Laminado): Anticipo $200 MXN. Para Combos y Tratamientos Capilares (Combo Full, Botox, Keratina): Anticipo $300 MXN."
+      },
+      {
+        "heading": "Tolerancia de llegada",
+        "body": "Contamos con una tolerancia máxima de 15 minutos. Si no llegas, se cancela y no es reembolsable el anticipo."
+      },
+      {
+        "heading": "Reagendado y cancelaciones",
+        "body": "Puedes reagendar tu cita sin costo avisando con al menos 24 horas de anticipación (tu anticipo se transfiere a tu nueva fecha, válido 1 sola vez dentro del mismo mes)."
+      },
+      {
+        "heading": "Acompañantes y cuidado",
+        "body": "Por comodidad, higiene y espacio en cabina, te pedimos asistir sin acompañantes o niños."
+      }
+    ]
+  },
+  "logoImage": "assets/logo-mark.jpg",
+  "mapEmbedUrl": "https://www.google.com/maps?q=ORIGEN+BROWS%2C+Agr%C3%ADcola+Oriental%2C+Iztacalco%2C+Ciudad+de+M%C3%A9xico&output=embed",
+  "phoneDisplay": "+52 55 6609 5405",
   "testimonials": [
     {
       "quote": "Excelente servicio. La profesional es muy meticulosa y sabe exactamente qué forma favorece según el rostro. La higiene es impecable y el ambiente es muy relajante. 100% recomendado.",
@@ -46,14 +158,20 @@
       "author": "Miriel Bernal Serrano",
       "stars": 5,
       "date": "septiembre 2026",
-      "photos": ["assets/testimonials/miriel-1.jpg", "assets/testimonials/miriel-2.jpg"]
+      "photos": [
+        "assets/testimonials/miriel-1.jpg",
+        "assets/testimonials/miriel-2.jpg"
+      ]
     },
     {
       "quote": "Hermoso trabajo me encantó, el ambiente es muy relajante te hacen sentir súper bien, son muy amables y elijo el lugar para mis cejas mil veces.",
       "author": "Valentina Espinosa",
       "stars": 5,
       "date": "septiembre 2026",
-      "photos": ["assets/testimonials/valentina-1.jpg", "assets/testimonials/valentina-2.jpg"]
+      "photos": [
+        "assets/testimonials/valentina-1.jpg",
+        "assets/testimonials/valentina-2.jpg"
+      ]
     },
     {
       "quote": "Me encantó, excelente trabajo y trato, sin duda un lugar al cual volvería.",
@@ -66,21 +184,28 @@
       "author": "Yazale Serrano Martinez",
       "stars": 5,
       "date": "septiembre 2026",
-      "photos": ["assets/testimonials/yazale-1.jpg", "assets/testimonials/yazale-2.jpg"]
+      "photos": [
+        "assets/testimonials/yazale-1.jpg",
+        "assets/testimonials/yazale-2.jpg"
+      ]
     },
     {
       "quote": "Me encantó la atención, es excelente, lo mejor es que ayudan al cuidado de la piel con sus productos de calidad, y en cuanto al lugar es muy bonito y cómodo.",
       "author": "Alejandra Hernandez Serrano",
       "stars": 5,
       "date": "septiembre 2026",
-      "photos": ["assets/testimonials/alejandra-1.jpg"]
+      "photos": [
+        "assets/testimonials/alejandra-1.jpg"
+      ]
     },
     {
       "quote": "Excelente servicio. Excelente ambiente. Es un trato muy personalizado, recomiendo el studio y sobre todo la calidad de trabajo y productos. Gracias infinitas por el trato y la atención recibida.",
       "author": "Yoselin Ayala",
       "stars": 5,
       "date": "agosto 2026",
-      "photos": ["assets/testimonials/yoselin-1.jpg"]
+      "photos": [
+        "assets/testimonials/yoselin-1.jpg"
+      ]
     },
     {
       "quote": "Lo recomiendo totalmente si quieres que tus cejas luzcan perfectas y naturales. Me encantó el resultado y la atención que te brindan, te hacen sentir muy a gusto.",
@@ -99,61 +224,70 @@
       "author": "Tokki Likethis",
       "stars": 5,
       "date": "agosto 2026",
-      "photos": ["assets/testimonials/tokki-1.jpg", "assets/testimonials/tokki-2.jpg"]
+      "photos": [
+        "assets/testimonials/tokki-1.jpg",
+        "assets/testimonials/tokki-2.jpg"
+      ]
     }
   ],
-
+  "address": "Ote. 253 299-Loc B, Agrícola Oriental, Iztacalco, 08500 Ciudad de México, CDMX",
+  "logoSub": "Brows & Hair Studio",
+  "brandQuote": "Origen Brows no nace solo como un estudio de cejas, sino como un santuario donde cada clienta vive una transformación que realza su esencia natural a través del detalle y la excelencia.",
+  "faq": [
+    {
+      "question": "¿Cómo aparto mi cita?",
+      "answer": "Eliges servicio, fecha y horario disponible, dejas tus datos y realizas el anticipo por transferencia. Tu horario queda reservado por 30 minutos mientras confirmamos tu depósito."
+    },
+    {
+      "question": "¿Qué pasa si no confirman mi pago a tiempo?",
+      "answer": "Si no confirmamos tu depósito dentro de los 30 minutos, el horario se libera automáticamente y puede ser tomado por otra persona."
+    },
+    {
+      "question": "¿El anticipo se puede reembolsar?",
+      "answer": "El anticipo no es reembolsable en caso de no presentarte o superar los 15 minutos de tolerancia. Si necesitas reagendar, avisa con 24 horas de anticipación y tu anticipo se transfiere a la nueva fecha (una sola vez, dentro del mismo mes)."
+    },
+    {
+      "question": "¿Puedo ir acompañada?",
+      "answer": "Por comodidad, higiene y espacio en cabina, te pedimos asistir sin acompañantes ni niños."
+    }
+  ],
+  "socialProof": {
+    "beforeAfter": [],
+    "instagramPosts": []
+  },
+  "opening": {
+    "show": false,
+    "message": "Gran apertura",
+    "date": "8 de agosto de 2026"
+  },
+  "logoText": "Origen",
+  "mapsUrl": "https://maps.app.goo.gl/qAjp9Hb4xWFJ5anR8",
+  "booking": {
+    "bufferMinutes": 30,
+    "holdMinutes": 30,
+    "maxAdvanceMonths": 2,
+    "ownerNotificationPhone": "525566095405"
+  },
+  "closedDates": [],
   "reviews": {
     "googlePlaceId": "ChIJxU4nlAD90YURF83FOaw97Hs",
     "minRating": 4
   },
-
   "whatsappNumber": "525566095405",
-  "phoneDisplay": "+52 55 6609 5405",
+  "metaPixelId": "",
   "email": "origenbrowsmx@gmail.com",
-
-  "address": "Ote. 253 299-Loc B, Agrícola Oriental, Iztacalco, 08500 Ciudad de México, CDMX",
-  "mapEmbedUrl": "https://www.google.com/maps?q=ORIGEN+BROWS%2C+Agr%C3%ADcola+Oriental%2C+Iztacalco%2C+Ciudad+de+M%C3%A9xico&output=embed",
-  "mapsUrl": "https://maps.app.goo.gl/qAjp9Hb4xWFJ5anR8",
-
-  "hours": [
-    { "day": "Lunes", "time": "Cerrado" },
-    { "day": "Martes - Viernes", "time": "10:00 am - 7:00 pm" },
-    { "day": "Sábado", "time": "9:00 am - 5:00 pm" },
-    { "day": "Domingo", "time": "Cerrado" }
-  ],
-
-  "businessHours": {
-    "mon": { "open": "", "close": "" },
-    "tue": { "open": "10:00", "close": "19:00" },
-    "wed": { "open": "10:00", "close": "19:00" },
-    "thu": { "open": "10:00", "close": "19:00" },
-    "fri": { "open": "10:00", "close": "19:00" },
-    "sat": { "open": "09:00", "close": "17:00" },
-    "sun": { "open": "", "close": "" }
+  "promoPopup": {
+    "show": true,
+    "eyebrow": "Oferta especial",
+    "title": "15% de descuento en tu primera cita",
+    "message": "Agenda tu primera cita y recibe 15% de descuento en cualquier servicio. Además, nuestras tarifas actuales están vigentes solo por tiempo limitado — asegura tu precio antes del cambio a tarifario regular.",
+    "ctaLabel": "Agenda tu cita",
+    "expiresOn": "2026-08-31"
   },
-
-  "social": {
-    "instagram": "https://www.instagram.com/origen.brows",
-    "facebook": "https://www.facebook.com/share/1J6xjM1VwE/?mibextid=wwXIfr",
-    "tiktok": "https://www.tiktok.com/@origen.brows",
-    "whatsapp": ""
+  "referral": {
+    "rewardDiscountPercent": 15,
+    "rewardValidDays": 60
   },
-
-  "aboutImage": "assets/gallery-1.jpg",
-
-  "galleryImages": [
-    { "src": "assets/gallery-2.jpg", "alt": "Origen Brows & Hair Studio" },
-    { "src": "assets/gallery-3.jpg", "alt": "Origen Brows & Hair Studio" },
-    { "src": "assets/gallery-4.jpg", "alt": "Diseño de cejas en Origen Brows & Hair Studio" },
-    { "src": "assets/gallery-5.jpg", "alt": "Productos profesionales InLei usados en Origen Brows" },
-    { "src": "assets/gallery-6.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" },
-    { "src": "assets/gallery-7.jpg", "alt": "Detalle de cejas en Origen Brows & Hair Studio" },
-    { "type": "video", "src": "assets/gallery-video-1.mov", "alt": "Video de trabajo en Origen Brows & Hair Studio" },
-    { "type": "video", "src": "assets/gallery-video-2.mov", "alt": "Video de trabajo en Origen Brows & Hair Studio" },
-    { "type": "video", "src": "assets/gallery-video-3.mp4", "alt": "Video de trabajo en Origen Brows & Hair Studio" }
-  ],
-
   "services": [
     {
       "id": "disenando-tu-origen",
@@ -215,7 +349,16 @@
       "price": "Valoración previa",
       "duration": 180,
       "depositAmount": 300,
-      "fixedSlots": { "weekday": ["10:00", "15:00"], "saturday": ["09:00", "14:00"] }
+      "fixedSlots": {
+        "weekday": [
+          "10:00",
+          "15:00"
+        ],
+        "saturday": [
+          "09:00",
+          "14:00"
+        ]
+      }
     },
     {
       "id": "keratina-alisante",
@@ -225,7 +368,16 @@
       "price": "Valoración previa",
       "duration": 180,
       "depositAmount": 300,
-      "fixedSlots": { "weekday": ["10:00", "15:00"], "saturday": ["09:00", "14:00"] }
+      "fixedSlots": {
+        "weekday": [
+          "10:00",
+          "15:00"
+        ],
+        "saturday": [
+          "09:00",
+          "14:00"
+        ]
+      }
     },
     {
       "id": "servicio-especial",
@@ -234,68 +386,6 @@
       "price": "Valoración previa",
       "duration": 120,
       "depositAmount": 200
-    }
-  ],
-
-  "booking": {
-    "bufferMinutes": 30,
-    "holdMinutes": 30,
-    "maxAdvanceMonths": 2,
-    "ownerNotificationPhone": "525566095405"
-  },
-
-  "closedDates": [],
-
-  "loyalty": {
-    "cycleSize": 5,
-    "discountPercent": 20
-  },
-
-  "bankTransfer": {
-    "bankName": "NU",
-    "accountHolder": "Areli Serrano",
-    "clabe": "638180000117145784",
-    "note": "Envía tu comprobante por WhatsApp para agilizar la confirmación."
-  },
-
-  "policies": {
-    "title": "Nuestras políticas",
-    "sections": [
-      {
-        "heading": "Reserva de turnos",
-        "body": "Para confirmar tu cita es necesario un anticipo. Para Servicios Individuales (Diseño, Lash Lifting, Laminado): Anticipo $200 MXN. Para Combos y Tratamientos Capilares (Combo Full, Botox, Keratina): Anticipo $300 MXN."
-      },
-      {
-        "heading": "Tolerancia de llegada",
-        "body": "Contamos con una tolerancia máxima de 15 minutos. Si no llegas, se cancela y no es reembolsable el anticipo."
-      },
-      {
-        "heading": "Reagendado y cancelaciones",
-        "body": "Puedes reagendar tu cita sin costo avisando con al menos 24 horas de anticipación (tu anticipo se transfiere a tu nueva fecha, válido 1 sola vez dentro del mismo mes)."
-      },
-      {
-        "heading": "Acompañantes y cuidado",
-        "body": "Por comodidad, higiene y espacio en cabina, te pedimos asistir sin acompañantes o niños."
-      }
-    ]
-  },
-
-  "faq": [
-    {
-      "question": "¿Cómo aparto mi cita?",
-      "answer": "Eliges servicio, fecha y horario disponible, dejas tus datos y realizas el anticipo por transferencia. Tu horario queda reservado por 30 minutos mientras confirmamos tu depósito."
-    },
-    {
-      "question": "¿Qué pasa si no confirman mi pago a tiempo?",
-      "answer": "Si no confirmamos tu depósito dentro de los 30 minutos, el horario se libera automáticamente y puede ser tomado por otra persona."
-    },
-    {
-      "question": "¿El anticipo se puede reembolsar?",
-      "answer": "El anticipo no es reembolsable en caso de no presentarte o superar los 15 minutos de tolerancia. Si necesitas reagendar, avisa con 24 horas de anticipación y tu anticipo se transfiere a la nueva fecha (una sola vez, dentro del mismo mes)."
-    },
-    {
-      "question": "¿Puedo ir acompañada?",
-      "answer": "Por comodidad, higiene y espacio en cabina, te pedimos asistir sin acompañantes ni niños."
     }
   ]
 }
