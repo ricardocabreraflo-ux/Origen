@@ -613,7 +613,7 @@
           <input type="number" id="eb-duration" min="5" step="5" required />
         </div>
         <div>
-          <label for="eb-amount">Monto cobrado (MXN)</label>
+          <label for="eb-amount">Monto cobrado — total de la cita (MXN)</label>
           <input type="number" id="eb-amount" min="0" step="1" required />
         </div>
       </div>
@@ -1856,14 +1856,21 @@
     rowEl.querySelector('input[data-field="amount"]').value = row.amount;
   });
 
-  // El monto de cada fila es solo para que Reportes cuente ese servicio
-  // aparte — no vuelve a tocar el total (que ya se ajustó al agregarla).
+  // El monto de cada fila sirve para que Reportes cuente ese servicio
+  // aparte, pero también es parte real de lo cobrado — si se corrige (por
+  // ejemplo, servicios de "valoración previa" que empiezan en $0 y hay que
+  // teclear el monto real), la diferencia se suma o resta del total para
+  // que "Monto cobrado" siempre refleje todo lo que se cobró.
   ebExtraList.addEventListener("input", (e) => {
     const input = e.target.closest('input[data-field="amount"]');
     if (!input) return;
     const rowEl = input.closest(".extra-service-row");
     const row = extraRows.find((r) => r.rowId === rowEl.getAttribute("data-row-id"));
-    if (row) row.amount = Number(input.value || 0);
+    if (!row) return;
+    const newAmount = Number(input.value || 0);
+    ebAmount.value = Math.max(0, Number(ebAmount.value || 0) + (newAmount - row.amount));
+    editAmountEditedManually = true;
+    row.amount = newAmount;
   });
 
   async function openEditModal(booking) {
