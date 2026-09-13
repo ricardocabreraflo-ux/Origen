@@ -84,6 +84,17 @@
     .cc-rev { display: none; }
   }
 
+  .citas-month-totals {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px;
+  }
+  .citas-month-totals .totals-chip {
+    flex: 1; min-width: 140px; background: var(--color-cream); border-radius: 10px; padding: 10px 14px;
+    text-align: center;
+  }
+  .citas-month-totals .totals-chip .totals-label { display: block; font-size: 0.7rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 2px; }
+  .citas-month-totals .totals-chip .totals-value { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 600; color: var(--color-dark); }
+  .citas-month-totals .totals-chip.is-highlight .totals-value { color: var(--color-accent-dark); }
+
   #empty-state, #loading-state { text-align: center; padding: 60px 20px; color: var(--color-muted); }
   .table-scroll { overflow-x: auto; }
   .bookings-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 18px; font-size: 0.88rem; color: var(--color-dark); }
@@ -293,6 +304,7 @@
       <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
     </div>
     <div class="citas-calendar-grid" id="cc-grid"></div>
+    <div class="citas-month-totals" id="citas-month-totals"></div>
   </div>
 
   <div class="admin-filters">
@@ -780,6 +792,43 @@
       cells += `<button type="button" class="${classes}" data-date="${dateStr}">${inner}</button>`;
     }
     ccGrid.innerHTML = cells;
+
+    renderCitasMonthTotals(bookings);
+  }
+
+  // Totales del mes que se está viendo en el calendario de arriba — no
+  // depende de los filtros de la tabla de abajo, para que siempre reflejen
+  // el mes completo aunque la tabla esté filtrada por estado o por un día.
+  function renderCitasMonthTotals(bookings) {
+    const el = document.getElementById("citas-month-totals");
+    let confirmedCount = 0;
+    let totalRevenue = 0;
+    let totalDeposits = 0;
+
+    bookings.forEach((b) => {
+      if (b.status !== "confirmed") return;
+      confirmedCount += 1;
+      totalDeposits += Number(b.deposit_amount || 0);
+      if (!b.revenue_exempt && b.total_amount !== null && b.total_amount !== undefined) {
+        totalRevenue += Number(b.total_amount);
+      }
+    });
+
+    const money = (n) => `$${n.toLocaleString("es-MX")} MXN`;
+    el.innerHTML = `
+      <div class="totals-chip">
+        <span class="totals-label">Citas confirmadas</span>
+        <span class="totals-value">${confirmedCount}</span>
+      </div>
+      <div class="totals-chip">
+        <span class="totals-label">Anticipos</span>
+        <span class="totals-value">${money(totalDeposits)}</span>
+      </div>
+      <div class="totals-chip is-highlight">
+        <span class="totals-label">Total cobrado del mes</span>
+        <span class="totals-value">${money(totalRevenue)}</span>
+      </div>
+    `;
   }
 
   function refreshCitasCalendar() {
