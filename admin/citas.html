@@ -581,6 +581,19 @@
         <label for="eb-service">Servicio</label>
         <select id="eb-service" required></select>
       </div>
+      <div>
+        <label for="eb-extra-service">Servicio adicional (opcional)</label>
+        <select id="eb-extra-service">
+          <option value="">Ninguno</option>
+        </select>
+        <p class="form-hint">Para cuando la clienta agrega otro servicio en el momento. Suma su precio y duración al total, pero puedes corregirlos.</p>
+      </div>
+      <div class="field-row" id="eb-extra-amount-row" hidden>
+        <div>
+          <label for="eb-extra-amount">Monto del servicio adicional (MXN)</label>
+          <input type="number" id="eb-extra-amount" min="0" step="1" />
+        </div>
+      </div>
       <div class="field-row">
         <div>
           <label for="eb-date">Fecha</label>
@@ -895,7 +908,7 @@
         <tr data-id="${b.id}" class="booking-row">
           <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
-          <td>${b.service_name}</td>
+          <td>${b.service_name}${b.extra_service_name ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">+ ${b.extra_service_name}</span>` : ""}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
           <td>${b.price_label || '<span style="color:var(--color-muted)">—</span>'}</td>
           <td>$${b.deposit_amount} MXN</td>
@@ -1723,6 +1736,9 @@
   const editOverlay = document.getElementById("edit-overlay");
   const editForm = document.getElementById("edit-form");
   const ebService = document.getElementById("eb-service");
+  const ebExtraService = document.getElementById("eb-extra-service");
+  const ebExtraAmountRow = document.getElementById("eb-extra-amount-row");
+  const ebExtraAmount = document.getElementById("eb-extra-amount");
   const ebDate = document.getElementById("eb-date");
   const ebTime = document.getElementById("eb-time");
   const ebDuration = document.getElementById("eb-duration");
@@ -1743,12 +1759,18 @@
   let editDiscountBase = 0;
   let editAmountEditedManually = false;
 
+  let editServices = [];
+
   async function openEditModal(booking) {
     ebHint.textContent = "";
     const cfg = await loadSiteConfig();
-    ebService.innerHTML = (cfg.services || [])
+    editServices = cfg.services || [];
+    ebService.innerHTML = editServices
       .map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`)
       .join("");
+    ebExtraService.innerHTML =
+      `<option value="">Ninguno</option>` +
+      editServices.map((s) => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`).join("");
 
     editingBookingId = booking.id;
     ebService.value = booking.service_id;
@@ -1759,7 +1781,7 @@
     ebDuration.value = endMin - startMin;
     const hasAmount = booking.total_amount !== null && booking.total_amount !== undefined;
     ebAmount.value = hasAmount ? booking.total_amount : "";
-    const service = (cfg.services || []).find((s) => s.id === booking.service_id);
+    const service = editServices.find((s) => s.id === booking.service_id);
     editDiscountBase = hasAmount ? Number(booking.total_amount) : parsePriceLabel(service && service.price);
     editAmountEditedManually = false;
     ebDiscount.value = "";
@@ -1769,8 +1791,40 @@
     ebEmail.value = booking.customer_email || "";
     ebNotes.value = booking.notes || "";
 
+    ebExtraService.value = booking.extra_service_id || "";
+    previousExtraService = booking.extra_service_id || "";
+    ebExtraAmountRow.hidden = !booking.extra_service_id;
+    ebExtraAmount.value =
+      booking.extra_amount !== null && booking.extra_amount !== undefined ? booking.extra_amount : "";
+
     editOverlay.hidden = false;
   }
+
+  // Al elegir un servicio adicional, se suma su precio de lista al monto
+  // cobrado y su duración a la duración total (ambos siguen editables a
+  // mano después) — y se muestra el campo para anotar cuánto de ese total
+  // corresponde al servicio adicional (para que Reportes lo cuente aparte).
+  let previousExtraService = "";
+  ebExtraService.addEventListener("change", () => {
+    const extraId = ebExtraService.value;
+    const previousService = editServices.find((s) => s.id === previousExtraService);
+    const newService = editServices.find((s) => s.id === extraId);
+
+    if (previousService) {
+      ebDuration.value = Math.max(5, Number(ebDuration.value || 0) - previousService.duration);
+      ebAmount.value = Math.max(0, Number(ebAmount.value || 0) - parsePriceLabel(previousService.price));
+    }
+    if (newService) {
+      ebDuration.value = Number(ebDuration.value || 0) + newService.duration;
+      ebAmount.value = Number(ebAmount.value || 0) + parsePriceLabel(newService.price);
+      ebExtraAmount.value = parsePriceLabel(newService.price);
+      editAmountEditedManually = true;
+    } else {
+      ebExtraAmount.value = "";
+    }
+    ebExtraAmountRow.hidden = !extraId;
+    previousExtraService = extraId;
+  });
 
   function toMinutesLocal(hhmm) {
     const [h, m] = hhmm.split(":").map(Number);
@@ -1826,6 +1880,8 @@
           totalAmount: ebAmount.value,
           durationMinutes: ebDuration.value,
           paymentMethod: ebPayment.value,
+          extraServiceId: ebExtraService.value || null,
+          extraAmount: ebExtraService.value ? ebExtraAmount.value : null,
         }),
       });
       const body = await res.json();

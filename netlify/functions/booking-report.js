@@ -49,7 +49,7 @@ exports.handler = async (event, context) => {
     const supabase = getServiceClient();
     const { data: bookings, error } = await supabase
       .from("bookings")
-      .select("booking_date, status, total_amount, revenue_exempt, service_id, service_name")
+      .select("booking_date, status, total_amount, revenue_exempt, service_id, service_name, extra_service_id, extra_service_name, extra_amount")
       .gte("booking_date", startStr)
       .lte("booking_date", endStr);
     if (error) throw error;
@@ -85,10 +85,26 @@ exports.handler = async (event, context) => {
             totalRevenue += amount;
             if (bucket) bucket.revenue += amount;
 
+            // Si la cita tiene un servicio adicional, su monto se cuenta
+            // aparte para que Reportes refleje cuántas veces se vendió cada
+            // servicio (el principal se queda con el resto del total).
+            const extraAmount = b.extra_service_id ? Number(b.extra_amount || 0) : 0;
             const svc = serviceMap.get(b.service_id) || { serviceId: b.service_id, serviceName: b.service_name, count: 0, revenue: 0 };
             svc.count += 1;
-            svc.revenue += amount;
+            svc.revenue += amount - extraAmount;
             serviceMap.set(b.service_id, svc);
+
+            if (b.extra_service_id) {
+              const extraSvc = serviceMap.get(b.extra_service_id) || {
+                serviceId: b.extra_service_id,
+                serviceName: b.extra_service_name,
+                count: 0,
+                revenue: 0,
+              };
+              extraSvc.count += 1;
+              extraSvc.revenue += extraAmount;
+              serviceMap.set(b.extra_service_id, extraSvc);
+            }
           }
         }
       }

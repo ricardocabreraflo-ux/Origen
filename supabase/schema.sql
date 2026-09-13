@@ -52,6 +52,16 @@ create table if not exists bookings (
 -- Por si la tabla bookings ya existía de antes de agregar esta columna.
 alter table bookings add column if not exists reward_redemption boolean not null default false;
 
+-- Servicio adicional que la clienta agregó en el momento de la cita
+-- (editado desde Citas → Editar cita). total_amount sigue siendo el
+-- monto cobrado por toda la visita; extra_amount es solo la porción de
+-- ese total que corresponde al servicio adicional, para que Reportes
+-- pueda contarlo aparte.
+alter table bookings add column if not exists extra_service_id text;
+alter table bookings add column if not exists extra_service_name text;
+alter table bookings add column if not exists extra_price_label text;
+alter table bookings add column if not exists extra_amount numeric;
+
 -- Cómo se pagó el anticipo: por transferencia manual (confirmada a mano
 -- por la administradora), con tarjeta a través de Mercado Pago
 -- (confirmada automáticamente por el webhook de pago), o en efectivo
