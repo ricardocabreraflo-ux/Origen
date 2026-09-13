@@ -166,9 +166,10 @@
   .field-row > div { flex: 1; }
   .form-hint-note { font-size: 0.8rem; color: var(--color-muted); margin: -8px 0 0; }
 
-  .extra-service-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-  .extra-service-row select { flex: 2; }
-  .extra-service-row input[type="number"] { flex: 1; min-width: 0; }
+  .extra-service-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .extra-service-row select { flex: 2; min-width: 160px; }
+  .extra-service-row input[data-field="amount"] { flex: 1; min-width: 70px; }
+  .extra-service-row input[data-field="discount"] { flex: 0 0 64px; min-width: 0; }
   .extra-service-row button {
     border: 1.5px solid rgba(161,58,47,0.35); background: var(--color-white); color: #a13a2f;
     border-radius: 6px; width: 30px; height: 30px; flex-shrink: 0; cursor: pointer; font-size: 0.8rem;
@@ -630,8 +631,9 @@
         </div>
       </div>
       <div>
-        <label for="eb-discount">% de descuento (opcional)</label>
-        <input type="number" id="eb-discount" min="0" max="100" step="1" placeholder="Ej. 15 — recalcula el monto según el precio de lista" />
+        <label for="eb-discount">% de descuento del servicio principal (opcional)</label>
+        <input type="number" id="eb-discount" min="0" max="100" step="1" placeholder="Ej. 15 — recalcula solo la parte del servicio principal" />
+        <p class="form-hint">Cada servicio adicional tiene su propio % de descuento junto a su monto, arriba — no hace falta que sea el mismo para todos.</p>
       </div>
       <div>
         <label for="eb-payment">Cómo se pagó</label>
@@ -1803,11 +1805,17 @@
   const ebSubmit = document.getElementById("eb-submit");
   const ebHint = document.getElementById("eb-hint");
   let editingBookingId = null;
-  // Monto sobre el que se calcula el % de descuento: el monto que ya tenía
-  // guardado la cita (no el precio de lista actual del servicio, que puede
-  // haber cambiado desde que se agendó y haría que un "descuento" terminara
-  // subiendo el monto en vez de bajarlo).
+  // Monto sobre el que se calcula el % de descuento del servicio
+  // principal: el monto que ya tenía guardado la cita (no el precio de
+  // lista actual del servicio, que puede haber cambiado desde que se
+  // agendó y haría que un "descuento" terminara subiendo el monto en vez
+  // de bajarlo).
   let editDiscountBase = 0;
+  // Cuánto del "Monto cobrado" total le corresponde solo al servicio
+  // principal (el resto son los servicios adicionales, cada uno con su
+  // propio monto en su fila) — para poder aplicarle un descuento sin
+  // afectar a los demás, sumando/restando solo la diferencia al total.
+  let primaryAmount = 0;
   let editAmountEditedManually = false;
 
   let editServices = [];
@@ -1829,6 +1837,7 @@
     div.innerHTML = `
       <select data-field="service">${extraServiceOptionsHtml()}</select>
       <input type="number" min="0" step="1" data-field="amount" placeholder="Monto" value="${row.amount}" />
+      <input type="number" min="0" max="100" step="1" data-field="discount" placeholder="% desc." title="% de descuento de este servicio" />
       <button type="button" title="Quitar">✕</button>
     `;
     div.querySelector('select[data-field="service"]').value = row.serviceId;
@@ -1903,6 +1912,7 @@
     row.duration = newService.duration;
     row.amount = parsePriceLabel(newService.price);
     rowEl.querySelector('input[data-field="amount"]').value = row.amount;
+    rowEl.querySelector('input[data-field="discount"]').value = "";
   });
 
   // El monto de cada fila sirve para que Reportes cuente ese servicio
@@ -1911,15 +1921,36 @@
   // teclear el monto real), la diferencia se suma o resta del total para
   // que "Monto cobrado" siempre refleje todo lo que se cobró.
   ebExtraList.addEventListener("input", (e) => {
-    const input = e.target.closest('input[data-field="amount"]');
-    if (!input) return;
-    const rowEl = input.closest(".extra-service-row");
-    const row = extraRows.find((r) => r.rowId === rowEl.getAttribute("data-row-id"));
-    if (!row) return;
-    const newAmount = Number(input.value || 0);
-    ebAmount.value = Math.max(0, Number(ebAmount.value || 0) + (newAmount - row.amount));
-    editAmountEditedManually = true;
-    row.amount = newAmount;
+    const amountInput = e.target.closest('input[data-field="amount"]');
+    if (amountInput) {
+      const rowEl = amountInput.closest(".extra-service-row");
+      const row = extraRows.find((r) => r.rowId === rowEl.getAttribute("data-row-id"));
+      if (!row) return;
+      const newAmount = Number(amountInput.value || 0);
+      ebAmount.value = Math.max(0, Number(ebAmount.value || 0) + (newAmount - row.amount));
+      editAmountEditedManually = true;
+      row.amount = newAmount;
+      return;
+    }
+
+    // % de descuento de un servicio adicional en particular: recalcula
+    // solo el monto de esa fila (sobre su precio de lista) sin tocar a
+    // los demás servicios de la misma cita.
+    const discountInput = e.target.closest('input[data-field="discount"]');
+    if (discountInput) {
+      const rowEl = discountInput.closest(".extra-service-row");
+      const row = extraRows.find((r) => r.rowId === rowEl.getAttribute("data-row-id"));
+      if (!row) return;
+      const pct = Number(discountInput.value);
+      if (!Number.isFinite(pct) || pct < 0 || pct > 100) return;
+      const rowService = editServices.find((s) => s.id === row.serviceId);
+      const listPrice = rowService ? parsePriceLabel(rowService.price) : row.amount;
+      const newAmount = Math.round(listPrice * (1 - pct / 100));
+      ebAmount.value = Math.max(0, Number(ebAmount.value || 0) + (newAmount - row.amount));
+      editAmountEditedManually = true;
+      row.amount = newAmount;
+      rowEl.querySelector('input[data-field="amount"]').value = newAmount;
+    }
   });
 
   async function openEditModal(booking) {
@@ -1940,8 +1971,6 @@
     const hasAmount = booking.total_amount !== null && booking.total_amount !== undefined;
     ebAmount.value = hasAmount ? booking.total_amount : "";
     const service = editServices.find((s) => s.id === booking.service_id);
-    editDiscountBase = hasAmount ? Number(booking.total_amount) : parsePriceLabel(service && service.price);
-    editAmountEditedManually = false;
     ebDiscount.value = "";
     ebPayment.value = booking.payment_method || "bank_transfer";
     ebName.value = booking.customer_name || "";
@@ -1954,6 +1983,13 @@
     (Array.isArray(booking.extra_services) ? booking.extra_services : []).forEach((extra) => {
       addExtraRow(extra.serviceId, Number(extra.amount || 0));
     });
+
+    // Lo que le toca al servicio principal es el total menos lo que ya
+    // está repartido entre los adicionales — así el % de descuento del
+    // principal parte del monto correcto, no del total completo.
+    const extrasSum = extraRows.reduce((sum, r) => sum + r.amount, 0);
+    primaryAmount = hasAmount ? Number(booking.total_amount) - extrasSum : parsePriceLabel(service && service.price);
+    editDiscountBase = primaryAmount;
     editAmountEditedManually = false;
 
     editOverlay.hidden = false;
@@ -1978,14 +2014,16 @@
     editAmountEditedManually = true;
   });
 
-  // Al escribir un % de descuento, recalcula el monto sobre lo que la cita
-  // ya tenía guardado (editDiscountBase) — no sobre el precio de lista
-  // actual del servicio, que puede haber cambiado desde que se agendó.
+  // Al escribir un % de descuento del servicio principal, recalcula solo
+  // su parte (editDiscountBase) y suma/resta la diferencia al total — así
+  // no toca lo que ya se cobra por los servicios adicionales.
   ebDiscount.addEventListener("input", () => {
-    if (editAmountEditedManually) return;
     const pct = Number(ebDiscount.value);
     if (!Number.isFinite(pct) || pct < 0 || pct > 100) return;
-    ebAmount.value = Math.round(editDiscountBase * (1 - pct / 100));
+    const newPrimaryAmount = Math.round(editDiscountBase * (1 - pct / 100));
+    ebAmount.value = Math.max(0, Number(ebAmount.value || 0) + (newPrimaryAmount - primaryAmount));
+    primaryAmount = newPrimaryAmount;
+    editAmountEditedManually = true;
   });
 
   editForm.addEventListener("submit", async (e) => {
