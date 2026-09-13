@@ -2279,6 +2279,12 @@
     renderSidebarUser();
     startPresence();
     if (!applySectionAccess("citas")) return;
+    // Por default la tabla se abre filtrada al mes actual (el mismo que
+    // se ve en el calendario de arriba) en vez de mostrar todas las citas
+    // de todos los tiempos — sigue pudiéndose quitar el filtro a mano.
+    if (!filterDate.value && !filterMonth.value) {
+      filterMonth.value = citasCalendarMonthStr();
+    }
     loadBookings();
 
     // Los submenús del menú lateral (Bloqueos de horario / Horario
