@@ -1012,6 +1012,9 @@
   document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
     const backdrop = sidebar.nextElementSibling;
     const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
+    // En computadora el menú se queda siempre abierto (no se encoge a solo
+    // iconos) — en celular sigue igual, angosto hasta que se toca el logo.
+    if (!isMobile()) sidebar.classList.add("is-pinned");
     sidebar.addEventListener("click", (e) => {
       const pinBtn = e.target.closest(".sidebar-pin");
       const brandBtn = e.target.closest(".sidebar-brand");
