@@ -7,5 +7,8 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.0.1 — 2026-09-25
+Corrección: el número de versión no se veía en celular porque estaba oculto siempre en el riel angosto — ahora se ve al abrir el menú (igual que el resto de las etiquetas).
+
 ## 1.0.0 — 2026-09-25
 Primera versión con número visible en el panel. A partir de aquí se numeran los cambios que sigan.

@@ -1487,8 +1487,9 @@ img { max-width: 100%; display: block; }
 .sidebar-logout:hover { background: rgba(196, 108, 79, 0.28); color: #f4c3af; }
 
 /* Número de versión del panel, al fondo del todo — se actualiza a mano
-   en data/version.json con cada cambio (ver CHANGELOG.md). Se oculta en
-   celular, donde el riel angosto no tiene espacio para texto suelto. */
+   en data/version.json con cada cambio (ver CHANGELOG.md). En el riel
+   angosto de celular no cabe el texto, así que ahí solo se ve cuando el
+   menú está abierto (mismo criterio que las etiquetas de cada sección). */
 .sidebar-version {
   margin-top: 8px;
   padding: 4px 12px 2px;
@@ -1501,6 +1502,7 @@ img { max-width: 100%; display: block; }
 }
 @media (max-width: 720px) {
   .sidebar-version { display: none; }
+  .admin-sidebar.is-pinned .sidebar-version { display: block; }
 }
 
 /* Submenús (Citas → Bloqueos/Horario especial, Finanzas → Gastos/Inversiones/Contabilidad) */
