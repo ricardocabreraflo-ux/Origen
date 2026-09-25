@@ -1486,6 +1486,23 @@ img { max-width: 100%; display: block; }
 }
 .sidebar-logout:hover { background: rgba(196, 108, 79, 0.28); color: #f4c3af; }
 
+/* Número de versión del panel, al fondo del todo — se actualiza a mano
+   en data/version.json con cada cambio (ver CHANGELOG.md). Se oculta en
+   celular, donde el riel angosto no tiene espacio para texto suelto. */
+.sidebar-version {
+  margin-top: 8px;
+  padding: 4px 12px 2px;
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.32);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 720px) {
+  .sidebar-version { display: none; }
+}
+
 /* Submenús (Citas → Bloqueos/Horario especial, Finanzas → Gastos/Inversiones/Contabilidad) */
 .sidebar-group-head { display: flex; align-items: center; gap: 2px; }
 .sidebar-group-head .sidebar-link { flex: 1; }

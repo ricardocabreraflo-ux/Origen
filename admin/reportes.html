@@ -148,6 +148,7 @@
       <ul class="presence-list" id="presence-list"></ul>
     </div>
     <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
+    <div class="sidebar-version" id="sidebar-version"></div>
   </nav>
   <div class="sidebar-backdrop"></div>
   <div class="admin-wrap" id="admin-wrap">
@@ -213,6 +214,15 @@
 <script>
 (function () {
   "use strict";
+
+  // Número de versión del panel, al fondo del menú (ver CHANGELOG.md).
+  fetch("../data/version.json")
+    .then((res) => (res.ok ? res.json() : null))
+    .then((v) => {
+      const el = document.getElementById("sidebar-version");
+      if (el && v && v.version) el.textContent = `v${v.version}`;
+    })
+    .catch(() => {});
 
   const ACCENT = "#b9a37f";
   const INK = "#211b15";
