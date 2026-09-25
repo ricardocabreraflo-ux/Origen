@@ -498,6 +498,18 @@ create table if not exists admin_presence (
 
 alter table admin_presence enable row level security;
 
+-- Historial de inicios de sesión al panel (Configuración → Historial de
+-- inicio de sesión, solo visible para una cuenta administradora): un
+-- registro por cada login real, no por cada carga de página.
+create table if not exists login_history (
+  id uuid primary key default gen_random_uuid(),
+  email text not null,
+  full_name text,
+  logged_in_at timestamptz not null default now()
+);
+create index if not exists login_history_logged_in_at_idx on login_history (logged_in_at desc);
+alter table login_history enable row level security;
+
 -- Galería de fotos del panel (Configuración → Galería de fotos): bucket
 -- público para los archivos + tabla para el orden/descripción. Las 6
 -- fotos que ya estaban en data/config.json se migran aquí con su ruta

@@ -173,6 +173,25 @@
       </table>
     </div>
   </div>
+
+  <div class="card" id="login-history-card">
+    <h2>Historial de inicio de sesión</h2>
+    <p class="section-note">Quién entró al panel y cuándo — se guarda un registro cada vez que alguien inicia sesión (solo lo ve una cuenta administradora).</p>
+    <div id="login-history-loading">Cargando…</div>
+    <div id="login-history-denied" hidden>Solo una cuenta administradora puede ver el historial de inicio de sesión.</div>
+    <div id="login-history-empty" hidden>Todavía no hay registros.</div>
+    <div class="table-scroll">
+      <table class="users-table" id="login-history-table" hidden>
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th>Fecha y hora</th>
+          </tr>
+        </thead>
+        <tbody id="login-history-tbody"></tbody>
+      </table>
+    </div>
+  </div>
   </div>
 
   <div class="ayuda-panel" id="ayuda-panel" hidden>
@@ -505,6 +524,65 @@
     }
   }
 
+  /* ---------------------------------------------------------
+     Historial de inicio de sesión
+  --------------------------------------------------------- */
+  const loginHistoryLoading = document.getElementById("login-history-loading");
+  const loginHistoryDenied = document.getElementById("login-history-denied");
+  const loginHistoryEmpty = document.getElementById("login-history-empty");
+  const loginHistoryTable = document.getElementById("login-history-table");
+  const loginHistoryTbody = document.getElementById("login-history-tbody");
+
+  function formatLoginDate(iso) {
+    return new Date(iso).toLocaleString("es-MX", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  async function loadLoginHistory() {
+    loginHistoryLoading.hidden = false;
+    loginHistoryDenied.hidden = true;
+    loginHistoryEmpty.hidden = true;
+    loginHistoryTable.hidden = true;
+
+    try {
+      const headers = await authHeaders();
+      const res = await fetch("/api/list-login-history", { headers });
+      loginHistoryLoading.hidden = true;
+      if (res.status === 401 || res.status === 403) {
+        loginHistoryDenied.hidden = false;
+        return;
+      }
+      if (!res.ok) {
+        loginHistoryEmpty.hidden = false;
+        return;
+      }
+      const body = await res.json();
+      const logins = body.logins || [];
+      if (!logins.length) {
+        loginHistoryEmpty.hidden = false;
+        return;
+      }
+      loginHistoryTbody.innerHTML = logins
+        .map(
+          (l) => `
+        <tr>
+          <td><strong>${l.full_name || l.email}</strong>${l.full_name ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${l.email}</span>` : ""}</td>
+          <td>${formatLoginDate(l.logged_in_at)}</td>
+        </tr>`
+        )
+        .join("");
+      loginHistoryTable.hidden = false;
+    } catch {
+      loginHistoryLoading.hidden = true;
+      loginHistoryEmpty.hidden = false;
+    }
+  }
+
   usersTbody.addEventListener("change", (e) => {
     // Ojo: el checkbox de una sección vive dentro de la mini-tabla
     // (.mini-section-table), que tiene sus propios <tr> — hay que buscar
@@ -766,8 +844,10 @@
     const user = window.netlifyIdentity.currentUser();
     if (getUserRole(user) !== "administrador") {
       document.getElementById("users-card").hidden = true;
+      document.getElementById("login-history-card").hidden = true;
     } else {
       loadUsers();
+      loadLoginHistory();
     }
 
     const sections = getUserSections(user);
@@ -789,7 +869,10 @@
   }
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && !adminShell.hidden && !document.getElementById("users-card").hidden) loadUsers();
+    if (document.visibilityState === "visible" && !adminShell.hidden && !document.getElementById("users-card").hidden) {
+      loadUsers();
+      loadLoginHistory();
+    }
   });
 
   if (!window.netlifyIdentity) {
@@ -804,6 +887,7 @@
   window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
   window.netlifyIdentity.on("login", () => {
     window.netlifyIdentity.close();
+    authHeaders().then((headers) => fetch("/api/log-login", { method: "POST", headers }).catch(() => {}));
     showAdmin();
   });
   window.netlifyIdentity.on("logout", showLogin);

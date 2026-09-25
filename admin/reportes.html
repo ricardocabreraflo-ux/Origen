@@ -658,6 +658,7 @@
   window.netlifyIdentity.on("init", (user) => (user ? showAdmin() : showLogin()));
   window.netlifyIdentity.on("login", () => {
     window.netlifyIdentity.close();
+    authHeaders().then((headers) => fetch("/api/log-login", { method: "POST", headers }).catch(() => {}));
     showAdmin();
   });
   window.netlifyIdentity.on("logout", showLogin);
