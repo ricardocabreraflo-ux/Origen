@@ -346,6 +346,58 @@
       .join("");
   }
 
+  // Datos estructurados (schema.org/BeautySalon) para que Google entienda
+  // el negocio directo (nombre, dirección, horario, teléfono) sin tener
+  // que adivinarlo del texto de la página — ayuda a aparecer mejor en
+  // Google Maps/búsquedas locales ("cejas cerca de mí", etc.).
+  const DAY_SCHEMA = {
+    mon: "Monday",
+    tue: "Tuesday",
+    wed: "Wednesday",
+    thu: "Thursday",
+    fri: "Friday",
+    sat: "Saturday",
+    sun: "Sunday",
+  };
+  const SITE_URL = "https://origen-brows.netlify.app";
+
+  function renderStructuredData() {
+    const hours = Object.entries(cfg.businessHours || {})
+      .filter(([, h]) => h && h.open && h.close)
+      .map(([day, h]) => ({
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: DAY_SCHEMA[day],
+        opens: h.open,
+        closes: h.close,
+      }));
+
+    const sameAs = [cfg.social && cfg.social.instagram, cfg.social && cfg.social.facebook, cfg.social && cfg.social.tiktok].filter(Boolean);
+
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "BeautySalon",
+      "@id": SITE_URL,
+      name: cfg.name,
+      image: `${SITE_URL}/${cfg.logoImage || "assets/logo-mark.jpg"}`,
+      url: SITE_URL,
+      telephone: cfg.phoneDisplay,
+      email: cfg.email,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: cfg.address,
+        addressLocality: "Ciudad de México",
+        addressCountry: "MX",
+      },
+      openingHoursSpecification: hours,
+      sameAs,
+    };
+
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify(data);
+    document.head.appendChild(script);
+  }
+
   function renderSocialLinks() {
     const links = [
       { key: "instagram", url: cfg.social.instagram, icon: "icon-instagram", label: "Instagram" },
@@ -890,6 +942,7 @@
           customerEmail: form.email.value.trim(),
           notes: form.notes.value.trim(),
           promoCode: form.promoCode.value.trim(),
+          website: form.website.value,
         }),
       })
         .then((res) => res.json().then((body) => ({ status: res.status, body })))
@@ -1167,6 +1220,7 @@
     renderGallery();
     renderTransformationReel();
     renderContact();
+    renderStructuredData();
     renderSocialLinks();
     renderWhatsappButtons();
     renderServices();

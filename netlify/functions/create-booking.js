@@ -20,6 +20,37 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getClientIp(event) {
+  const xff = event.headers && (event.headers["x-forwarded-for"] || event.headers["X-Forwarded-For"]);
+  if (xff) return xff.split(",")[0].trim();
+  return (event.headers && event.headers["x-nf-client-connection-ip"]) || null;
+}
+
+// Protección básica contra bots/spam en el formulario público:
+//  1. Campo trampa (honeypot): invisible para una persona, pero los bots
+//     que llenan formularios automáticamente sí lo llenan.
+//  2. Límite por IP: como máximo RATE_LIMIT_MAX_ATTEMPTS reservas en los
+//     últimos RATE_LIMIT_WINDOW_MINUTES minutos desde la misma IP — no
+//     afecta a nadie que reserve normalmente, solo a un script mandando
+//     muchas de golpe.
+const RATE_LIMIT_WINDOW_MINUTES = 15;
+const RATE_LIMIT_MAX_ATTEMPTS = 5;
+
+async function isRateLimited(supabase, ip) {
+  if (!ip) return false;
+  const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60000).toISOString();
+  const { count, error } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("created_ip", ip)
+    .gte("created_at", since);
+  if (error) {
+    console.error("No se pudo revisar el límite por IP", error);
+    return false; // mejor dejar pasar la reserva que tumbarla por un error aquí
+  }
+  return (count || 0) >= RATE_LIMIT_MAX_ATTEMPTS;
+}
+
 class CodeError extends Error {}
 
 // Resuelve el código de descuento/referido que la clienta escribió al
@@ -92,7 +123,11 @@ exports.handler = async (event) => {
     return badRequest("JSON inválido.");
   }
 
-  const { serviceId, date, startTime, customerName, customerPhone, customerEmail, notes, promoCode } = payload;
+  const { serviceId, date, startTime, customerName, customerPhone, customerEmail, notes, promoCode, website } = payload;
+
+  // Campo trampa: una persona nunca lo ve ni lo llena, así que si viene
+  // con algo escrito es un bot — se rechaza sin dar pistas de por qué.
+  if (website) return badRequest("No se pudo completar la reserva.");
 
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
   if (!date || !DATE_RE.test(date)) return badRequest("Fecha inválida.");
@@ -120,6 +155,11 @@ exports.handler = async (event) => {
     }
 
     const supabase = getServiceClient();
+    const clientIp = getClientIp(event);
+    if (await isRateLimited(supabase, clientIp)) {
+      return badRequest("Hiciste demasiadas reservas en poco tiempo. Espera unos minutos o escríbenos por WhatsApp.");
+    }
+
     const opening = await getOpeningForDate(supabase, date);
 
     const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots, opening);
@@ -173,6 +213,7 @@ exports.handler = async (event) => {
       customer_phone: customerPhone.trim(),
       customer_email: (customerEmail || "").trim() || null,
       notes: (notes || "").trim() || null,
+      created_ip: clientIp,
       promo_code: codeResult.kind !== "none" ? (codeResult.promotion || codeResult.referral).code : null,
       discount_type: codeResult.kind === "promotion" ? codeResult.promotion.discount_type : null,
       discount_value: codeResult.kind === "promotion" ? codeResult.promotion.discount_value : null,

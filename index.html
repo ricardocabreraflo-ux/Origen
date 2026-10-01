@@ -199,6 +199,13 @@
         <div class="booking-summary" id="booking-summary"></div>
 
         <form class="booking-form" id="booking-form">
+          <!-- Campo trampa para bots: invisible para una persona, pero los
+               bots que llenan formularios automáticamente sí lo llenan. Si
+               llega con algo escrito, create-booking.js rechaza la reserva. -->
+          <div class="form-row" style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
+            <label for="b-website">Déjalo vacío</label>
+            <input type="text" id="b-website" name="website" tabindex="-1" autocomplete="off" />
+          </div>
           <div class="form-row">
             <label for="b-name">Nombre completo *</label>
             <input type="text" id="b-name" name="name" required placeholder="Tu nombre" />

@@ -101,6 +101,12 @@ alter table bookings add column if not exists mp_preference_id text;
 alter table bookings add column if not exists revenue_exempt boolean not null default false;
 alter table bookings add column if not exists revenue_exempt_reason text;
 
+-- IP desde la que se mandó la reserva (create-booking.js) — solo para
+-- poder limitar cuántas reservas puede intentar la misma IP en pocos
+-- minutos (protección contra bots/spam), no se usa para nada más.
+alter table bookings add column if not exists created_ip text;
+create index if not exists bookings_created_ip_idx on bookings (created_ip, created_at);
+
 create table if not exists client_preferences (
   phone text primary key,
   email text,
