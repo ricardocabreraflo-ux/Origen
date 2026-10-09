@@ -65,11 +65,15 @@ exports.handler = async (event) => {
           // nota para la administradora (ej. "Cita médica", "Puerto
           // Escondido" si está de viaje) — nunca se le muestra a las
           // clientas tal cual, para no mandarles un mensaje sin sentido.
+          // Tampoco se le dice "cerrado": se redacta como que el día ya no
+          // tiene horarios libres, para que se vea como un día muy
+          // solicitado y no como que el negocio no abrió — e invita a
+          // anotarse en la lista de espera (justo debajo de este mensaje).
           // Los días cerrados de data/config.json (closedDates) sí son
           // contenido público que la dueña redacta a propósito para
           // mostrarse (ej. "Cerrado por Día de Muertos").
           closedReason: fullDayBlock
-            ? "Cerrado ese día."
+            ? "Ya no hay horarios disponibles este día."
             : opening
               ? "El servicio elegido no cabe en el horario especial de este día."
               : closed
