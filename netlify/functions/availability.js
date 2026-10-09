@@ -61,8 +61,15 @@ exports.handler = async (event) => {
           date,
           serviceId,
           slots: [],
+          // El "Motivo" de un bloqueo (Citas → Bloqueos de horario) es una
+          // nota para la administradora (ej. "Cita médica", "Puerto
+          // Escondido" si está de viaje) — nunca se le muestra a las
+          // clientas tal cual, para no mandarles un mensaje sin sentido.
+          // Los días cerrados de data/config.json (closedDates) sí son
+          // contenido público que la dueña redacta a propósito para
+          // mostrarse (ej. "Cerrado por Día de Muertos").
           closedReason: fullDayBlock
-            ? fullDayBlock.label || "Día bloqueado."
+            ? "Cerrado ese día."
             : opening
               ? "El servicio elegido no cabe en el horario especial de este día."
               : closed

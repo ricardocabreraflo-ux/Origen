@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.1.1 — 2026-10-09
+Corrección: el "Motivo" privado de un bloqueo de horario (Citas → Bloqueos de horario) se estaba mostrando tal cual a las clientas en la página de reservas cuando ese día no tenía horarios — ahora se queda solo en el panel y la clienta ve un mensaje genérico.
+
 ## 1.1.0 — 2026-10-01
 - Protección anti-spam en el formulario de reservas: campo trampa invisible + límite de 5 reservas por IP cada 15 minutos.
 - Datos estructurados (schema.org) en la página principal para que Google entienda mejor el negocio en búsquedas locales (Maps, "cejas cerca de mí", etc.).
