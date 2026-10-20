@@ -1078,13 +1078,26 @@ img { max-width: 100%; display: block; }
 }
 .before-after-label { padding: 14px 18px; font-size: 0.9rem; color: var(--color-dark); font-weight: 600; }
 
+/* Carrusel horizontal deslizable (no grid): varios posts caben en una
+   fila y se recorren con swipe/scroll en vez de apilarse hacia abajo. */
 .instagram-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
+  display: flex;
+  gap: 20px;
   margin-top: 40px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) transparent;
 }
-.instagram-grid iframe { border-radius: var(--radius) !important; }
+.instagram-grid::-webkit-scrollbar { height: 6px; }
+.instagram-grid::-webkit-scrollbar-thumb { background: rgba(33, 29, 25, 0.2); border-radius: 10px; }
+.instagram-grid > * {
+  flex: 0 0 340px;
+  scroll-snap-align: start;
+}
+.instagram-grid iframe { border-radius: var(--radius) !important; width: 100% !important; }
 
 /* Floating WhatsApp button */
 .floating-whatsapp {
