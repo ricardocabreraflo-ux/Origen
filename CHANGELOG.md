@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.2.0 — 2026-10-20
+Nuevo: "Antes y después" y "Posts de Instagram" ahora se administran desde Configuración (como la Galería de fotos) en vez de desde el editor de contenido — sube las fotos de antes/después directamente y pega el enlace de un post para destacarlo, sin tener que buscar el campo en un formulario largo.
+
 ## 1.1.2 — 2026-10-09
 Ajuste de texto: cuando un día está bloqueado por completo (Citas → Bloqueos de horario), ya no se le dice "cerrado" a la clienta — ahora el mensaje es "Ya no hay horarios disponibles este día", para que se vea como un día muy solicitado e invite a anotarse en la lista de espera.
 

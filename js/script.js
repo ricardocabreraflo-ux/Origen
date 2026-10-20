@@ -439,18 +439,19 @@
   }
 
   function renderSocialProof() {
-    const proof = cfg.socialProof || {};
-
-    const baGrid = document.getElementById("before-after-grid");
-    const beforeAfter = proof.beforeAfter || [];
-    if (beforeAfter.length === 0) {
-      baGrid.outerHTML = `
-        <div class="testimonial-empty" id="before-after-grid">
-          <strong>Muy pronto, aquí</strong>
-          En cuanto tengamos tus primeros resultados reales, los mostraremos en esta sección.
-        </div>`;
-    } else {
-      baGrid.innerHTML = beforeAfter
+    function paintBeforeAfter(items) {
+      const grid = document.getElementById("before-after-grid");
+      if (!grid) return;
+      if (!items.length) {
+        grid.outerHTML = `
+          <div class="testimonial-empty" id="before-after-grid">
+            <strong>Muy pronto, aquí</strong>
+            En cuanto tengamos tus primeros resultados reales, los mostraremos en esta sección.
+          </div>`;
+        return;
+      }
+      grid.outerHTML = `<div class="before-after-grid reveal-stagger" id="before-after-grid"></div>`;
+      document.getElementById("before-after-grid").innerHTML = items
         .map(
           (item) => `
           <div class="before-after-card">
@@ -464,35 +465,62 @@
         .join("");
     }
 
-    const igGrid = document.getElementById("instagram-grid");
-    const posts = (proof.instagramPosts || []).filter((p) => p && p.permalink);
-    if (posts.length === 0) {
-      igGrid.outerHTML = `
-        <div class="testimonial-empty" id="instagram-grid">
-          <strong>Síguenos en Instagram</strong>
-          Muy pronto destacaremos aquí las publicaciones de nuestras clientas.
-        </div>`;
-      return;
+    function paintInstagram(posts) {
+      const grid = document.getElementById("instagram-grid");
+      if (!grid) return;
+      if (!posts.length) {
+        grid.outerHTML = `
+          <div class="testimonial-empty" id="instagram-grid">
+            <strong>Síguenos en Instagram</strong>
+            Muy pronto destacaremos aquí las publicaciones de nuestras clientas.
+          </div>`;
+        return;
+      }
+      grid.outerHTML = `<div class="instagram-grid reveal-stagger" id="instagram-grid"></div>`;
+      document.getElementById("instagram-grid").innerHTML = posts
+        .map(
+          (p) => `
+          <blockquote class="instagram-media" data-instgrm-permalink="${p.permalink}" data-instgrm-version="14"></blockquote>`
+        )
+        .join("");
+
+      // El script oficial de Instagram procesa los <blockquote> y los
+      // convierte en el embed real — se carga una sola vez y, si ya estaba
+      // cargado, solo se le pide reprocesar los nuevos.
+      if (window.instgrm) {
+        window.instgrm.Embeds.process();
+      } else {
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = "https://www.instagram.com/embed.js";
+        document.body.appendChild(script);
+      }
     }
 
-    igGrid.innerHTML = posts
-      .map(
-        (p) => `
-        <blockquote class="instagram-media" data-instgrm-permalink="${p.permalink}" data-instgrm-version="14"></blockquote>`
-      )
-      .join("");
+    const proof = cfg.socialProof || {};
+    paintBeforeAfter(proof.beforeAfter || []);
+    paintInstagram((proof.instagramPosts || []).filter((p) => p && p.permalink));
 
-    // El script oficial de Instagram procesa los <blockquote> y los
-    // convierte en el embed real — se carga una sola vez y, si ya estaba
-    // cargado, solo se le pide reprocesar los nuevos.
-    if (window.instgrm) {
-      window.instgrm.Embeds.process();
-    } else {
-      const script = document.createElement("script");
-      script.async = true;
-      script.src = "https://www.instagram.com/embed.js";
-      document.body.appendChild(script);
-    }
+    // El antes/después y los posts destacados se administran desde
+    // Configuración (no desde config.json) — se piden aparte y, si
+    // llegan, reemplazan lo de arriba; si la llamada tarda, falla o la
+    // tabla todavía no existe, la sección ya está funcionando con lo que
+    // había (el mensaje de "muy pronto" en la mayoría de los casos).
+    fetch("/api/list-before-after")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (!body || !Array.isArray(body.pairs) || !body.pairs.length) return;
+        paintBeforeAfter(body.pairs.map((p) => ({ beforeImage: p.beforeUrl, afterImage: p.afterUrl, label: p.label })));
+      })
+      .catch(() => {});
+
+    fetch("/api/list-instagram-posts")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (!body || !Array.isArray(body.posts) || !body.posts.length) return;
+        paintInstagram(body.posts);
+      })
+      .catch(() => {});
   }
 
   function moneyDigits(str) {

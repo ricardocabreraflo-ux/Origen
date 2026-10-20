@@ -45,6 +45,17 @@
   .gallery-manager-item .item-actions button:disabled { opacity: 0.35; cursor: default; }
   .gallery-manager-item .item-actions .del-btn { margin-left: auto; color: #a13a2f; border-color: rgba(161,58,47,0.35); }
 
+  #before-after-loading, #before-after-empty, #instagram-posts-loading, #instagram-posts-empty { text-align: center; padding: 30px 20px; color: var(--color-muted); }
+  .ig-posts-list { display: flex; flex-direction: column; gap: 8px; }
+  .ig-post-row { display: flex; align-items: center; gap: 10px; border: 1.5px solid rgba(33,29,25,0.1); border-radius: 10px; padding: 8px 12px; background: var(--color-cream-soft); }
+  .ig-post-row .ig-post-link { flex: 1; font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); }
+  .ig-post-row .item-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .ig-post-row .item-actions button {
+    border: 1.5px solid rgba(33,29,25,0.15); background: var(--color-white); border-radius: 6px;
+    width: 26px; height: 26px; cursor: pointer; font-size: 0.8rem; line-height: 1;
+  }
+  .ig-post-row .item-actions .del-btn { color: #a13a2f; border-color: rgba(161,58,47,0.35); }
+
   .table-scroll { overflow-x: auto; }
   table.users-table { width: 100%; border-collapse: collapse; }
   .users-table th, .users-table td { padding: 12px 10px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid rgba(33,29,25,0.08); vertical-align: top; }
@@ -152,6 +163,42 @@
     <div id="gallery-loading">Cargando…</div>
     <div id="gallery-empty" hidden>Todavía no hay fotos.</div>
     <div class="gallery-manager-grid" id="gallery-manager-grid" hidden></div>
+  </div>
+
+  <div class="card" id="before-after-card">
+    <h2>Antes y después</h2>
+    <p class="section-note">Fotos reales de resultados (con permiso de la clienta) que se muestran en la página principal. Sube las dos fotos de un mismo caso y agrégalo.</p>
+    <div class="row-actions" style="margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;gap:10px;">
+      <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+        Foto antes
+        <input type="file" id="ba-before-input" accept="image/jpeg,image/png,image/webp" hidden />
+      </label>
+      <span class="form-hint" id="ba-before-name"></span>
+      <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+        Foto después
+        <input type="file" id="ba-after-input" accept="image/jpeg,image/png,image/webp" hidden />
+      </label>
+      <span class="form-hint" id="ba-after-name"></span>
+      <input type="text" id="ba-label-input" placeholder="Servicio (opcional)" style="max-width:220px;padding:7px 10px;border-radius:8px;border:1.5px solid rgba(33,29,25,0.15);font-family:var(--font-body);" />
+      <button type="button" class="btn btn-primary btn-sm" id="ba-save-btn" disabled>+ Agregar</button>
+    </div>
+    <p class="form-hint" id="ba-upload-hint"></p>
+    <div id="before-after-loading">Cargando…</div>
+    <div id="before-after-empty" hidden>Todavía no hay fotos de antes y después.</div>
+    <div class="gallery-manager-grid" id="before-after-grid" hidden></div>
+  </div>
+
+  <div class="card" id="instagram-posts-card">
+    <h2>Posts de Instagram</h2>
+    <p class="section-note">Pega el enlace de un post (en Instagram: ⋯ → Copiar enlace) para destacarlo en la página principal.</p>
+    <div class="row-actions" style="margin-bottom:16px;">
+      <input type="text" id="ig-permalink-input" placeholder="https://www.instagram.com/p/..." style="flex:1;min-width:220px;padding:7px 10px;border-radius:8px;border:1.5px solid rgba(33,29,25,0.15);font-family:var(--font-body);" />
+      <button type="button" class="btn btn-primary btn-sm" id="ig-add-btn">+ Agregar</button>
+    </div>
+    <p class="form-hint" id="ig-add-hint"></p>
+    <div id="instagram-posts-loading">Cargando…</div>
+    <div id="instagram-posts-empty" hidden>Todavía no hay posts destacados.</div>
+    <div class="ig-posts-list" id="instagram-posts-grid" hidden></div>
   </div>
 
   <div class="card" id="users-card">
@@ -501,6 +548,344 @@
     },
     true
   );
+
+  /* ---------------------------------------------------------
+     Antes y después
+  --------------------------------------------------------- */
+  const baLoading = document.getElementById("before-after-loading");
+  const baEmpty = document.getElementById("before-after-empty");
+  const baGrid = document.getElementById("before-after-grid");
+  const baBeforeInput = document.getElementById("ba-before-input");
+  const baAfterInput = document.getElementById("ba-after-input");
+  const baBeforeName = document.getElementById("ba-before-name");
+  const baAfterName = document.getElementById("ba-after-name");
+  const baLabelInput = document.getElementById("ba-label-input");
+  const baSaveBtn = document.getElementById("ba-save-btn");
+  const baUploadHint = document.getElementById("ba-upload-hint");
+  let baPairs = [];
+  let baReadOnly = false;
+  let baBeforeFile = null;
+  let baAfterFile = null;
+
+  function baItemHtml(pair, index, total) {
+    const images = `
+      <div style="display:flex;">
+        <img class="thumb" style="width:50%;" src="${pair.beforeUrl}" alt="Antes — ${pair.label || ""}" loading="lazy" />
+        <img class="thumb" style="width:50%;" src="${pair.afterUrl}" alt="Después — ${pair.label || ""}" loading="lazy" />
+      </div>`;
+    if (baReadOnly) {
+      return `
+        <div class="gallery-manager-item" data-pair-id="${pair.id}">
+          ${images}
+          <div class="item-body">
+            <p style="margin:0;font-size:0.78rem;color:var(--color-muted);">${pair.label || "Sin descripción"}</p>
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="gallery-manager-item" data-pair-id="${pair.id}">
+        ${images}
+        <div class="item-body">
+          <input type="text" data-field="label" placeholder="Servicio (opcional)" value="${(pair.label || "").replace(/"/g, "&quot;")}" />
+          <div class="item-actions">
+            <button type="button" data-action="left" ${index === 0 ? "disabled" : ""} title="Mover a la izquierda">←</button>
+            <button type="button" data-action="right" ${index === total - 1 ? "disabled" : ""} title="Mover a la derecha">→</button>
+            <button type="button" class="del-btn" data-action="delete" title="Borrar">✕</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderBaGrid() {
+    baGrid.innerHTML = baPairs.map((p, i) => baItemHtml(p, i, baPairs.length)).join("");
+  }
+
+  async function loadBeforeAfter() {
+    baLoading.hidden = false;
+    baEmpty.hidden = true;
+    baGrid.hidden = true;
+    try {
+      const res = await fetch("/api/list-before-after");
+      const body = await res.json();
+      baLoading.hidden = true;
+      if (!res.ok) {
+        baEmpty.textContent = "No se pudo cargar.";
+        baEmpty.hidden = false;
+        return;
+      }
+      baPairs = body.pairs || [];
+      if (!baPairs.length) {
+        baEmpty.textContent = "Todavía no hay fotos de antes y después.";
+        baEmpty.hidden = false;
+        return;
+      }
+      renderBaGrid();
+      baGrid.hidden = false;
+    } catch {
+      baLoading.hidden = true;
+      baEmpty.textContent = "No se pudo cargar.";
+      baEmpty.hidden = false;
+    }
+  }
+
+  async function saveBaOrder() {
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/reorder-before-after", { method: "POST", headers, body: JSON.stringify({ orderedIds: baPairs.map((p) => p.id) }) });
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function refreshBaSaveState() {
+    baSaveBtn.disabled = !(baBeforeFile && baAfterFile);
+  }
+
+  baBeforeInput.addEventListener("change", () => {
+    baBeforeFile = baBeforeInput.files[0] || null;
+    baBeforeName.textContent = baBeforeFile ? baBeforeFile.name : "";
+    refreshBaSaveState();
+  });
+  baAfterInput.addEventListener("change", () => {
+    baAfterFile = baAfterInput.files[0] || null;
+    baAfterName.textContent = baAfterFile ? baAfterFile.name : "";
+    refreshBaSaveState();
+  });
+
+  baSaveBtn.addEventListener("click", async () => {
+    if (!baBeforeFile || !baAfterFile) return;
+    const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+    baUploadHint.classList.remove("is-error");
+    if (!ALLOWED.includes(baBeforeFile.type) || !ALLOWED.includes(baAfterFile.type)) {
+      baUploadHint.textContent = "Usa fotos en formato JPG, PNG o WEBP.";
+      baUploadHint.classList.add("is-error");
+      return;
+    }
+    if (baBeforeFile.size > 4.5 * 1024 * 1024 || baAfterFile.size > 4.5 * 1024 * 1024) {
+      baUploadHint.textContent = "Cada foto debe pesar máximo 4.5 MB.";
+      baUploadHint.classList.add("is-error");
+      return;
+    }
+    baSaveBtn.disabled = true;
+    baUploadHint.textContent = "Subiendo…";
+    try {
+      const [beforeDataBase64, afterDataBase64] = await Promise.all([fileToBase64(baBeforeFile), fileToBase64(baAfterFile)]);
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/add-before-after", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          beforeDataBase64,
+          beforeContentType: baBeforeFile.type,
+          afterDataBase64,
+          afterContentType: baAfterFile.type,
+          label: baLabelInput.value.trim(),
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar.");
+      baBeforeFile = null;
+      baAfterFile = null;
+      baBeforeInput.value = "";
+      baAfterInput.value = "";
+      baBeforeName.textContent = "";
+      baAfterName.textContent = "";
+      baLabelInput.value = "";
+      baUploadHint.textContent = "Agregado.";
+      await loadBeforeAfter();
+    } catch (err) {
+      baUploadHint.textContent = err.message || "No se pudo guardar.";
+      baUploadHint.classList.add("is-error");
+    } finally {
+      refreshBaSaveState();
+    }
+  });
+
+  baGrid.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const item = btn.closest(".gallery-manager-item");
+    const pairId = item.getAttribute("data-pair-id");
+    const index = baPairs.findIndex((p) => p.id === pairId);
+    if (index === -1) return;
+    const action = btn.getAttribute("data-action");
+
+    if (action === "left" && index > 0) {
+      [baPairs[index - 1], baPairs[index]] = [baPairs[index], baPairs[index - 1]];
+      renderBaGrid();
+      await saveBaOrder();
+    } else if (action === "right" && index < baPairs.length - 1) {
+      [baPairs[index + 1], baPairs[index]] = [baPairs[index], baPairs[index + 1]];
+      renderBaGrid();
+      await saveBaOrder();
+    } else if (action === "delete") {
+      if (!window.confirm("¿Borrar este antes y después?")) return;
+      btn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/delete-before-after", { method: "POST", headers, body: JSON.stringify({ id: pairId }) });
+        if (!res.ok) throw new Error();
+        baPairs.splice(index, 1);
+        renderBaGrid();
+        if (!baPairs.length) {
+          baEmpty.textContent = "Todavía no hay fotos de antes y después.";
+          baEmpty.hidden = false;
+          baGrid.hidden = true;
+        }
+      } catch {
+        alert("No se pudo borrar. Intenta de nuevo.");
+        btn.disabled = false;
+      }
+    }
+  });
+
+  baGrid.addEventListener(
+    "blur",
+    async (e) => {
+      if (!e.target.matches('input[data-field="label"]')) return;
+      const item = e.target.closest(".gallery-manager-item");
+      const pairId = item.getAttribute("data-pair-id");
+      const pair = baPairs.find((p) => p.id === pairId);
+      const label = e.target.value.trim();
+      if (!pair || pair.label === label) return;
+      pair.label = label;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        await fetch("/api/update-before-after", { method: "POST", headers, body: JSON.stringify({ id: pairId, label }) });
+      } catch {}
+    },
+    true
+  );
+
+  /* ---------------------------------------------------------
+     Posts de Instagram
+  --------------------------------------------------------- */
+  const igLoading = document.getElementById("instagram-posts-loading");
+  const igEmpty = document.getElementById("instagram-posts-empty");
+  const igGrid = document.getElementById("instagram-posts-grid");
+  const igPermalinkInput = document.getElementById("ig-permalink-input");
+  const igAddBtn = document.getElementById("ig-add-btn");
+  const igAddHint = document.getElementById("ig-add-hint");
+  let igPosts = [];
+  let igReadOnly = false;
+
+  function igItemHtml(post, index, total) {
+    return `
+      <div class="ig-post-row" data-post-id="${post.id}">
+        <span class="ig-post-link">${post.permalink}</span>
+        ${
+          igReadOnly
+            ? ""
+            : `<div class="item-actions">
+          <button type="button" data-action="left" ${index === 0 ? "disabled" : ""} title="Mover arriba">↑</button>
+          <button type="button" data-action="right" ${index === total - 1 ? "disabled" : ""} title="Mover abajo">↓</button>
+          <button type="button" class="del-btn" data-action="delete" title="Borrar">✕</button>
+        </div>`
+        }
+      </div>`;
+  }
+
+  function renderIgGrid() {
+    igGrid.innerHTML = igPosts.map((p, i) => igItemHtml(p, i, igPosts.length)).join("");
+  }
+
+  async function loadInstagramPosts() {
+    igLoading.hidden = false;
+    igEmpty.hidden = true;
+    igGrid.hidden = true;
+    try {
+      const res = await fetch("/api/list-instagram-posts");
+      const body = await res.json();
+      igLoading.hidden = true;
+      if (!res.ok) {
+        igEmpty.textContent = "No se pudo cargar.";
+        igEmpty.hidden = false;
+        return;
+      }
+      igPosts = body.posts || [];
+      if (!igPosts.length) {
+        igEmpty.textContent = "Todavía no hay posts destacados.";
+        igEmpty.hidden = false;
+        return;
+      }
+      renderIgGrid();
+      igGrid.hidden = false;
+    } catch {
+      igLoading.hidden = true;
+      igEmpty.textContent = "No se pudo cargar.";
+      igEmpty.hidden = false;
+    }
+  }
+
+  async function saveIgOrder() {
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/reorder-instagram-posts", { method: "POST", headers, body: JSON.stringify({ orderedIds: igPosts.map((p) => p.id) }) });
+  }
+
+  igAddBtn.addEventListener("click", async () => {
+    const permalink = igPermalinkInput.value.trim();
+    if (!permalink) return;
+    igAddBtn.disabled = true;
+    igAddHint.classList.remove("is-error");
+    igAddHint.textContent = "Guardando…";
+    try {
+      const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+      const res = await fetch("/api/add-instagram-post", { method: "POST", headers, body: JSON.stringify({ permalink }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "No se pudo guardar.");
+      igPermalinkInput.value = "";
+      igAddHint.textContent = "Agregado.";
+      await loadInstagramPosts();
+    } catch (err) {
+      igAddHint.textContent = err.message || "No se pudo guardar.";
+      igAddHint.classList.add("is-error");
+    } finally {
+      igAddBtn.disabled = false;
+    }
+  });
+
+  igGrid.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const item = btn.closest(".ig-post-row");
+    const postId = item.getAttribute("data-post-id");
+    const index = igPosts.findIndex((p) => p.id === postId);
+    if (index === -1) return;
+    const action = btn.getAttribute("data-action");
+
+    if (action === "left" && index > 0) {
+      [igPosts[index - 1], igPosts[index]] = [igPosts[index], igPosts[index - 1]];
+      renderIgGrid();
+      await saveIgOrder();
+    } else if (action === "right" && index < igPosts.length - 1) {
+      [igPosts[index + 1], igPosts[index]] = [igPosts[index], igPosts[index + 1]];
+      renderIgGrid();
+      await saveIgOrder();
+    } else if (action === "delete") {
+      if (!window.confirm("¿Borrar este post?")) return;
+      btn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/delete-instagram-post", { method: "POST", headers, body: JSON.stringify({ id: postId }) });
+        if (!res.ok) throw new Error();
+        igPosts.splice(index, 1);
+        renderIgGrid();
+        if (!igPosts.length) {
+          igEmpty.textContent = "Todavía no hay posts destacados.";
+          igEmpty.hidden = false;
+          igGrid.hidden = true;
+        }
+      } catch {
+        alert("No se pudo borrar. Intenta de nuevo.");
+        btn.disabled = false;
+      }
+    }
+  });
 
   async function loadUsers() {
     usersLoading.hidden = false;
@@ -871,6 +1256,30 @@
         if (uploadLabel) uploadLabel.hidden = true;
       }
       loadGallery();
+    }
+
+    const baCard = document.getElementById("before-after-card");
+    if (!sections.includes("contenido")) {
+      baCard.hidden = true;
+    } else {
+      baReadOnly = getUserReadOnlySections(user).includes("contenido");
+      if (baReadOnly) {
+        const row = baCard.querySelector(".row-actions");
+        if (row) row.hidden = true;
+      }
+      loadBeforeAfter();
+    }
+
+    const igCard = document.getElementById("instagram-posts-card");
+    if (!sections.includes("contenido")) {
+      igCard.hidden = true;
+    } else {
+      igReadOnly = getUserReadOnlySections(user).includes("contenido");
+      if (igReadOnly) {
+        const row = igCard.querySelector(".row-actions");
+        if (row) row.hidden = true;
+      }
+      loadInstagramPosts();
     }
   }
   function showLogin() {

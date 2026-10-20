@@ -555,3 +555,27 @@ from (values
   ('/assets/gallery-video-3.mp4', 'Video de trabajo en Origen Brows & Hair Studio', 102, 'video')
 ) as v(storage_path, alt, sort_order, media_type)
 where not exists (select 1 from gallery_photos g where g.storage_path = v.storage_path);
+
+-- Antes y después (Configuración → Antes y después): mismo patrón que la
+-- galería de fotos — reusa el bucket "gallery" (prefijo "before-after/")
+-- + una tabla con las dos fotos de cada caso.
+create table if not exists before_after_photos (
+  id uuid primary key default gen_random_uuid(),
+  before_path text not null,
+  after_path text not null,
+  label text,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table before_after_photos enable row level security;
+
+-- Posts de Instagram destacados (Configuración → Posts de Instagram):
+-- solo guarda el enlace del post — Instagram arma el embed solo, no hay
+-- archivos que subir ni bucket que usar.
+create table if not exists instagram_posts (
+  id uuid primary key default gen_random_uuid(),
+  permalink text not null,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table instagram_posts enable row level security;
