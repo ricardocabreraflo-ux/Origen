@@ -35,7 +35,13 @@ exports.handler = async (event, context) => {
   try {
     requireSectionWrite(context, "citas");
   } catch (err) {
-    return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
+    return {
+      statusCode: err.statusCode || 401,
+      body: JSON.stringify({
+        error: "unauthorized",
+        message: err.statusCode === 403 ? err.message : "Tu sesión expiró — cierra sesión y vuelve a entrar al panel.",
+      }),
+    };
   }
 
   let payload;

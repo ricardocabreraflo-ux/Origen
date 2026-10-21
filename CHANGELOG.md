@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.2.2 — 2026-10-21
+Corrección: cuando la sesión del panel expiraba al crear una cita manual (Citas → Crear cita), el error mostraba el mensaje genérico "No se pudo crear la cita" en vez de avisar que había que volver a iniciar sesión.
+
 ## 1.2.1 — 2026-10-20
 Ajuste visual: los posts de Instagram destacados ahora se ven en carrusel horizontal (se deslizan con el dedo) en vez de apilarse uno debajo del otro.
 
