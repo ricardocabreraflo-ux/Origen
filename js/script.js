@@ -748,7 +748,15 @@
      Agenda tu cita — flujo por pasos + API de reservas
   --------------------------------------------------------- */
   const BookingFlow = (function () {
-    const state = { service: null, date: null, slot: null, booking: null, promoRequiresPair: false, companionSlot: null };
+    const state = {
+      service: null,
+      date: null,
+      slot: null,
+      booking: null,
+      promoRequiresPair: false,
+      promoPairDepositAmount: null,
+      companionSlot: null,
+    };
     let countdownInterval = null;
 
     let els = {};
@@ -953,11 +961,15 @@
     }
 
     function renderBookingSummary() {
+      const depositText =
+        state.promoRequiresPair && state.promoPairDepositAmount
+          ? `${formatMoney(state.promoPairDepositAmount)} (combinado, las dos citas)`
+          : formatMoney(state.service.depositAmount);
       els.bookingSummary.innerHTML = `
         <span><strong>Servicio:</strong> ${state.service.name}</span>
         <span><strong>Fecha:</strong> ${formatDateReadable(state.date)}</span>
         <span><strong>Horario:</strong> ${state.slot.startTime} – ${state.slot.endTime}</span>
-        <span><strong>Anticipo:</strong> ${formatMoney(state.service.depositAmount)}</span>
+        <span><strong>Anticipo:</strong> ${depositText}</span>
       `;
     }
 
@@ -1286,7 +1298,7 @@
       els.companionPhoneInput.required = visible;
       if (visible) {
         els.companionPolicyNote.textContent =
-          "Política de esta promoción: si una de las dos no llega a su cita, se pierde el precio de promoción — el servicio de quien sí asista se cobra completo (precio normal), y quien falte debe cubrir el costo de la promoción y pagar completo su propia cita.";
+          "Política de esta promoción: si una de las dos no llega a su cita, el servicio se cobra al precio completo (sin el descuento de esta promoción).";
         fetchCompanionAvailability();
       } else {
         els.companionNameInput.value = "";
@@ -1296,7 +1308,9 @@
         els.companionSlotStatus.textContent = "";
         els.companionSlotStatus.classList.remove("is-error");
         state.companionSlot = null;
+        state.promoPairDepositAmount = null;
       }
+      if (state.slot) renderBookingSummary();
     }
 
     function checkPromoCode() {
@@ -1312,6 +1326,7 @@
         .then((body) => {
           els.promoCodeHint.textContent = body.message || "";
           els.promoCodeHint.classList.toggle("is-error", !body.valid);
+          state.promoPairDepositAmount = body.valid && body.requiresPair ? body.pairDepositAmount : null;
           setCompanionFieldsVisible(!!(body.valid && body.requiresPair));
         })
         .catch(() => {
@@ -1376,7 +1391,14 @@
         clearTimeout(promoCheckTimer);
         els.promoCodeHint.textContent = "";
         els.promoCodeHint.classList.remove("is-error");
-        if (!els.promoCodeInput.value.trim()) return;
+        if (!els.promoCodeInput.value.trim()) {
+          // Si ya se había detectado un código en pareja y lo borra, hay
+          // que revertir los campos de la amiga y el anticipo combinado —
+          // si no, se quedarían pidiendo sus datos sin un código válido.
+          state.promoPairDepositAmount = null;
+          setCompanionFieldsVisible(false);
+          return;
+        }
         promoCheckTimer = setTimeout(checkPromoCode, 500);
       });
 
