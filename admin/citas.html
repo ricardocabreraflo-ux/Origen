@@ -970,7 +970,7 @@
       .map(
         (b) => `
         <tr data-id="${b.id}" class="booking-row">
-          <td>${b.reservation_code}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
+          <td>${b.reservation_code}${b.promo_code ? `<br/><span class="status-pill" style="background:#e8dcef;color:#5a2d7a;margin-top:4px;" title="${b.discount_type === "percent" ? b.discount_value + "% de descuento" : "$" + b.discount_value + " MXN de descuento"}">🏷️ ${b.promo_code}</span>` : ""}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
           <td>${b.service_name}${(Array.isArray(b.extra_services) ? b.extra_services : []).map((x) => `<br/><span style="color:var(--color-muted);font-size:0.78rem;">+ ${x.serviceName}</span>`).join("")}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>

@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.3.0 — 2026-10-26
+Nuevo: en Citas ahora se ve una etiqueta 🏷️ con el código de promoción cuando una cita usó uno (y cuánto descuento aplica) — antes el código se guardaba pero no se veía en ningún lado del panel, así que no había forma de saber a simple vista qué citas lo usaron.
+
 ## 1.2.2 — 2026-10-21
 Corrección: cuando la sesión del panel expiraba al crear una cita manual (Citas → Crear cita), el error mostraba el mensaje genérico "No se pudo crear la cita" en vez de avisar que había que volver a iniciar sesión.
 
