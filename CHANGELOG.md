@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.4.2 — 2026-10-26
+Corrección: en la promoción en pareja, el selector de horario de la amiga dejaba elegir un horario pegado justo después del de la primera clienta, sin dejar los 30 minutos de colchón de limpieza entre citas — eso hacía que, al enviar, la reserva fallara igual. Ahora el selector ya excluye esos horarios desde el inicio.
+
 ## 1.4.1 — 2026-10-26
 Ajuste a la promoción en pareja: la amiga ahora elige su propio horario (con el de justo después ya sugerido) en vez de asignárselo automático, y se agregó una política visible al detectar el código: si una de las dos no asiste, se pierde el precio de promoción — quien sí va paga su servicio completo, y quien falte cubre el costo de la promoción perdida.
 

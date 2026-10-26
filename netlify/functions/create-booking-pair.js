@@ -93,6 +93,7 @@ exports.handler = async (event) => {
     if (!service) return badRequest("El servicio seleccionado no existe.");
 
     const holdMinutes = (config.booking && config.booking.holdMinutes) || 30;
+    const bufferMinutes = (config.booking && config.booking.bufferMinutes) || 30;
     const maxAdvanceMonths = (config.booking && config.booking.maxAdvanceMonths) || 2;
     if (!isWithinBookingWindow(date, maxAdvanceMonths)) {
       return badRequest(`Solo se puede reservar con hasta ${maxAdvanceMonths} meses de anticipación.`);
@@ -128,10 +129,17 @@ exports.handler = async (event) => {
     if (!slotA) return badRequest("Ese horario no está dentro del horario de atención.");
     const slotB = grid.find((s) => s.startTime === companionStartTime);
     if (!slotB) return badRequest("El horario de tu amiga no está dentro del horario de atención.");
-    if (
-      rangesOverlap(toMinutes(slotA.startTime), toMinutes(slotA.endTime), toMinutes(slotB.startTime), toMinutes(slotB.endTime))
-    ) {
-      return badRequest("El horario de tu amiga se traslapa con el tuyo — solo se atiende a una clienta a la vez. Elige otra hora para ella.");
+
+    // Cada cita "ocupa" desde su inicio hasta su fin + el colchón de
+    // limpieza (igual que markAvailability en _lib/slots.js) — así que el
+    // horario de la amiga no solo no puede encimarse con el de la
+    // primera, sino que debe dejar ese margen después (o antes) de él.
+    const occupiedA = { start: toMinutes(slotA.startTime), end: toMinutes(slotA.endTime) + bufferMinutes };
+    const occupiedB = { start: toMinutes(slotB.startTime), end: toMinutes(slotB.endTime) + bufferMinutes };
+    if (rangesOverlap(occupiedA.start, occupiedA.end, occupiedB.start, occupiedB.end)) {
+      return badRequest(
+        `El horario de tu amiga queda muy pegado al tuyo — deja al menos ${bufferMinutes} minutos entre las dos citas. Elige otra hora para ella.`
+      );
     }
 
     const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);

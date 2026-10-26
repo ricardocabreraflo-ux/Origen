@@ -1205,12 +1205,28 @@
       countdownInterval = setInterval(tick, 1000);
     }
 
+    function timeToMinutes(hhmm) {
+      const [h, m] = hhmm.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    // Cada cita "ocupa" desde su inicio hasta su fin + el colchón de
+    // limpieza entre citas (igual que el servidor) — así que el horario
+    // de la amiga tiene que dejar ese margen después (o antes) del de la
+    // primera, no solo no encimarse con él.
+    function slotTooCloseToMain(slot) {
+      const bufferMinutes = (cfg.booking && cfg.booking.bufferMinutes) || 30;
+      const occupiedMainEnd = timeToMinutes(state.slot.endTime) + bufferMinutes;
+      const occupiedSlotEnd = timeToMinutes(slot.endTime) + bufferMinutes;
+      return timeToMinutes(state.slot.startTime) < occupiedSlotEnd && timeToMinutes(slot.startTime) < occupiedMainEnd;
+    }
+
     function renderCompanionSlotGrid(slots) {
       els.companionSlotGrid.innerHTML = slots
         .map(
           (s) => `
           <button type="button" class="slot-pill" data-start="${s.startTime}" data-end="${s.endTime}"
-            ${s.available && s.startTime !== state.slot.startTime ? "" : "disabled"}>${s.startTime} – ${s.endTime}</button>`
+            ${s.available && !slotTooCloseToMain(s) ? "" : "disabled"}>${s.startTime} – ${s.endTime}</button>`
         )
         .join("");
 
@@ -1224,9 +1240,10 @@
         });
       });
 
-      // Conveniencia: deja preseleccionado el horario justo después del
-      // tuyo, si está disponible — la clienta lo puede cambiar.
-      const suggested = slots.find((s) => s.available && s.startTime === state.slot.endTime);
+      // Conveniencia: deja preseleccionado el primer horario disponible
+      // que sí deja el margen necesario después del tuyo — la clienta lo
+      // puede cambiar por cualquier otro horario habilitado.
+      const suggested = slots.find((s) => s.available && !slotTooCloseToMain(s));
       if (suggested) {
         const btn = els.companionSlotGrid.querySelector(`.slot-pill[data-start="${suggested.startTime}"]`);
         if (btn) btn.click();
@@ -1242,7 +1259,7 @@
         .then((res) => res.json())
         .then((body) => {
           const slots = body.slots || [];
-          const hasOther = slots.some((s) => s.available && s.startTime !== state.slot.startTime);
+          const hasOther = slots.some((s) => s.available && !slotTooCloseToMain(s));
           if (!hasOther) {
             els.companionSlotGrid.innerHTML = "";
             els.companionSlotStatus.textContent = body.closedReason || "No hay más horarios disponibles ese día para tu amiga.";
