@@ -589,6 +589,13 @@ alter table instagram_posts enable row level security;
 alter table promotions add column if not exists requires_pair boolean not null default false;
 alter table promotions add column if not exists pair_deposit_amount numeric;
 
+-- Si una promoción solo debe aplicar a uno o varios servicios en
+-- específico (ej. "15% en Luxury Brow Lamination"), aquí van sus ids
+-- (ver data/config.json → services[].id). Vacío o null = aplica a
+-- cualquier servicio, como se comportaban todas las promociones antes
+-- de que existiera esta columna.
+alter table promotions add column if not exists service_ids jsonb;
+
 -- Liga cada cita de una pareja con la otra, para poder mostrarlo en el
 -- panel (Citas) y para que create-booking-pair.js pueda deshacer la
 -- primera inserción si la segunda falla.

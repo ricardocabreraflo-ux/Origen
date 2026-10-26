@@ -57,7 +57,7 @@ class CodeError extends Error {}
 // agendar. Nunca confía en lo que ya validó check-promo-code.js del lado
 // del cliente — vuelve a checar todo aquí, que es lo único que de verdad
 // aplica el descuento y cuenta el uso.
-async function resolvePromoOrReferralCode(supabase, rawCode, customerPhone) {
+async function resolvePromoOrReferralCode(supabase, rawCode, customerPhone, serviceId) {
   const code = (rawCode || "").trim().toUpperCase();
   if (!code) return { kind: "none" };
 
@@ -77,6 +77,9 @@ async function resolvePromoOrReferralCode(supabase, rawCode, customerPhone) {
     if (promo.ends_at && promo.ends_at < today) throw new CodeError("Ese código ya venció.");
     if (promo.max_redemptions != null && promo.redemptions_count >= promo.max_redemptions) {
       throw new CodeError("Ese código ya alcanzó su límite de usos.");
+    }
+    if (Array.isArray(promo.service_ids) && promo.service_ids.length && !promo.service_ids.includes(serviceId)) {
+      throw new CodeError("Ese código no aplica al servicio que elegiste.");
     }
     return { kind: "promotion", promotion: promo };
   }
@@ -196,7 +199,7 @@ exports.handler = async (event) => {
     // check-promo-code.js del lado del cliente).
     let codeResult;
     try {
-      codeResult = await resolvePromoOrReferralCode(supabase, promoCode, customerPhone);
+      codeResult = await resolvePromoOrReferralCode(supabase, promoCode, customerPhone, serviceId);
     } catch (err) {
       if (err instanceof CodeError) return badRequest(err.message);
       throw err;

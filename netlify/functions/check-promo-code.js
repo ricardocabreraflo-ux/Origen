@@ -11,6 +11,7 @@ function todayStr() {
 exports.handler = async (event) => {
   const raw = event.queryStringParameters && event.queryStringParameters.code;
   const code = (raw || "").trim().toUpperCase();
+  const serviceId = event.queryStringParameters && event.queryStringParameters.serviceId;
 
   if (!code) {
     return { statusCode: 400, body: JSON.stringify({ valid: false, message: "Escribe un código." }) };
@@ -23,7 +24,7 @@ exports.handler = async (event) => {
     const { data: promo, error: promoError } = await supabase
       .from("promotions")
       .select(
-        "code, campaign_name, discount_type, discount_value, active, starts_at, ends_at, max_redemptions, redemptions_count, requires_pair, pair_deposit_amount"
+        "code, campaign_name, discount_type, discount_value, active, starts_at, ends_at, max_redemptions, redemptions_count, requires_pair, pair_deposit_amount, service_ids"
       )
       .eq("code", code)
       .maybeSingle();
@@ -41,6 +42,14 @@ exports.handler = async (event) => {
       }
       if (promo.max_redemptions != null && promo.redemptions_count >= promo.max_redemptions) {
         return { statusCode: 200, body: JSON.stringify({ valid: false, message: "Ese código ya alcanzó su límite de usos." }) };
+      }
+      if (
+        serviceId &&
+        Array.isArray(promo.service_ids) &&
+        promo.service_ids.length &&
+        !promo.service_ids.includes(serviceId)
+      ) {
+        return { statusCode: 200, body: JSON.stringify({ valid: false, message: "Ese código no aplica al servicio que elegiste." }) };
       }
       const pairMessage = promo.requires_pair ? " — debes agendar junto con tu amiga, en el mismo envío." : "";
       return {

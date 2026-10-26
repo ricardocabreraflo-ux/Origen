@@ -122,6 +122,9 @@ exports.handler = async (event) => {
     if (promo.max_redemptions != null && promo.redemptions_count + 2 > promo.max_redemptions) {
       return badRequest("Ese código ya alcanzó su límite de usos.");
     }
+    if (Array.isArray(promo.service_ids) && promo.service_ids.length && !promo.service_ids.includes(serviceId)) {
+      return badRequest("Ese código no aplica al servicio que elegiste.");
+    }
 
     const opening = await getOpeningForDate(supabase, date);
     const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots, opening);

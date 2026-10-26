@@ -1321,7 +1321,8 @@
       }
       els.promoCodeHint.textContent = "Validando…";
       els.promoCodeHint.classList.remove("is-error");
-      fetch(`/api/check-promo-code?code=${encodeURIComponent(code)}`)
+      const serviceParam = state.service ? `&serviceId=${encodeURIComponent(state.service.id)}` : "";
+      fetch(`/api/check-promo-code?code=${encodeURIComponent(code)}${serviceParam}`)
         .then((res) => res.json())
         .then((body) => {
           els.promoCodeHint.textContent = body.message || "";

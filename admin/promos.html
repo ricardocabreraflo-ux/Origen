@@ -132,6 +132,11 @@
         </select>
       </div>
       <div class="full">
+        <label>Servicios a los que aplica (opcional)</label>
+        <p class="card-hint" style="margin:0 0 8px;">Si no marcas ninguno, el código aplica a cualquier servicio.</p>
+        <div id="p-services-checklist" style="display:flex;flex-wrap:wrap;gap:10px 18px;"></div>
+      </div>
+      <div class="full">
         <label style="display:flex;align-items:center;gap:8px;font-weight:normal;">
           <input type="checkbox" id="p-requires-pair" style="width:auto;" />
           Requiere agendar en pareja (ej. "trae a tu amiga") — solo se puede usar si las dos citas se reservan juntas, en un mismo envío
@@ -226,6 +231,44 @@
     return { Authorization: `Bearer ${token}` };
   }
 
+  let siteServices = [];
+  const servicesChecklist = document.getElementById("p-services-checklist");
+
+  async function loadServicesChecklist() {
+    try {
+      const res = await fetch("../data/config.json");
+      const cfg = await res.json();
+      siteServices = cfg.services || [];
+      servicesChecklist.innerHTML = siteServices
+        .map(
+          (s) => `
+          <label style="display:flex;align-items:center;gap:6px;font-weight:normal;font-size:0.86rem;">
+            <input type="checkbox" value="${s.id}" data-service-check style="width:auto;" /> ${s.name}
+          </label>`
+        )
+        .join("");
+    } catch {
+      servicesChecklist.textContent = "No se pudo cargar la lista de servicios.";
+    }
+  }
+
+  function getCheckedServiceIds() {
+    return Array.from(servicesChecklist.querySelectorAll("input[data-service-check]:checked")).map((cb) => cb.value);
+  }
+
+  function setCheckedServiceIds(ids) {
+    const set = new Set(ids || []);
+    servicesChecklist.querySelectorAll("input[data-service-check]").forEach((cb) => {
+      cb.checked = set.has(cb.value);
+    });
+  }
+
+  function formatServiceNames(ids) {
+    if (!Array.isArray(ids) || !ids.length) return "Todos los servicios";
+    const names = ids.map((id) => (siteServices.find((s) => s.id === id) || {}).name || id);
+    return names.join(", ");
+  }
+
   function formatDiscount(p) {
     return p.discount_type === "percent" ? `${p.discount_value}%` : `$${p.discount_value} MXN`;
   }
@@ -250,6 +293,7 @@
     document.getElementById("p-active").value = "true";
     requiresPairCheckbox.checked = false;
     pairDepositRow.hidden = true;
+    setCheckedServiceIds([]);
     formTitle.textContent = "Nueva campaña";
     submitBtn.textContent = "Crear campaña";
     cancelEditBtn.hidden = true;
@@ -272,6 +316,7 @@
     requiresPairCheckbox.checked = !!p.requires_pair;
     pairDepositRow.hidden = !p.requires_pair;
     pairDepositInput.value = p.pair_deposit_amount || "";
+    setCheckedServiceIds(p.service_ids);
     formTitle.textContent = `Editar "${p.campaign_name}"`;
     submitBtn.textContent = "Guardar cambios";
     cancelEditBtn.hidden = false;
@@ -310,7 +355,7 @@
           <td><strong>${p.campaign_name}</strong>${p.requires_pair ? '<br/><span class="status-pill" style="background:#e8dcef;color:#5a2d7a;margin-top:4px;" title="Solo se puede usar si las dos citas se reservan juntas">👯 En pareja</span>' : ""}${p.description ? `<br/><span style="color:var(--color-muted);font-size:0.8rem;">${p.description}</span>` : ""}</td>
           <td><code class="code-chip">${p.code}</code></td>
           <td>${p.slug ? `<a href="/promo-${p.slug}" target="_blank" rel="noopener">/promo-${p.slug}</a>` : "—"}</td>
-          <td>${formatDiscount(p)}</td>
+          <td>${formatDiscount(p)}${Array.isArray(p.service_ids) && p.service_ids.length ? `<br/><span style="color:var(--color-muted);font-size:0.76rem;">${formatServiceNames(p.service_ids)}</span>` : ""}</td>
           <td>${formatDateRange(p)}</td>
           <td>${p.redemptions_count}${p.max_redemptions ? ` / ${p.max_redemptions}` : ""}</td>
           <td><span class="status-pill ${p.active ? "is-active" : "is-inactive"}">${p.active ? "Activa" : "Desactivada"}</span></td>
@@ -356,6 +401,7 @@
             active: !promo.active,
             requiresPair: promo.requires_pair,
             pairDepositAmount: promo.pair_deposit_amount,
+            serviceIds: promo.service_ids,
           }),
         });
         const body = await res.json();
@@ -393,6 +439,7 @@
       active: document.getElementById("p-active").value === "true",
       requiresPair: requiresPairCheckbox.checked,
       pairDepositAmount: requiresPairCheckbox.checked ? pairDepositInput.value || null : null,
+      serviceIds: getCheckedServiceIds(),
     };
 
     try {
@@ -453,7 +500,7 @@
     loginGate.hidden = true;
     adminShell.hidden = false;
     renderSidebarUser();
-    loadPromotions();
+    loadServicesChecklist().then(loadPromotions);
     loadReferrals();
   }
   function showLogin() {

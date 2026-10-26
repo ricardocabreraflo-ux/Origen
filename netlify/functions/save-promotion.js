@@ -45,6 +45,12 @@ exports.handler = async (event, context) => {
     return badRequest("El límite de usos debe ser un número entero mayor a 0.");
   }
 
+  let serviceIds = null;
+  if (Array.isArray(payload.serviceIds) && payload.serviceIds.length) {
+    serviceIds = payload.serviceIds.filter((id) => typeof id === "string" && id.trim());
+    if (!serviceIds.length) serviceIds = null;
+  }
+
   const requiresPair = payload.requiresPair === true;
   let pairDepositAmount = null;
   if (requiresPair && payload.pairDepositAmount !== undefined && payload.pairDepositAmount !== null && payload.pairDepositAmount !== "") {
@@ -68,6 +74,7 @@ exports.handler = async (event, context) => {
       active: payload.active !== false,
       requires_pair: requiresPair,
       pair_deposit_amount: requiresPair ? pairDepositAmount : null,
+      service_ids: serviceIds,
     };
 
     if (payload.id) {
