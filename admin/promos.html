@@ -2,11 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Promos · Origen Brows &amp; Hair Studio</title>
 <meta name="robots" content="noindex" />
+<link rel="manifest" href="../manifest-admin.json" />
+<meta name="theme-color" content="#211b15" />
+<link rel="apple-touch-icon" href="../assets/icon-admin-192.png" />
 <link rel="stylesheet" href="../css/style.css" />
 <style>
+  [hidden] { display: none !important; }
   body { background: var(--color-cream-soft); }
   .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 100px; }
   .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
@@ -58,20 +62,62 @@
 
 <div class="admin-shell" id="admin-shell" hidden>
   <nav class="admin-sidebar">
-    <div class="sidebar-brand">Origen · Panel</div>
-    <a class="sidebar-link" href="citas.html">📅 Citas</a>
-    <a class="sidebar-link" href="clientas.html">👥 Clientas</a>
-    <a class="sidebar-link" href="lealtad.html">🎁 Lealtad</a>
-    <a class="sidebar-link is-active" href="promos.html">🏷️ Promos</a>
-    <a class="sidebar-link" href="sorteos.html">🎉 Sorteos</a>
-    <a class="sidebar-link" href="reportes.html">📊 Reportes</a>
-    <a class="sidebar-link" href="finanzas.html">💰 Finanzas</a>
-    <a class="sidebar-link" href="index.html">✏️ Contenido</a>
+    <div class="sidebar-brand">
+      <img class="sidebar-logo" src="../assets/logo-mark.jpg" alt="Origen Brows &amp; Hair Studio" />
+      <span class="sidebar-brand-text">Origen · Panel</span>
+    </div>
+    <div class="sidebar-nav">
+    <button type="button" class="sidebar-pin" title="Fijar menú abierto">📌</button>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link" href="citas.html"><span class="sidebar-icon">📅</span><span class="sidebar-label">Citas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Citas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="citas.html#bloqueos">🚫 Bloqueos de horario</a>
+        <a class="sidebar-sublink" href="citas.html#horario-especial">🔓 Horario especial</a>
+        <a class="sidebar-sublink" href="citas.html#lista-espera">⏳ Lista de espera</a>
+      </div></div>
+    </div>
+    <a class="sidebar-link" href="clientas.html"><span class="sidebar-icon">👥</span><span class="sidebar-label">Clientas</span></a>
+    <a class="sidebar-link" href="lealtad.html"><span class="sidebar-icon">🎁</span><span class="sidebar-label">Lealtad</span></a>
+    <a class="sidebar-link is-active" href="promos.html"><span class="sidebar-icon">🏷️</span><span class="sidebar-label">Promos</span></a>
+    <a class="sidebar-link" href="sorteos.html"><span class="sidebar-icon">🎉</span><span class="sidebar-label">Sorteos</span></a>
+    <a class="sidebar-link" href="reportes.html"><span class="sidebar-icon">📊</span><span class="sidebar-label">Reportes</span></a>
+    <div class="sidebar-group" data-group>
+      <div class="sidebar-group-head">
+        <a class="sidebar-link" href="finanzas.html"><span class="sidebar-icon">💰</span><span class="sidebar-label">Finanzas</span></a>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar opciones de Finanzas"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="finanzas.html#gastos-fijos">Gastos fijos</a>
+        <a class="sidebar-sublink" href="finanzas.html#inversiones">Inversiones</a>
+        <a class="sidebar-sublink" href="finanzas.html#contabilidad">Contabilidad</a>
+      </div></div>
+    </div>
+      <a class="sidebar-link" href="configuracion.html"><span class="sidebar-icon">⚙️</span><span class="sidebar-label">Configuración</span></a>
+      <a class="sidebar-link" href="index.html"><span class="sidebar-icon">✏️</span><span class="sidebar-label">Contenido</span></a>
+    <div class="sidebar-group sidebar-help" data-group>
+      <div class="sidebar-group-head">
+        <button type="button" class="sidebar-link"><span class="sidebar-icon">❓</span><span class="sidebar-label">Ayuda</span></button>
+        <button type="button" class="sidebar-chev-btn" aria-label="Mostrar tutoriales"><span class="sidebar-chev">›</span></button>
+      </div>
+      <div class="sidebar-sub"><div>
+        <a class="sidebar-sublink" href="ayuda/citas.html">📅 Citas</a>
+        <a class="sidebar-sublink" href="ayuda/clientas.html">👥 Clientas</a>
+        <a class="sidebar-sublink" href="ayuda/lealtad.html">🎁 Lealtad</a>
+        <a class="sidebar-sublink" href="ayuda/reportes.html">📊 Reportes</a>
+        <a class="sidebar-sublink" href="ayuda/finanzas.html">💰 Finanzas</a>
+      </div></div>
+    </div>
+    </div>
     <div class="sidebar-user" id="sidebar-user"></div>
-    <button class="sidebar-link sidebar-logout" id="logout-btn">Cerrar sesión</button>
+    <button type="button" class="sidebar-logout" id="logout-btn" title="Cerrar sesión"><span class="sidebar-icon">🚪</span><span class="sidebar-label">Cerrar sesión</span></button>
     <div class="sidebar-version" id="sidebar-version"></div>
   </nav>
+  <div class="sidebar-backdrop"></div>
   <div class="admin-wrap" id="admin-wrap">
+  <div id="admin-wrap-content">
 
   <div class="admin-header">
     <h1>Campañas de promoción</h1>
@@ -194,6 +240,15 @@
     </div>
   </div>
 
+  </div>
+
+  <div class="ayuda-panel" id="ayuda-panel" hidden>
+    <div class="ayuda-panel-bar">
+      <strong>❓ Ayuda</strong>
+      <button type="button" class="ayuda-panel-close" id="ayuda-panel-close" aria-label="Cerrar ayuda">✕ Cerrar</button>
+    </div>
+    <iframe id="ayuda-frame" title="Tutorial del panel"></iframe>
+  </div>
   </div>
 </div>
 
@@ -490,11 +545,90 @@
   document.getElementById("login-btn").addEventListener("click", () => window.netlifyIdentity.open());
   document.getElementById("logout-btn").addEventListener("click", () => window.netlifyIdentity.logout());
 
+  function initialsFromUser(user) {
+    const fullName = (user.user_metadata && user.user_metadata.full_name) || "";
+    if (fullName.trim()) {
+      return fullName.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+    }
+    const local = (user.email || "").split("@")[0];
+    const parts = local.split(/[._-]+/).filter(Boolean);
+    return (parts.length >= 2 ? parts[0][0] + parts[1][0] : local.slice(0, 2)).toUpperCase();
+  }
   function renderSidebarUser() {
     const el = document.getElementById("sidebar-user");
     const user = window.netlifyIdentity.currentUser();
-    if (el && user) el.innerHTML = `Sesión activa<span>${user.email}</span>`;
+    if (!el || !user) return;
+    el.innerHTML = `<span class="sidebar-avatar-wrap"><span class="sidebar-avatar">${initialsFromUser(user)}</span></span><span class="sidebar-label">Sesión activa<br><strong>${user.email}</strong></span>`;
   }
+
+  // Riel del menú: fijarlo abierto con el pin, y desplegar/cerrar los
+  // submenús de Citas y Finanzas con el botón de flecha.
+  document.querySelectorAll(".admin-sidebar").forEach((sidebar) => {
+    const backdrop = sidebar.nextElementSibling;
+    const isMobile = () => window.matchMedia("(max-width: 720px)").matches;
+    // En computadora el menú se queda siempre abierto (no se encoge a solo
+    // iconos) — en celular sigue igual, angosto hasta que se toca el logo.
+    if (!isMobile()) sidebar.classList.add("is-pinned");
+    sidebar.addEventListener("click", (e) => {
+      const pinBtn = e.target.closest(".sidebar-pin");
+      const brandBtn = e.target.closest(".sidebar-brand");
+      if (pinBtn || brandBtn) {
+        sidebar.classList.toggle("is-pinned");
+        return;
+      }
+      const chevBtn = e.target.closest(".sidebar-chev-btn");
+      const groupToggle = e.target.closest(".sidebar-group-head .sidebar-link:not([href])");
+      if (chevBtn || groupToggle) {
+        (chevBtn || groupToggle).closest("[data-group]").classList.toggle("is-open");
+        return;
+      }
+      if (isMobile() && e.target.closest(".sidebar-link, .sidebar-sublink")) {
+        sidebar.classList.remove("is-pinned");
+      }
+    });
+    if (backdrop && backdrop.classList.contains("sidebar-backdrop")) {
+      backdrop.addEventListener("click", () => sidebar.classList.remove("is-pinned"));
+    }
+  });
+
+  // Panel de Ayuda: los tutoriales se abren aquí mismo, en un iframe que
+  // reemplaza el contenido normal de la página — no se navega a otra
+  // pestaña. El botón "Volver al panel" de esas páginas, cuando detecta
+  // que está incrustado, en vez de navegar le avisa a esta página (por
+  // postMessage) que lo cierre.
+  (function () {
+    const wrapContent = document.getElementById("admin-wrap-content");
+    const panel = document.getElementById("ayuda-panel");
+    const frame = document.getElementById("ayuda-frame");
+    const closeBtn = document.getElementById("ayuda-panel-close");
+    if (!wrapContent || !panel || !frame) return;
+
+    function openAyuda(url) {
+      frame.src = url;
+      wrapContent.hidden = true;
+      panel.hidden = false;
+      panel.scrollIntoView({ behavior: "instant", block: "start" });
+    }
+    function closeAyuda() {
+      panel.hidden = true;
+      wrapContent.hidden = false;
+      frame.src = "about:blank";
+    }
+
+    document.querySelectorAll(".sidebar-help .sidebar-sublink").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        openAyuda(link.getAttribute("href"));
+        link.blur();
+        const sidebarEl = document.querySelector(".admin-sidebar");
+        if (sidebarEl) sidebarEl.classList.remove("is-pinned");
+      });
+    });
+    if (closeBtn) closeBtn.addEventListener("click", closeAyuda);
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.source === "origen-ayuda" && e.data.type === "close") closeAyuda();
+    });
+  })();
 
   function showAdmin() {
     loginGate.hidden = true;

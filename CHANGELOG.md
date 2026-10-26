@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.5.1 — 2026-10-26
+Corrección: Promos y Sorteos se habían quedado con el menú lateral viejo (de antes de fijarlo en computadora) — por eso en pantallas de escritorio se veía angosto y con texto cortado. Ahora las dos páginas se comportan igual que el resto del panel: fijo y completo en computadora, oculto hasta tocarlo en celular.
+
 ## 1.5.0 — 2026-10-26
 Nuevo: en Promos ya puedes marcar a qué servicios aplica una campaña (ej. "solo Korean Lash Lifting") — si no marcas ninguno, sigue aplicando a cualquier servicio, como antes. Si alguien intenta usar el código en un servicio distinto, se lo dice al momento de escribirlo y la reserva lo rechaza aunque lo intente de todas formas.
 
