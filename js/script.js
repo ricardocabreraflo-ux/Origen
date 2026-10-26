@@ -748,7 +748,7 @@
      Agenda tu cita — flujo por pasos + API de reservas
   --------------------------------------------------------- */
   const BookingFlow = (function () {
-    const state = { service: null, date: null, slot: null, booking: null, promoRequiresPair: false };
+    const state = { service: null, date: null, slot: null, booking: null, promoRequiresPair: false, companionSlot: null };
     let countdownInterval = null;
 
     let els = {};
@@ -779,6 +779,10 @@
         companionNameInput: document.getElementById("b-companion-name"),
         companionPhoneInput: document.getElementById("b-companion-phone"),
         companionEmailInput: document.getElementById("b-companion-email"),
+        companionPolicyNote: document.getElementById("companion-policy-note"),
+        companionSlotRow: document.getElementById("companion-slot-row"),
+        companionSlotGrid: document.getElementById("companion-slot-grid"),
+        companionSlotStatus: document.getElementById("companion-slot-status"),
         transferAmount: document.getElementById("transfer-amount"),
         transferBank: document.getElementById("transfer-bank"),
         transferHolder: document.getElementById("transfer-holder"),
@@ -893,6 +897,10 @@
       state.slot = slot;
       goToStep(3);
       renderBookingSummary();
+      // Si ya se había detectado un código en pareja y la clienta regresó
+      // a cambiar su horario, el horario de la amiga (y lo ya elegido) se
+      // vuelve a calcular contra el nuevo horario.
+      if (state.promoRequiresPair) fetchCompanionAvailability();
     }
 
     function joinWaitlist(e) {
@@ -960,6 +968,12 @@
         form.reportValidity();
         return;
       }
+      if (state.promoRequiresPair && !state.companionSlot) {
+        els.companionSlotStatus.textContent = "Elige el horario de tu amiga.";
+        els.companionSlotStatus.classList.add("is-error");
+        els.companionSlotRow.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      }
 
       els.submitBtn.disabled = true;
       els.submitBtn.textContent = "Reservando…";
@@ -972,6 +986,7 @@
             serviceId: state.service.id,
             date: state.date,
             startTime: state.slot.startTime,
+            companionStartTime: state.companionSlot.startTime,
             customerA: { name: form.name.value.trim(), phone: form.phone.value.trim(), email: form.email.value.trim() },
             customerB: {
               name: els.companionNameInput.value.trim(),
@@ -1190,18 +1205,80 @@
       countdownInterval = setInterval(tick, 1000);
     }
 
+    function renderCompanionSlotGrid(slots) {
+      els.companionSlotGrid.innerHTML = slots
+        .map(
+          (s) => `
+          <button type="button" class="slot-pill" data-start="${s.startTime}" data-end="${s.endTime}"
+            ${s.available && s.startTime !== state.slot.startTime ? "" : "disabled"}>${s.startTime} – ${s.endTime}</button>`
+        )
+        .join("");
+
+      els.companionSlotGrid.querySelectorAll(".slot-pill:not(:disabled)").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          els.companionSlotGrid.querySelectorAll(".slot-pill").forEach((p) => p.classList.remove("is-selected"));
+          btn.classList.add("is-selected");
+          state.companionSlot = { startTime: btn.getAttribute("data-start"), endTime: btn.getAttribute("data-end") };
+          els.companionSlotStatus.textContent = "";
+          els.companionSlotStatus.classList.remove("is-error");
+        });
+      });
+
+      // Conveniencia: deja preseleccionado el horario justo después del
+      // tuyo, si está disponible — la clienta lo puede cambiar.
+      const suggested = slots.find((s) => s.available && s.startTime === state.slot.endTime);
+      if (suggested) {
+        const btn = els.companionSlotGrid.querySelector(`.slot-pill[data-start="${suggested.startTime}"]`);
+        if (btn) btn.click();
+      }
+    }
+
+    function fetchCompanionAvailability() {
+      if (!state.service || !state.date) return;
+      els.companionSlotStatus.textContent = "Cargando horarios…";
+      els.companionSlotStatus.classList.remove("is-error");
+      state.companionSlot = null;
+      fetch(`/api/availability?date=${encodeURIComponent(state.date)}&serviceId=${encodeURIComponent(state.service.id)}`)
+        .then((res) => res.json())
+        .then((body) => {
+          const slots = body.slots || [];
+          const hasOther = slots.some((s) => s.available && s.startTime !== state.slot.startTime);
+          if (!hasOther) {
+            els.companionSlotGrid.innerHTML = "";
+            els.companionSlotStatus.textContent = body.closedReason || "No hay más horarios disponibles ese día para tu amiga.";
+            els.companionSlotStatus.classList.add("is-error");
+            return;
+          }
+          els.companionSlotStatus.textContent = "";
+          renderCompanionSlotGrid(slots);
+        })
+        .catch(() => {
+          els.companionSlotStatus.textContent = "No se pudo cargar el horario de tu amiga.";
+          els.companionSlotStatus.classList.add("is-error");
+        });
+    }
+
     function setCompanionFieldsVisible(visible) {
       state.promoRequiresPair = visible;
       els.companionFields.hidden = !visible;
       els.companionNameRow.hidden = !visible;
       els.companionPhoneRow.hidden = !visible;
       els.companionEmailRow.hidden = !visible;
+      els.companionSlotRow.hidden = !visible;
       els.companionNameInput.required = visible;
       els.companionPhoneInput.required = visible;
-      if (!visible) {
+      if (visible) {
+        els.companionPolicyNote.textContent =
+          "Política de esta promoción: si una de las dos no llega a su cita, se pierde el precio de promoción — el servicio de quien sí asista se cobra completo (precio normal), y quien falte debe cubrir el costo de la promoción y pagar completo su propia cita.";
+        fetchCompanionAvailability();
+      } else {
         els.companionNameInput.value = "";
         els.companionPhoneInput.value = "";
         els.companionEmailInput.value = "";
+        els.companionSlotGrid.innerHTML = "";
+        els.companionSlotStatus.textContent = "";
+        els.companionSlotStatus.classList.remove("is-error");
+        state.companionSlot = null;
       }
     }
 

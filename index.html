@@ -228,7 +228,8 @@
             <p class="form-hint" id="promo-code-hint"></p>
           </div>
           <div class="form-row form-row-full companion-fields" id="companion-fields" hidden>
-            <p class="form-hint">👯 Esta promoción es para agendar junto con tu amiga — ella queda en el horario justo después del tuyo. Completa también sus datos:</p>
+            <p class="form-hint">👯 Esta promoción es para agendar junto con tu amiga. Completa también sus datos y elige su horario:</p>
+            <p class="form-hint" id="companion-policy-note"></p>
           </div>
           <div class="form-row" id="companion-name-row" hidden>
             <label for="b-companion-name">Nombre completo de tu amiga</label>
@@ -241,6 +242,11 @@
           <div class="form-row" id="companion-email-row" hidden>
             <label for="b-companion-email">Correo de tu amiga (opcional)</label>
             <input type="email" id="b-companion-email" name="companionEmail" placeholder="correo@ejemplo.com" />
+          </div>
+          <div class="form-row form-row-full" id="companion-slot-row" hidden>
+            <label>Horario de tu amiga</label>
+            <div class="slot-grid" id="companion-slot-grid"></div>
+            <p class="form-hint" id="companion-slot-status"></p>
           </div>
           <div class="form-row form-row-full form-actions">
             <button type="submit" class="btn btn-primary" id="booking-submit">Apartar horario</button>

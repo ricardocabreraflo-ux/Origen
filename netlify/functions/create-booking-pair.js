@@ -1,9 +1,9 @@
 // Crea DOS citas juntas, de un solo envío, para promociones que exigen
 // agendar en pareja (ej. "trae a tu amiga"): el código con requires_pair
-// solo se puede aplicar aquí, nunca desde create-booking.js normal. La
-// segunda persona queda en el horario justo después del de la primera
-// (mismo servicio) — no al mismo tiempo exacto, porque solo se atiende a
-// una clienta a la vez.
+// solo se puede aplicar aquí, nunca desde create-booking.js normal. Cada
+// persona elige su propio horario (mismo servicio, mismo día) — nunca el
+// mismo horario exacto que la otra, porque solo se atiende a una clienta
+// a la vez.
 const { loadConfig } = require("./_lib/config");
 const { getServiceClient } = require("./_lib/supabase");
 const { slotsForDate, isTodayOrFuture, isWithinBookingWindow, rangesOverlap, toMinutes } = require("./_lib/slots");
@@ -73,12 +73,13 @@ exports.handler = async (event) => {
     return badRequest("JSON inválido.");
   }
 
-  const { serviceId, date, startTime, customerA, customerB, notes, promoCode, website } = payload;
+  const { serviceId, date, startTime, companionStartTime, customerA, customerB, notes, promoCode, website } = payload;
 
   if (website) return badRequest("No se pudo completar la reserva.");
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
   if (!date || !DATE_RE.test(date)) return badRequest("Fecha inválida.");
   if (!startTime || !/^\d{2}:\d{2}$/.test(startTime)) return badRequest("Horario inválido.");
+  if (!companionStartTime || !/^\d{2}:\d{2}$/.test(companionStartTime)) return badRequest("Falta el horario de tu amiga.");
   const errA = validPerson(customerA, "la primera persona");
   if (errA) return badRequest(errA);
   const errB = validPerson(customerB, "tu amiga");
@@ -125,9 +126,12 @@ exports.handler = async (event) => {
     const grid = slotsForDate(date, config.businessHours, service.duration, config.closedDates, service.fixedSlots, opening);
     const slotA = grid.find((s) => s.startTime === startTime);
     if (!slotA) return badRequest("Ese horario no está dentro del horario de atención.");
-    const slotB = grid.find((s) => s.startTime === slotA.endTime);
-    if (!slotB) {
-      return badRequest("No hay un segundo horario disponible justo después para tu amiga. Elige una hora un poco más temprano.");
+    const slotB = grid.find((s) => s.startTime === companionStartTime);
+    if (!slotB) return badRequest("El horario de tu amiga no está dentro del horario de atención.");
+    if (
+      rangesOverlap(toMinutes(slotA.startTime), toMinutes(slotA.endTime), toMinutes(slotB.startTime), toMinutes(slotB.endTime))
+    ) {
+      return badRequest("El horario de tu amiga se traslapa con el tuyo — solo se atiende a una clienta a la vez. Elige otra hora para ella.");
     }
 
     const { fullDayBlock, partialBlocks } = await getBlocksForDate(supabase, date);
@@ -136,7 +140,7 @@ exports.handler = async (event) => {
       return badRequest("Ese horario no está disponible.");
     }
     if (blockedInRange(partialBlocks, toMinutes(slotB.startTime), toMinutes(slotB.endTime))) {
-      return badRequest("El horario de tu amiga (justo después) no está disponible. Elige una hora un poco más temprano.");
+      return badRequest("El horario de tu amiga no está disponible. Elige otra hora para ella.");
     }
 
     await supabase
