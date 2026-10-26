@@ -45,6 +45,15 @@ exports.handler = async (event, context) => {
     return badRequest("El límite de usos debe ser un número entero mayor a 0.");
   }
 
+  const requiresPair = payload.requiresPair === true;
+  let pairDepositAmount = null;
+  if (requiresPair && payload.pairDepositAmount !== undefined && payload.pairDepositAmount !== null && payload.pairDepositAmount !== "") {
+    pairDepositAmount = Number(payload.pairDepositAmount);
+    if (!Number.isFinite(pairDepositAmount) || pairDepositAmount <= 0) {
+      return badRequest("El anticipo de la pareja debe ser un número mayor a 0.");
+    }
+  }
+
   try {
     const supabase = getServiceClient();
 
@@ -57,6 +66,8 @@ exports.handler = async (event, context) => {
       ends_at: endsAt,
       max_redemptions: maxRedemptions,
       active: payload.active !== false,
+      requires_pair: requiresPair,
+      pair_deposit_amount: requiresPair ? pairDepositAmount : null,
     };
 
     if (payload.id) {

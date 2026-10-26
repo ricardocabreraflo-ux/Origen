@@ -227,6 +227,21 @@
             <input type="text" id="b-promo-code" name="promoCode" placeholder="Ej. VERANO15" autocomplete="off" />
             <p class="form-hint" id="promo-code-hint"></p>
           </div>
+          <div class="form-row form-row-full companion-fields" id="companion-fields" hidden>
+            <p class="form-hint">👯 Esta promoción es para agendar junto con tu amiga — ella queda en el horario justo después del tuyo. Completa también sus datos:</p>
+          </div>
+          <div class="form-row" id="companion-name-row" hidden>
+            <label for="b-companion-name">Nombre completo de tu amiga</label>
+            <input type="text" id="b-companion-name" name="companionName" placeholder="Nombre de tu amiga" />
+          </div>
+          <div class="form-row" id="companion-phone-row" hidden>
+            <label for="b-companion-phone">Teléfono / WhatsApp de tu amiga</label>
+            <input type="tel" id="b-companion-phone" name="companionPhone" placeholder="Ej. 55 1234 5678" />
+          </div>
+          <div class="form-row" id="companion-email-row" hidden>
+            <label for="b-companion-email">Correo de tu amiga (opcional)</label>
+            <input type="email" id="b-companion-email" name="companionEmail" placeholder="correo@ejemplo.com" />
+          </div>
           <div class="form-row form-row-full form-actions">
             <button type="submit" class="btn btn-primary" id="booking-submit">Apartar horario</button>
           </div>

@@ -748,7 +748,7 @@
      Agenda tu cita — flujo por pasos + API de reservas
   --------------------------------------------------------- */
   const BookingFlow = (function () {
-    const state = { service: null, date: null, slot: null, booking: null };
+    const state = { service: null, date: null, slot: null, booking: null, promoRequiresPair: false };
     let countdownInterval = null;
 
     let els = {};
@@ -772,6 +772,13 @@
         confirmationTimer: document.getElementById("confirmation-timer"),
         promoCodeInput: document.getElementById("b-promo-code"),
         promoCodeHint: document.getElementById("promo-code-hint"),
+        companionFields: document.getElementById("companion-fields"),
+        companionNameRow: document.getElementById("companion-name-row"),
+        companionPhoneRow: document.getElementById("companion-phone-row"),
+        companionEmailRow: document.getElementById("companion-email-row"),
+        companionNameInput: document.getElementById("b-companion-name"),
+        companionPhoneInput: document.getElementById("b-companion-phone"),
+        companionEmailInput: document.getElementById("b-companion-email"),
         transferAmount: document.getElementById("transfer-amount"),
         transferBank: document.getElementById("transfer-bank"),
         transferHolder: document.getElementById("transfer-holder"),
@@ -781,6 +788,7 @@
         confirmationWhatsapp: document.getElementById("confirmation-whatsapp"),
         confirmationCalendar: document.getElementById("confirmation-calendar"),
         bookingRestart: document.getElementById("booking-restart"),
+        payOnlineBlock: document.getElementById("pay-online-block"),
         payOnlineBtn: document.getElementById("pay-online-btn"),
         payOnlineHint: document.getElementById("pay-online-hint"),
         mpReturnBanner: document.getElementById("mp-return-banner"),
@@ -958,35 +966,53 @@
       els.formHint.textContent = "";
       els.formHint.classList.remove("is-error");
 
-      fetch("/api/create-booking", {
+      const endpoint = state.promoRequiresPair ? "/api/create-booking-pair" : "/api/create-booking";
+      const body = state.promoRequiresPair
+        ? {
+            serviceId: state.service.id,
+            date: state.date,
+            startTime: state.slot.startTime,
+            customerA: { name: form.name.value.trim(), phone: form.phone.value.trim(), email: form.email.value.trim() },
+            customerB: {
+              name: els.companionNameInput.value.trim(),
+              phone: els.companionPhoneInput.value.trim(),
+              email: els.companionEmailInput.value.trim(),
+            },
+            notes: form.notes.value.trim(),
+            promoCode: form.promoCode.value.trim(),
+            website: form.website.value,
+          }
+        : {
+            serviceId: state.service.id,
+            date: state.date,
+            startTime: state.slot.startTime,
+            customerName: form.name.value.trim(),
+            customerPhone: form.phone.value.trim(),
+            customerEmail: form.email.value.trim(),
+            notes: form.notes.value.trim(),
+            promoCode: form.promoCode.value.trim(),
+            website: form.website.value,
+          };
+
+      fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          serviceId: state.service.id,
-          date: state.date,
-          startTime: state.slot.startTime,
-          customerName: form.name.value.trim(),
-          customerPhone: form.phone.value.trim(),
-          customerEmail: form.email.value.trim(),
-          notes: form.notes.value.trim(),
-          promoCode: form.promoCode.value.trim(),
-          website: form.website.value,
-        }),
+        body: JSON.stringify(body),
       })
-        .then((res) => res.json().then((body) => ({ status: res.status, body })))
-        .then(({ status, body }) => {
+        .then((res) => res.json().then((resBody) => ({ status: res.status, body: resBody })))
+        .then(({ status, body: resBody }) => {
           if (status === 409) {
-            els.formHint.textContent = body.message || "Ese horario ya no está disponible.";
+            els.formHint.textContent = resBody.message || "Ese horario ya no está disponible.";
             els.formHint.classList.add("is-error");
             goToStep(2);
             fetchAvailability(state.date);
             return;
           }
           if (status !== 200) {
-            throw new Error(body.message || "No se pudo completar la reserva.");
+            throw new Error(resBody.message || "No se pudo completar la reserva.");
           }
-          state.booking = body;
-          renderConfirmation(body);
+          state.booking = resBody;
+          renderConfirmation(resBody);
           goToStep(4);
         })
         .catch((err) => {
@@ -1000,10 +1026,18 @@
     }
 
     function renderConfirmation(data) {
-      els.confirmationCode.textContent = data.reservationCode;
-      els.confirmationSummary.textContent = `${data.serviceName} · ${formatDateReadable(data.date)} · ${data.startTime} – ${data.endTime}`;
+      const isPair = !!(data.a && data.b);
+      const reservationCode = isPair ? `${data.a.reservationCode} y ${data.b.reservationCode}` : data.reservationCode;
+      const startTime = isPair ? data.a.startTime : data.startTime;
+      const endTime = isPair ? data.b.endTime : data.endTime;
+      const depositAmount = isPair ? data.totalDeposit : data.depositAmount;
 
-      if (data.rewardRedemption) {
+      els.confirmationCode.textContent = reservationCode;
+      els.confirmationSummary.textContent = isPair
+        ? `${data.serviceName} · ${formatDateReadable(data.date)} · ${data.a.customerName} ${data.a.startTime}–${data.a.endTime} · ${data.b.customerName} ${data.b.startTime}–${data.b.endTime}`
+        : `${data.serviceName} · ${formatDateReadable(data.date)} · ${data.startTime} – ${data.endTime}`;
+
+      if (!isPair && data.rewardRedemption) {
         els.confirmationLoyaltyNote.textContent = `🎁 Estás usando tu ${data.loyaltyDiscountPercent}% de descuento de lealtad — lo confirmamos junto con tu depósito.`;
         els.confirmationLoyaltyNote.hidden = false;
       } else {
@@ -1013,7 +1047,9 @@
       if (data.discountType) {
         const discountText =
           data.discountType === "percent" ? `${data.discountValue}% de descuento` : `${formatMoney(data.discountValue)} de descuento`;
-        els.confirmationPromoNote.textContent = `🏷️ Código ${data.promoCode} aplicado — ${discountText} en tu servicio, se ajusta al liquidar en el estudio.`;
+        els.confirmationPromoNote.textContent = isPair
+          ? `🏷️ Código ${data.promoCode} aplicado — ${discountText} por persona, se ajusta al liquidar en el estudio.`
+          : `🏷️ Código ${data.promoCode} aplicado — ${discountText} en tu servicio, se ajusta al liquidar en el estudio.`;
         els.confirmationPromoNote.hidden = false;
         if (window.fbq) window.fbq("trackCustom", "PromoCodeUsed", { code: data.promoCode });
         logMarketingEvent("promo_code_used", data.promoCode);
@@ -1021,20 +1057,31 @@
         els.confirmationPromoNote.hidden = true;
       }
 
-      els.transferAmount.textContent = formatMoney(data.depositAmount);
+      els.transferAmount.textContent = formatMoney(depositAmount);
       els.transferBank.textContent = data.bankTransfer.bankName;
       els.transferHolder.textContent = data.bankTransfer.accountHolder;
       els.transferClabe.textContent = data.bankTransfer.clabe;
-      els.transferNote.textContent = data.bankTransfer.note || "";
+      els.transferNote.textContent = isPair
+        ? `${data.bankTransfer.note || ""} Este anticipo cubre las dos citas (${data.a.customerName} y ${data.b.customerName}).`.trim()
+        : data.bankTransfer.note || "";
 
-      const waMessage = [
-        `Hola ${getShortName()}, aquí está mi comprobante de transferencia.`,
-        `Código de reserva: ${data.reservationCode}`,
-        `Servicio: ${data.serviceName}`,
-        `Fecha: ${formatDateReadable(data.date)}`,
-        `Horario: ${data.startTime} – ${data.endTime}`,
-        `Anticipo: ${formatMoney(data.depositAmount)}`,
-      ].join("\n");
+      const waMessage = isPair
+        ? [
+            `Hola ${getShortName()}, aquí está mi comprobante de transferencia.`,
+            `Códigos de reserva: ${data.a.reservationCode} y ${data.b.reservationCode}`,
+            `Servicio: ${data.serviceName} (para ${data.a.customerName} y ${data.b.customerName})`,
+            `Fecha: ${formatDateReadable(data.date)}`,
+            `Horarios: ${data.a.startTime}–${data.a.endTime} y ${data.b.startTime}–${data.b.endTime}`,
+            `Anticipo (las dos citas): ${formatMoney(depositAmount)}`,
+          ].join("\n")
+        : [
+            `Hola ${getShortName()}, aquí está mi comprobante de transferencia.`,
+            `Código de reserva: ${data.reservationCode}`,
+            `Servicio: ${data.serviceName}`,
+            `Fecha: ${formatDateReadable(data.date)}`,
+            `Horario: ${data.startTime} – ${data.endTime}`,
+            `Anticipo: ${formatMoney(data.depositAmount)}`,
+          ].join("\n");
       els.confirmationWhatsapp.href = contactLink(waMessage);
       els.confirmationWhatsapp.setAttribute("data-message", waMessage);
       applyContactChannelToButton({
@@ -1043,22 +1090,28 @@
         hintId: "confirmation-contact-hint",
       });
 
-      const start = new Date(`${data.date}T${data.startTime}`);
-      const end = new Date(`${data.date}T${data.endTime}`);
+      const start = new Date(`${data.date}T${startTime}`);
+      const end = new Date(`${data.date}T${endTime}`);
       const toGCalDate = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
       const calParams = new URLSearchParams({
         action: "TEMPLATE",
         text: `Cita: ${data.serviceName} en ${getShortName()}`,
         dates: `${toGCalDate(start)}/${toGCalDate(end)}`,
-        details: `Código de reserva ${data.reservationCode}. Recuerda llevar tu comprobante de transferencia.`,
+        details: `Código de reserva ${reservationCode}. Recuerda llevar tu comprobante de transferencia.`,
         location: cfg.address,
       });
       els.confirmationCalendar.href = `https://calendar.google.com/calendar/render?${calParams.toString()}`;
 
-      els.payOnlineHint.textContent = "";
-      els.payOnlineHint.classList.remove("is-error");
-      els.payOnlineBtn.disabled = false;
-      els.payOnlineBtn.textContent = "Pagar anticipo con tarjeta";
+      // El pago con tarjeta en línea cobra UNA cita — para una promoción
+      // en pareja (dos citas, un anticipo combinado) solo queda la opción
+      // de transferencia manual.
+      els.payOnlineBlock.hidden = isPair;
+      if (!isPair) {
+        els.payOnlineHint.textContent = "";
+        els.payOnlineHint.classList.remove("is-error");
+        els.payOnlineBtn.disabled = false;
+        els.payOnlineBtn.textContent = "Pagar anticipo con tarjeta";
+      }
 
       startCountdown(data.expiresAt);
     }
@@ -1137,9 +1190,27 @@
       countdownInterval = setInterval(tick, 1000);
     }
 
+    function setCompanionFieldsVisible(visible) {
+      state.promoRequiresPair = visible;
+      els.companionFields.hidden = !visible;
+      els.companionNameRow.hidden = !visible;
+      els.companionPhoneRow.hidden = !visible;
+      els.companionEmailRow.hidden = !visible;
+      els.companionNameInput.required = visible;
+      els.companionPhoneInput.required = visible;
+      if (!visible) {
+        els.companionNameInput.value = "";
+        els.companionPhoneInput.value = "";
+        els.companionEmailInput.value = "";
+      }
+    }
+
     function checkPromoCode() {
       const code = els.promoCodeInput.value.trim();
-      if (!code) return;
+      if (!code) {
+        setCompanionFieldsVisible(false);
+        return;
+      }
       els.promoCodeHint.textContent = "Validando…";
       els.promoCodeHint.classList.remove("is-error");
       fetch(`/api/check-promo-code?code=${encodeURIComponent(code)}`)
@@ -1147,9 +1218,11 @@
         .then((body) => {
           els.promoCodeHint.textContent = body.message || "";
           els.promoCodeHint.classList.toggle("is-error", !body.valid);
+          setCompanionFieldsVisible(!!(body.valid && body.requiresPair));
         })
         .catch(() => {
           els.promoCodeHint.textContent = "";
+          setCompanionFieldsVisible(false);
         });
     }
 
@@ -1158,6 +1231,7 @@
       state.date = null;
       state.slot = null;
       state.booking = null;
+      setCompanionFieldsVisible(false);
       if (countdownInterval) clearInterval(countdownInterval);
       els.form.reset();
       els.dateInput.value = "";

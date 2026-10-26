@@ -22,7 +22,9 @@ exports.handler = async (event) => {
 
     const { data: promo, error: promoError } = await supabase
       .from("promotions")
-      .select("code, campaign_name, discount_type, discount_value, active, starts_at, ends_at, max_redemptions, redemptions_count")
+      .select(
+        "code, campaign_name, discount_type, discount_value, active, starts_at, ends_at, max_redemptions, redemptions_count, requires_pair, pair_deposit_amount"
+      )
       .eq("code", code)
       .maybeSingle();
     if (promoError) throw promoError;
@@ -40,6 +42,7 @@ exports.handler = async (event) => {
       if (promo.max_redemptions != null && promo.redemptions_count >= promo.max_redemptions) {
         return { statusCode: 200, body: JSON.stringify({ valid: false, message: "Ese código ya alcanzó su límite de usos." }) };
       }
+      const pairMessage = promo.requires_pair ? " — debes agendar junto con tu amiga, en el mismo envío." : "";
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -48,10 +51,12 @@ exports.handler = async (event) => {
           campaignName: promo.campaign_name,
           discountType: promo.discount_type,
           discountValue: promo.discount_value,
+          requiresPair: !!promo.requires_pair,
+          pairDepositAmount: promo.pair_deposit_amount,
           message:
-            promo.discount_type === "percent"
+            (promo.discount_type === "percent"
               ? `${promo.discount_value}% de descuento — ${promo.campaign_name}`
-              : `$${promo.discount_value} MXN de descuento — ${promo.campaign_name}`,
+              : `$${promo.discount_value} MXN de descuento — ${promo.campaign_name}`) + pairMessage,
         }),
       };
     }

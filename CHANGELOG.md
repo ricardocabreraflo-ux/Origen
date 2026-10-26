@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.4.0 — 2026-10-26
+Nuevo: promociones "en pareja" (ej. "trae a tu amiga"). En Promos hay un nuevo checkbox "Requiere agendar en pareja" + un anticipo combinado opcional — cuando una clienta usa uno de estos códigos al reservar, el formulario le pide también los datos de su amiga y crea las dos citas juntas (horarios seguidos), con el anticipo repartido entre ambas. El código ya no se puede usar si solo reserva una persona.
+
 ## 1.3.0 — 2026-10-26
 Nuevo: en Citas ahora se ve una etiqueta 🏷️ con el código de promoción cuando una cita usó uno (y cuánto descuento aplica) — antes el código se guardaba pero no se veía en ningún lado del panel, así que no había forma de saber a simple vista qué citas lo usaron.
 

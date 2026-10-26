@@ -131,6 +131,16 @@
           <option value="false">Desactivada</option>
         </select>
       </div>
+      <div class="full">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:normal;">
+          <input type="checkbox" id="p-requires-pair" style="width:auto;" />
+          Requiere agendar en pareja (ej. "trae a tu amiga") — solo se puede usar si las dos citas se reservan juntas, en un mismo envío
+        </label>
+      </div>
+      <div id="p-pair-deposit-row" hidden>
+        <label for="p-pair-deposit">Anticipo total para las dos citas (opcional)</label>
+        <input type="number" id="p-pair-deposit" min="1" step="1" placeholder="Ej. 300 — se reparte entre las dos" />
+      </div>
       <div class="full form-actions">
         <button type="submit" class="btn btn-primary" id="promo-submit">Crear campaña</button>
         <button type="button" class="btn btn-outline" id="promo-cancel-edit" hidden>Cancelar edición</button>
@@ -225,11 +235,21 @@
     return `${p.starts_at || "…"} → ${p.ends_at || "sin fin"}`;
   }
 
+  const requiresPairCheckbox = document.getElementById("p-requires-pair");
+  const pairDepositRow = document.getElementById("p-pair-deposit-row");
+  const pairDepositInput = document.getElementById("p-pair-deposit");
+  requiresPairCheckbox.addEventListener("change", () => {
+    pairDepositRow.hidden = !requiresPairCheckbox.checked;
+    if (!requiresPairCheckbox.checked) pairDepositInput.value = "";
+  });
+
   function resetForm() {
     form.reset();
     document.getElementById("p-id").value = "";
     document.getElementById("p-discount-type").value = "percent";
     document.getElementById("p-active").value = "true";
+    requiresPairCheckbox.checked = false;
+    pairDepositRow.hidden = true;
     formTitle.textContent = "Nueva campaña";
     submitBtn.textContent = "Crear campaña";
     cancelEditBtn.hidden = true;
@@ -249,6 +269,9 @@
     document.getElementById("p-ends").value = p.ends_at || "";
     document.getElementById("p-max").value = p.max_redemptions || "";
     document.getElementById("p-active").value = String(p.active);
+    requiresPairCheckbox.checked = !!p.requires_pair;
+    pairDepositRow.hidden = !p.requires_pair;
+    pairDepositInput.value = p.pair_deposit_amount || "";
     formTitle.textContent = `Editar "${p.campaign_name}"`;
     submitBtn.textContent = "Guardar cambios";
     cancelEditBtn.hidden = false;
@@ -284,7 +307,7 @@
       .map(
         (p) => `
         <tr data-id="${p.id}">
-          <td><strong>${p.campaign_name}</strong>${p.description ? `<br/><span style="color:var(--color-muted);font-size:0.8rem;">${p.description}</span>` : ""}</td>
+          <td><strong>${p.campaign_name}</strong>${p.requires_pair ? '<br/><span class="status-pill" style="background:#e8dcef;color:#5a2d7a;margin-top:4px;" title="Solo se puede usar si las dos citas se reservan juntas">👯 En pareja</span>' : ""}${p.description ? `<br/><span style="color:var(--color-muted);font-size:0.8rem;">${p.description}</span>` : ""}</td>
           <td><code class="code-chip">${p.code}</code></td>
           <td>${p.slug ? `<a href="/promo-${p.slug}" target="_blank" rel="noopener">/promo-${p.slug}</a>` : "—"}</td>
           <td>${formatDiscount(p)}</td>
@@ -322,7 +345,18 @@
         const res = await fetch("/api/save-promotion", {
           method: "POST",
           headers,
-          body: JSON.stringify({ id: promo.id, campaignName: promo.campaign_name, discountType: promo.discount_type, discountValue: promo.discount_value, startsAt: promo.starts_at, endsAt: promo.ends_at, maxRedemptions: promo.max_redemptions, active: !promo.active }),
+          body: JSON.stringify({
+            id: promo.id,
+            campaignName: promo.campaign_name,
+            discountType: promo.discount_type,
+            discountValue: promo.discount_value,
+            startsAt: promo.starts_at,
+            endsAt: promo.ends_at,
+            maxRedemptions: promo.max_redemptions,
+            active: !promo.active,
+            requiresPair: promo.requires_pair,
+            pairDepositAmount: promo.pair_deposit_amount,
+          }),
         });
         const body = await res.json();
         if (!res.ok) throw new Error(body.message || "No se pudo actualizar.");
@@ -357,6 +391,8 @@
       endsAt: document.getElementById("p-ends").value || null,
       maxRedemptions: document.getElementById("p-max").value || null,
       active: document.getElementById("p-active").value === "true",
+      requiresPair: requiresPairCheckbox.checked,
+      pairDepositAmount: requiresPairCheckbox.checked ? pairDepositInput.value || null : null,
     };
 
     try {

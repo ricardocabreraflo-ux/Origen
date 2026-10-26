@@ -579,3 +579,17 @@ create table if not exists instagram_posts (
   created_at timestamptz not null default now()
 );
 alter table instagram_posts enable row level security;
+
+-- Promociones "en pareja" (ej. "trae a tu amiga"): el código solo se
+-- puede aplicar si las dos citas se crean juntas en un mismo envío
+-- (ver create-booking-pair.js) — una clienta sola no puede usarlo.
+-- pair_deposit_amount, si se define, es el anticipo TOTAL de las dos
+-- citas (se reparte entre ambas); si se deja vacío, cada cita cobra el
+-- anticipo normal de su servicio, sin combinar nada.
+alter table promotions add column if not exists requires_pair boolean not null default false;
+alter table promotions add column if not exists pair_deposit_amount numeric;
+
+-- Liga cada cita de una pareja con la otra, para poder mostrarlo en el
+-- panel (Citas) y para que create-booking-pair.js pueda deshacer la
+-- primera inserción si la segunda falla.
+alter table bookings add column if not exists paired_booking_id uuid references bookings(id);
