@@ -24,7 +24,7 @@ exports.handler = async (event) => {
     const { data: promo, error: promoError } = await supabase
       .from("promotions")
       .select(
-        "code, campaign_name, discount_type, discount_value, active, starts_at, ends_at, max_redemptions, redemptions_count, requires_pair, pair_deposit_amount, service_ids"
+        "code, campaign_name, discount_type, discount_value, active, starts_at, ends_at, max_redemptions, redemptions_count, requires_pair, pair_deposit_amount, service_ids, is_package, package_total_sessions, package_price"
       )
       .eq("code", code)
       .maybeSingle();
@@ -52,6 +52,9 @@ exports.handler = async (event) => {
         return { statusCode: 200, body: JSON.stringify({ valid: false, message: "Ese código no aplica al servicio que elegiste." }) };
       }
       const pairMessage = promo.requires_pair ? " — debes agendar junto con tu amiga, en el mismo envío." : "";
+      const packageMessage = promo.is_package
+        ? `Paquete de ${promo.package_total_sessions} sesiones por $${promo.package_price} MXN — ${promo.campaign_name}`
+        : null;
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -62,7 +65,11 @@ exports.handler = async (event) => {
           discountValue: promo.discount_value,
           requiresPair: !!promo.requires_pair,
           pairDepositAmount: promo.pair_deposit_amount,
+          isPackage: !!promo.is_package,
+          packageTotalSessions: promo.package_total_sessions,
+          packagePrice: promo.package_price,
           message:
+            packageMessage ||
             (promo.discount_type === "percent"
               ? `${promo.discount_value}% de descuento — ${promo.campaign_name}`
               : `$${promo.discount_value} MXN de descuento — ${promo.campaign_name}`) + pairMessage,

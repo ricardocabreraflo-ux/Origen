@@ -778,6 +778,9 @@
         confirmationLoyaltyNote: document.getElementById("confirmation-loyalty-note"),
         confirmationPromoNote: document.getElementById("confirmation-promo-note"),
         confirmationTimer: document.getElementById("confirmation-timer"),
+        confirmationPrepaidNote: document.getElementById("confirmation-prepaid-note"),
+        paymentDivider: document.getElementById("payment-divider"),
+        transferDetails: document.getElementById("transfer-details"),
         promoCodeInput: document.getElementById("b-promo-code"),
         promoCodeHint: document.getElementById("promo-code-hint"),
         companionFields: document.getElementById("companion-fields"),
@@ -1054,6 +1057,7 @@
 
     function renderConfirmation(data) {
       const isPair = !!(data.a && data.b);
+      const isPrepaidSession = !isPair && data.packageSessionNumber && data.packageSessionNumber > 1;
       const reservationCode = isPair ? `${data.a.reservationCode} y ${data.b.reservationCode}` : data.reservationCode;
       const startTime = isPair ? data.a.startTime : data.startTime;
       const endTime = isPair ? data.b.endTime : data.endTime;
@@ -1064,6 +1068,19 @@
         ? `${data.serviceName} · ${formatDateReadable(data.date)} · ${data.a.customerName} ${data.a.startTime}–${data.a.endTime} · ${data.b.customerName} ${data.b.startTime}–${data.b.endTime}`
         : `${data.serviceName} · ${formatDateReadable(data.date)} · ${data.startTime} – ${data.endTime}`;
 
+      // Sesión 2 en adelante de un paquete ya pagado: no hay nada que
+      // transferir ni pagar en línea, solo confirmar que quedó agendada.
+      els.payOnlineBlock.hidden = isPair || isPrepaidSession;
+      els.paymentDivider.hidden = isPrepaidSession;
+      els.transferDetails.hidden = isPrepaidSession;
+      els.transferNote.hidden = isPrepaidSession;
+      if (isPrepaidSession) {
+        els.confirmationPrepaidNote.textContent = `✅ Esta es tu sesión ${data.packageSessionNumber} de ${data.packageTotalSessions} de tu paquete — ya está pagada, no necesitas transferir nada. Solo te esperamos en tu cita.`;
+        els.confirmationPrepaidNote.hidden = false;
+      } else {
+        els.confirmationPrepaidNote.hidden = true;
+      }
+
       if (!isPair && data.rewardRedemption) {
         els.confirmationLoyaltyNote.textContent = `🎁 Estás usando tu ${data.loyaltyDiscountPercent}% de descuento de lealtad — lo confirmamos junto con tu depósito.`;
         els.confirmationLoyaltyNote.hidden = false;
@@ -1071,7 +1088,14 @@
         els.confirmationLoyaltyNote.hidden = true;
       }
 
-      if (data.discountType) {
+      if (data.packageSessionNumber === 1) {
+        els.confirmationPromoNote.textContent = `🎟️ Compraste el paquete de ${data.packageTotalSessions} sesiones — esta es tu sesión 1. Las siguientes ya están pagadas.`;
+        els.confirmationPromoNote.hidden = false;
+        if (window.fbq) window.fbq("trackCustom", "PromoCodeUsed", { code: data.promoCode });
+        logMarketingEvent("promo_code_used", data.promoCode);
+      } else if (isPrepaidSession) {
+        els.confirmationPromoNote.hidden = true;
+      } else if (data.discountType) {
         const discountText =
           data.discountType === "percent" ? `${data.discountValue}% de descuento` : `${formatMoney(data.discountValue)} de descuento`;
         els.confirmationPromoNote.textContent = isPair
@@ -1101,16 +1125,27 @@
             `Horarios: ${data.a.startTime}–${data.a.endTime} y ${data.b.startTime}–${data.b.endTime}`,
             `Anticipo (las dos citas): ${formatMoney(depositAmount)}`,
           ].join("\n")
-        : [
-            `Hola ${getShortName()}, aquí está mi comprobante de transferencia.`,
-            `Código de reserva: ${data.reservationCode}`,
-            `Servicio: ${data.serviceName}`,
-            `Fecha: ${formatDateReadable(data.date)}`,
-            `Horario: ${data.startTime} – ${data.endTime}`,
-            `Anticipo: ${formatMoney(data.depositAmount)}`,
-          ].join("\n");
+        : isPrepaidSession
+          ? [
+              `Hola ${getShortName()}, confirmo mi sesión ${data.packageSessionNumber} de ${data.packageTotalSessions} de mi paquete.`,
+              `Código de reserva: ${data.reservationCode}`,
+              `Servicio: ${data.serviceName}`,
+              `Fecha: ${formatDateReadable(data.date)}`,
+              `Horario: ${data.startTime} – ${data.endTime}`,
+            ].join("\n")
+          : [
+              `Hola ${getShortName()}, aquí está mi comprobante de transferencia.`,
+              `Código de reserva: ${data.reservationCode}`,
+              `Servicio: ${data.serviceName}`,
+              `Fecha: ${formatDateReadable(data.date)}`,
+              `Horario: ${data.startTime} – ${data.endTime}`,
+              `Anticipo: ${formatMoney(data.depositAmount)}`,
+            ].join("\n");
       els.confirmationWhatsapp.href = contactLink(waMessage);
       els.confirmationWhatsapp.setAttribute("data-message", waMessage);
+      document.getElementById("confirmation-whatsapp-label").textContent = isPrepaidSession
+        ? "Confirmar por WhatsApp"
+        : "Enviar comprobante por WhatsApp";
       applyContactChannelToButton({
         iconId: "confirmation-whatsapp-icon",
         labelId: "confirmation-whatsapp-label",
@@ -1124,16 +1159,19 @@
         action: "TEMPLATE",
         text: `Cita: ${data.serviceName} en ${getShortName()}`,
         dates: `${toGCalDate(start)}/${toGCalDate(end)}`,
-        details: `Código de reserva ${reservationCode}. Recuerda llevar tu comprobante de transferencia.`,
+        details: isPrepaidSession
+          ? `Código de reserva ${reservationCode}. Sesión ${data.packageSessionNumber} de ${data.packageTotalSessions} de tu paquete — ya está pagada.`
+          : `Código de reserva ${reservationCode}. Recuerda llevar tu comprobante de transferencia.`,
         location: cfg.address,
       });
       els.confirmationCalendar.href = `https://calendar.google.com/calendar/render?${calParams.toString()}`;
 
       // El pago con tarjeta en línea cobra UNA cita — para una promoción
-      // en pareja (dos citas, un anticipo combinado) solo queda la opción
-      // de transferencia manual.
-      els.payOnlineBlock.hidden = isPair;
-      if (!isPair) {
+      // en pareja (dos citas, un anticipo combinado) o una sesión ya
+      // pagada de un paquete, solo queda la opción de transferencia
+      // manual (o, en el caso de la sesión ya pagada, ninguna).
+      els.payOnlineBlock.hidden = isPair || isPrepaidSession;
+      if (!isPair && !isPrepaidSession) {
         els.payOnlineHint.textContent = "";
         els.payOnlineHint.classList.remove("is-error");
         els.payOnlineBtn.disabled = false;

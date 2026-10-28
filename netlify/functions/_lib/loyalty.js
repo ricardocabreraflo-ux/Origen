@@ -29,7 +29,11 @@ function computeLoyaltyStatus(confirmedPhones, phoneRaw, loyaltyConfig) {
 }
 
 async function getLoyaltyStatus(supabase, loyaltyConfig, phoneRaw) {
-  const { data, error } = await supabase.from("bookings").select("customer_phone").eq("status", "confirmed");
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("customer_phone")
+    .eq("status", "confirmed")
+    .eq("loyalty_exempt", false);
   if (error) throw error;
   return computeLoyaltyStatus((data || []).map((b) => b.customer_phone), phoneRaw, loyaltyConfig);
 }

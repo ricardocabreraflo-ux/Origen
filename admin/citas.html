@@ -393,6 +393,10 @@
         <textarea id="mb-notes" rows="2"></textarea>
       </div>
       <div>
+        <label for="mb-promo-code">Código de promoción (opcional)</label>
+        <input type="text" id="mb-promo-code" placeholder="Ej. HALLOWEENRITUAL — para paquetes, lleva la cuenta de las sesiones sola" autocomplete="off" />
+      </div>
+      <div>
         <label>Forma de pago del anticipo</label>
         <div class="manual-payment-options">
           <label><input type="radio" name="mb-payment" value="transfer" checked /> Transferencia — queda pendiente hasta que llegue el comprobante (le mandamos WhatsApp pidiéndolo)</label>
@@ -970,7 +974,7 @@
       .map(
         (b) => `
         <tr data-id="${b.id}" class="booking-row">
-          <td>${b.reservation_code}${b.promo_code ? `<br/><span class="status-pill" style="background:#e8dcef;color:#5a2d7a;margin-top:4px;" title="${b.discount_type === "percent" ? b.discount_value + "% de descuento" : "$" + b.discount_value + " MXN de descuento"}">🏷️ ${b.promo_code}</span>` : ""}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}</td>
+          <td>${b.reservation_code}${b.promo_code ? `<br/><span class="status-pill" style="background:#e8dcef;color:#5a2d7a;margin-top:4px;" title="${b.discount_type === "percent" ? b.discount_value + "% de descuento" : "$" + b.discount_value + " MXN de descuento"}">🏷️ ${b.promo_code}${b.package_session_number ? ` (sesión ${b.package_session_number})` : ""}</span>` : ""}${b.reward_redemption ? '<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;">🎁 Canje de lealtad</span>' : ""}${paymentMethodBadge(b) ? `<br/>${paymentMethodBadge(b)}` : ""}${b.revenue_exempt ? `<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;">🎟️ Sin ingreso${b.revenue_exempt_reason ? " — " + b.revenue_exempt_reason : ""}</span>` : ""}${b.loyalty_exempt ? '<br/><span class="status-pill" style="background:#e6e2da;color:#5c5344;margin-top:4px;" title="No cuenta como visita nueva para la tarjeta de lealtad">🔁 No cuenta para lealtad</span>' : ""}</td>
           <td>${b.customer_name}<br/><span style="color:var(--color-muted)">${b.customer_phone}</span>${b.customer_email ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${b.customer_email}</span>` : ""}</td>
           <td>${b.service_name}${(Array.isArray(b.extra_services) ? b.extra_services : []).map((x) => `<br/><span style="color:var(--color-muted);font-size:0.78rem;">+ ${x.serviceName}</span>`).join("")}</td>
           <td>${formatDateTime(b.booking_date, b.start_time, b.end_time)}</td>
@@ -1156,6 +1160,7 @@
   const mbPhone = document.getElementById("mb-phone");
   const mbEmail = document.getElementById("mb-email");
   const mbNotes = document.getElementById("mb-notes");
+  const mbPromoCode = document.getElementById("mb-promo-code");
   const mbSubmit = document.getElementById("mb-submit");
   const mbHint = document.getElementById("mb-hint");
 
@@ -1267,6 +1272,7 @@
           customerEmail: mbEmail.value.trim(),
           notes: mbNotes.value.trim(),
           paymentMethod,
+          promoCode: mbPromoCode.value.trim(),
         }),
       });
       const body = await res.json();

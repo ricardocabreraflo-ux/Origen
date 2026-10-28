@@ -192,6 +192,24 @@
         <label for="p-pair-deposit">Anticipo total para las dos citas (opcional)</label>
         <input type="number" id="p-pair-deposit" min="1" step="1" placeholder="Ej. 300 — se reparte entre las dos" />
       </div>
+      <div class="full">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:normal;">
+          <input type="checkbox" id="p-is-package" style="width:auto;" />
+          Es un paquete de varias sesiones (ej. "6 sesiones por $999") — el cupo es por clienta, no global
+        </label>
+      </div>
+      <div id="p-package-sessions-row" hidden>
+        <label for="p-package-sessions">Número de sesiones incluidas</label>
+        <input type="number" id="p-package-sessions" min="2" step="1" placeholder="Ej. 6" />
+      </div>
+      <div id="p-package-price-row" hidden>
+        <label for="p-package-price">Precio total del paquete</label>
+        <input type="number" id="p-package-price" min="1" step="1" placeholder="Ej. 999" />
+      </div>
+      <div id="p-package-deposit-row" hidden>
+        <label for="p-package-deposit">Anticipo de la primera sesión (opcional)</label>
+        <input type="number" id="p-package-deposit" min="1" step="1" placeholder="Si lo dejas vacío, cobra el anticipo normal del servicio" />
+      </div>
       <div class="full form-actions">
         <button type="submit" class="btn btn-primary" id="promo-submit">Crear campaña</button>
         <button type="button" class="btn btn-outline" id="promo-cancel-edit" hidden>Cancelar edición</button>
@@ -341,6 +359,25 @@
     if (!requiresPairCheckbox.checked) pairDepositInput.value = "";
   });
 
+  const isPackageCheckbox = document.getElementById("p-is-package");
+  const packageSessionsRow = document.getElementById("p-package-sessions-row");
+  const packageSessionsInput = document.getElementById("p-package-sessions");
+  const packagePriceRow = document.getElementById("p-package-price-row");
+  const packagePriceInput = document.getElementById("p-package-price");
+  const packageDepositRow = document.getElementById("p-package-deposit-row");
+  const packageDepositInput = document.getElementById("p-package-deposit");
+  isPackageCheckbox.addEventListener("change", () => {
+    const on = isPackageCheckbox.checked;
+    packageSessionsRow.hidden = !on;
+    packagePriceRow.hidden = !on;
+    packageDepositRow.hidden = !on;
+    if (!on) {
+      packageSessionsInput.value = "";
+      packagePriceInput.value = "";
+      packageDepositInput.value = "";
+    }
+  });
+
   function resetForm() {
     form.reset();
     document.getElementById("p-id").value = "";
@@ -348,6 +385,10 @@
     document.getElementById("p-active").value = "true";
     requiresPairCheckbox.checked = false;
     pairDepositRow.hidden = true;
+    isPackageCheckbox.checked = false;
+    packageSessionsRow.hidden = true;
+    packagePriceRow.hidden = true;
+    packageDepositRow.hidden = true;
     setCheckedServiceIds([]);
     formTitle.textContent = "Nueva campaña";
     submitBtn.textContent = "Crear campaña";
@@ -371,6 +412,13 @@
     requiresPairCheckbox.checked = !!p.requires_pair;
     pairDepositRow.hidden = !p.requires_pair;
     pairDepositInput.value = p.pair_deposit_amount || "";
+    isPackageCheckbox.checked = !!p.is_package;
+    packageSessionsRow.hidden = !p.is_package;
+    packagePriceRow.hidden = !p.is_package;
+    packageDepositRow.hidden = !p.is_package;
+    packageSessionsInput.value = p.package_total_sessions || "";
+    packagePriceInput.value = p.package_price || "";
+    packageDepositInput.value = p.package_deposit_amount || "";
     setCheckedServiceIds(p.service_ids);
     formTitle.textContent = `Editar "${p.campaign_name}"`;
     submitBtn.textContent = "Guardar cambios";
@@ -407,7 +455,7 @@
       .map(
         (p) => `
         <tr data-id="${p.id}">
-          <td><strong>${p.campaign_name}</strong>${p.requires_pair ? '<br/><span class="status-pill" style="background:#e8dcef;color:#5a2d7a;margin-top:4px;" title="Solo se puede usar si las dos citas se reservan juntas">👯 En pareja</span>' : ""}${p.description ? `<br/><span style="color:var(--color-muted);font-size:0.8rem;">${p.description}</span>` : ""}</td>
+          <td><strong>${p.campaign_name}</strong>${p.requires_pair ? '<br/><span class="status-pill" style="background:#e8dcef;color:#5a2d7a;margin-top:4px;" title="Solo se puede usar si las dos citas se reservan juntas">👯 En pareja</span>' : ""}${p.is_package ? `<br/><span class="status-pill" style="background:#f0dcc0;color:#7a4a12;margin-top:4px;" title="Cupo de ${p.package_total_sessions || "?"} sesiones por clienta">🎟️ Paquete de ${p.package_total_sessions || "?"} sesiones</span>` : ""}${p.description ? `<br/><span style="color:var(--color-muted);font-size:0.8rem;">${p.description}</span>` : ""}</td>
           <td><code class="code-chip">${p.code}</code></td>
           <td>${p.slug ? `<a href="/promo-${p.slug}" target="_blank" rel="noopener">/promo-${p.slug}</a>` : "—"}</td>
           <td>${formatDiscount(p)}${Array.isArray(p.service_ids) && p.service_ids.length ? `<br/><span style="color:var(--color-muted);font-size:0.76rem;">${formatServiceNames(p.service_ids)}</span>` : ""}</td>
@@ -457,6 +505,10 @@
             requiresPair: promo.requires_pair,
             pairDepositAmount: promo.pair_deposit_amount,
             serviceIds: promo.service_ids,
+            isPackage: promo.is_package,
+            packageTotalSessions: promo.package_total_sessions,
+            packagePrice: promo.package_price,
+            packageDepositAmount: promo.package_deposit_amount,
           }),
         });
         const body = await res.json();
@@ -495,6 +547,10 @@
       requiresPair: requiresPairCheckbox.checked,
       pairDepositAmount: requiresPairCheckbox.checked ? pairDepositInput.value || null : null,
       serviceIds: getCheckedServiceIds(),
+      isPackage: isPackageCheckbox.checked,
+      packageTotalSessions: isPackageCheckbox.checked ? packageSessionsInput.value || null : null,
+      packagePrice: isPackageCheckbox.checked ? packagePriceInput.value || null : null,
+      packageDepositAmount: isPackageCheckbox.checked ? packageDepositInput.value || null : null,
     };
 
     try {

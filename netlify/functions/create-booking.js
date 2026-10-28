@@ -81,6 +81,27 @@ async function resolvePromoOrReferralCode(supabase, rawCode, customerPhone, serv
     if (Array.isArray(promo.service_ids) && promo.service_ids.length && !promo.service_ids.includes(serviceId)) {
       throw new CodeError("Ese código no aplica al servicio que elegiste.");
     }
+
+    if (promo.is_package) {
+      // El cupo de un código "paquete" es POR CLIENTA, no global — se
+      // cuenta cuántas citas activas (no canceladas/vencidas) de ESTE
+      // teléfono ya usaron este código, sin importar quién las haya
+      // creado (la clienta o la administradora desde el panel).
+      const target = last10(customerPhone);
+      const { data: priorUses, error: priorUsesError } = await supabase
+        .from("bookings")
+        .select("customer_phone")
+        .eq("promo_code", promo.code)
+        .in("status", ["pending", "confirmed"]);
+      if (priorUsesError) throw priorUsesError;
+      const sessionsUsed = (priorUses || []).filter((b) => last10(b.customer_phone) === target).length;
+      const totalSessions = promo.package_total_sessions || 1;
+      if (sessionsUsed >= totalSessions) {
+        throw new CodeError(`Ya usaste las ${totalSessions} sesiones de este paquete.`);
+      }
+      return { kind: "promotion", promotion: promo, packageSessionNumber: sessionsUsed + 1 };
+    }
+
     return { kind: "promotion", promotion: promo };
   }
 
@@ -228,6 +249,26 @@ exports.handler = async (event) => {
       reward_redemption: loyaltyStatus.hasReward,
     };
 
+    // Paquete de varias sesiones por un precio fijo (ej. "6 sesiones por
+    // $999"): la primera sesión cobra el anticipo/total del paquete
+    // completo; de la 2a en adelante ya está pagado — no se cobra de
+    // nuevo, no cuenta como ingreso nuevo y tampoco cuenta otra vez para
+    // la tarjeta de lealtad (el paquete completo cuenta como 1 visita).
+    if (codeResult.packageSessionNumber) {
+      const promo = codeResult.promotion;
+      row.package_session_number = codeResult.packageSessionNumber;
+      if (codeResult.packageSessionNumber === 1) {
+        row.deposit_amount = promo.package_deposit_amount || service.depositAmount;
+        row.total_amount = promo.package_price || row.total_amount;
+      } else {
+        row.deposit_amount = 0;
+        row.total_amount = 0;
+        row.revenue_exempt = true;
+        row.revenue_exempt_reason = `Sesión ${codeResult.packageSessionNumber}/${promo.package_total_sessions} del paquete ${promo.campaign_name}`;
+        row.loyalty_exempt = true;
+      }
+    }
+
     const { data, error } = await supabase.from("bookings").insert(row).select().single();
 
     if (error) {
@@ -329,6 +370,8 @@ exports.handler = async (event) => {
         promoCode: data.promo_code,
         discountType: data.discount_type,
         discountValue: data.discount_value,
+        packageSessionNumber: data.package_session_number,
+        packageTotalSessions: codeResult.packageSessionNumber ? codeResult.promotion.package_total_sessions : undefined,
       }),
     };
   } catch (err) {

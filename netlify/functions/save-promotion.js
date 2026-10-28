@@ -60,6 +60,27 @@ exports.handler = async (event, context) => {
     }
   }
 
+  const isPackage = payload.isPackage === true;
+  let packageTotalSessions = null;
+  let packagePrice = null;
+  let packageDepositAmount = null;
+  if (isPackage) {
+    packageTotalSessions = Number(payload.packageTotalSessions);
+    if (!Number.isInteger(packageTotalSessions) || packageTotalSessions < 2) {
+      return badRequest("El número de sesiones del paquete debe ser un número entero de al menos 2.");
+    }
+    packagePrice = Number(payload.packagePrice);
+    if (!Number.isFinite(packagePrice) || packagePrice <= 0) {
+      return badRequest("El precio del paquete debe ser un número mayor a 0.");
+    }
+    if (payload.packageDepositAmount !== undefined && payload.packageDepositAmount !== null && payload.packageDepositAmount !== "") {
+      packageDepositAmount = Number(payload.packageDepositAmount);
+      if (!Number.isFinite(packageDepositAmount) || packageDepositAmount <= 0) {
+        return badRequest("El anticipo de la primera sesión debe ser un número mayor a 0.");
+      }
+    }
+  }
+
   try {
     const supabase = getServiceClient();
 
@@ -75,6 +96,10 @@ exports.handler = async (event, context) => {
       requires_pair: requiresPair,
       pair_deposit_amount: requiresPair ? pairDepositAmount : null,
       service_ids: serviceIds,
+      is_package: isPackage,
+      package_total_sessions: isPackage ? packageTotalSessions : null,
+      package_price: isPackage ? packagePrice : null,
+      package_deposit_amount: isPackage ? packageDepositAmount : null,
     };
 
     if (payload.id) {

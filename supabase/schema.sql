@@ -600,3 +600,26 @@ alter table promotions add column if not exists service_ids jsonb;
 -- panel (Citas) y para que create-booking-pair.js pueda deshacer la
 -- primera inserción si la segunda falla.
 alter table bookings add column if not exists paired_booking_id uuid references bookings(id);
+
+-- Promociones "paquete" (ej. "Halloween Brow Ritual": 6 sesiones por
+-- $999): a diferencia de un código normal, el cupo de usos es POR
+-- CLIENTA (su teléfono), no global — cada clienta que use el código
+-- tiene derecho a package_total_sessions citas. La primera cita cobra
+-- package_deposit_amount de anticipo y package_price como total (el
+-- paquete completo); de la 2a en adelante quedan en $0, marcadas sin
+-- ingreso (ya se pagaron) y sin contar para la tarjeta de lealtad — el
+-- paquete completo cuenta como una sola visita, no seis.
+alter table promotions add column if not exists is_package boolean not null default false;
+alter table promotions add column if not exists package_total_sessions integer;
+alter table promotions add column if not exists package_price numeric;
+alter table promotions add column if not exists package_deposit_amount numeric;
+
+-- Cuántas de las sesiones de un paquete lleva usadas esta cita (ej. 3 de
+-- 6) — solo se llena cuando promo_code es de una promoción is_package.
+alter table bookings add column if not exists package_session_number integer;
+
+-- Si esta cita NO debe contar como una visita más para la tarjeta de
+-- lealtad (ej. sesión 2-6 de un paquete, que ya cuenta desde la sesión
+-- 1) — mismo patrón que revenue_exempt, pero para lealtad en vez de
+-- dinero.
+alter table bookings add column if not exists loyalty_exempt boolean not null default false;

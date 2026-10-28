@@ -18,6 +18,7 @@ const { runPostConfirmSideEffects } = require("./_lib/confirmBooking");
 const { parsePriceAmount } = require("./_lib/money");
 const { getBlocksForDate } = require("./_lib/scheduleBlocks");
 const { getOpeningForDate } = require("./_lib/scheduleOpenings");
+const { CodeError, resolvePackagePromo } = require("./_lib/packagePromo");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UNIQUE_VIOLATION = "23505";
@@ -64,6 +65,7 @@ exports.handler = async (event, context) => {
     totalAmount,
     durationMinutes,
     notifyLoyalty,
+    promoCode,
   } = payload;
 
   if (!serviceId || typeof serviceId !== "string") return badRequest("Falta el servicio.");
@@ -142,7 +144,21 @@ exports.handler = async (event, context) => {
     // que ambos confirman la cita de inmediato igual que antes solo hacía
     // "cash" — la diferencia entre los dos queda en payment_method, para
     // que Finanzas/Reportes los distinga.
-    const isPaidNow = paymentMethod === "cash" || paymentMethod === "card" || isPast;
+    let packageResult = null;
+    if (promoCode && promoCode.trim()) {
+      try {
+        packageResult = await resolvePackagePromo(supabase, promoCode, customerPhone, serviceId);
+      } catch (err) {
+        if (err instanceof CodeError) return badRequest(err.message);
+        throw err;
+      }
+    }
+    const packageSessionNumber = packageResult && packageResult.packageSessionNumber;
+
+    // Una sesión 2+ de un paquete ya está pagada desde la primera vez —
+    // se confirma de una vez, sin esperar depósito, sin importar qué
+    // forma de pago se haya marcado en el formulario.
+    const isPaidNow = paymentMethod === "cash" || paymentMethod === "card" || isPast || packageSessionNumber > 1;
     const now = new Date();
     const loyaltyStatus = await getLoyaltyStatus(supabase, config.loyalty, customerPhone);
     const effectiveTotalAmount =
@@ -168,6 +184,26 @@ exports.handler = async (event, context) => {
       payment_method: isPast ? "cash" : paymentMethod === "card" ? "mercado_pago" : paymentMethod === "cash" ? "cash" : "bank_transfer",
       reward_redemption: loyaltyStatus.hasReward,
     };
+
+    if (packageResult) {
+      const promo = packageResult.promo;
+      row.promo_code = promo.code;
+      row.discount_type = promo.discount_type;
+      row.discount_value = promo.discount_value;
+      if (packageSessionNumber) {
+        row.package_session_number = packageSessionNumber;
+        if (packageSessionNumber === 1) {
+          row.deposit_amount = promo.package_deposit_amount || service.depositAmount;
+          row.total_amount = promo.package_price || row.total_amount;
+        } else {
+          row.deposit_amount = 0;
+          row.total_amount = 0;
+          row.revenue_exempt = true;
+          row.revenue_exempt_reason = `Sesión ${packageSessionNumber}/${promo.package_total_sessions} del paquete ${promo.campaign_name}`;
+          row.loyalty_exempt = true;
+        }
+      }
+    }
 
     const { data, error } = await supabase.from("bookings").insert(row).select().single();
 
