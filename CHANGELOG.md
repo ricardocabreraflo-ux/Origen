@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.6.0 — 2026-10-28
+Nuevo: promociones "paquete" (ej. "6 sesiones por $999"). En Promos hay un nuevo checkbox "Es un paquete de varias sesiones" — el cupo es por clienta, no global: cada una que use el código tiene derecho a sus N sesiones. La primera paga el paquete completo; de la 2a en adelante ya están pagadas (sin pedir transferencia, sin contar como ingreso nuevo, y sin contar otra vez para la tarjeta de lealtad). Funciona tanto si la clienta agenda sola en la página como si tú agendas las siguientes sesiones a mano desde Citas.
+
 ## 1.5.1 — 2026-10-26
 Corrección: Promos y Sorteos se habían quedado con el menú lateral viejo (de antes de fijarlo en computadora) — por eso en pantallas de escritorio se veía angosto y con texto cortado. Ahora las dos páginas se comportan igual que el resto del panel: fijo y completo en computadora, oculto hasta tocarlo en celular.
 
