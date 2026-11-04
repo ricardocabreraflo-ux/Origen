@@ -202,6 +202,9 @@
   .pill{ display:inline-block; padding:3px 10px; border-radius:100px; font-size:0.68rem; font-weight:700; }
   .pill.ok{ background:var(--ok-bg); color:var(--ok); }
   .pill.warn{ background:var(--warn-bg); color:var(--warn); }
+  .pill.purple{ background:#e8dcef; color:#5a2d7a; }
+  .pill.info{ background:var(--info-bg); color:var(--info); }
+  .pill.neutral{ background:var(--gold-ghost); color:var(--gold-dark); }
   .muted-cell{ color:var(--muted); }
 
   .mk-modal{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 22px; max-width:420px; box-shadow:var(--shadow); }
@@ -278,8 +281,11 @@
     <a href="citas.html" class="is-current">📅 Citas</a>
     <a href="clientas.html">👥 Clientas</a>
     <a href="lealtad.html">🎁 Lealtad</a>
+    <a href="promos.html">🏷️ Promos</a>
+    <a href="sorteos.html">🎉 Sorteos</a>
     <a href="reportes.html">📊 Reportes</a>
     <a href="finanzas.html">💰 Finanzas</a>
+    <a href="configuracion.html">⚙️ Configuración</a>
     </nav>
   </div>
 <div class="hero">
@@ -290,7 +296,7 @@
     <div class="hero-meta">
       <span class="hero-chip">📍 <b>admin/citas.html</b></span>
       <span class="hero-chip">🧭 12 partes</span>
-      <span class="hero-chip">⚠️ 8 puntos donde te puedes atorar — ver el resumen al final</span>
+      <span class="hero-chip">⚠️ 10 puntos donde te puedes atorar — ver el resumen al final</span>
     </div>
   </div>
 </div>
@@ -319,7 +325,7 @@
     <!-- 1 -->
     <section class="step" id="llegar">
       <div class="step-head"><span class="step-num">01</span><h2>Cómo llegar a Citas</h2></div>
-      <p class="step-intro">Citas es lo primero del menú lateral y la página con la que abre el panel. El menú vive angosto (solo iconos) y se abre solo al pasar el mouse — por diseño, para no robarle espacio a la tabla.</p>
+      <p class="step-intro">Citas es lo primero del menú lateral y la página con la que abre el panel. En computadora, el menú ahora se queda <strong>abierto con texto por default</strong>; en celular y tablet se queda angosto (solo iconos) y se expande al tocarlo.</p>
 
       <div class="mk rep-dark">
         <div class="mk-sidebar-row">
@@ -333,7 +339,7 @@
               <div class="sb-link"><span class="sb-icon">💰</span></div>
               <div class="sb-link"><span class="sb-icon">✏️</span></div>
             </div>
-            <span class="mk-sidebar-label">En reposo <span class="tag">1</span></span>
+            <span class="mk-sidebar-label">Angosto en celular/tablet <span class="tag">1</span></span>
           </div>
           <div class="mk-sidebar-col">
             <div class="mk-sidebar is-open">
@@ -350,19 +356,24 @@
               <div class="sb-link"><span class="sb-icon">💰</span><span>Finanzas</span></div>
               <div class="sb-link"><span class="sb-icon">✏️</span><span>Contenido</span></div>
             </div>
-            <span class="mk-sidebar-label">Al pasar el mouse / con el pin 📌 <span class="tag">2</span></span>
+            <span class="mk-sidebar-label">Siempre abierto en computadora, o con el pin 📌 <span class="tag">2</span></span>
           </div>
         </div>
       </div>
 
       <ol class="legend">
-        <li><span class="tag">1</span><div><strong>Riel angosto por defecto.</strong><span class="d">Solo se ven los iconos. Es normal — no está roto, así ahorra espacio en pantallas chicas.</span></div></li>
-        <li><span class="tag">2</span><div><strong>Se expande al pasar el mouse (o con el pin 📌).</strong><span class="d">El pin fija el menú abierto aunque quites el mouse — útil si vas a estar navegando entre secciones seguido. Vuelve a tocarlo para soltarlo.</span></div></li>
+        <li><span class="tag">1</span><div><strong>Riel angosto solo en pantallas chicas.</strong><span class="d">En celular o tablet solo se ven los iconos hasta que lo tocas. Es normal — no está roto, así ahorra espacio.</span></div></li>
+        <li><span class="tag">2</span><div><strong>En computadora queda fijo abierto, con el pin 📌 también disponible en pantallas chicas.</strong><span class="d">El botón 📌 lo fija abierto manualmente (o lo suelta, si lo vuelves a tocar) — útil en celular/tablet si vas a estar navegando entre secciones seguido.</span></div></li>
       </ol>
 
       <div class="callout tip">
         <span class="ic">💡</span>
         <p>La flechita <strong>›</strong> junto a "Citas" no navega a otra página: despliega un submenú con 3 accesos directos — <strong>Bloqueos de horario</strong>, <strong>Horario especial</strong> y <strong>Lista de espera</strong>. Son atajos que abren la misma ventana emergente que sus botones gemelos del encabezado (parte 8, 9 y 10 de este recorrido), no páginas nuevas.</p>
+      </div>
+
+      <div class="callout tip">
+        <span class="ic">👤</span>
+        <p>Junto a tu nombre, abajo del menú lateral, hay un indicador de <strong>quién más tiene el panel abierto en este momento</strong> — tócalo para ver la lista de sesiones activas. Útil para saber si alguien más está capturando una cita al mismo tiempo que tú.</p>
       </div>
     </section>
 
@@ -420,6 +431,11 @@
             <div class="day closed"><span>9 <span class="tag">4</span></span></div>
             <div class="day"><span>10</span></div><div class="day"><span>11</span></div><div class="day"><span>12</span></div>
           </div>
+          <div class="mk-cal-totals" style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;"><span style="display:block;font-size:0.65rem;color:var(--muted);text-transform:uppercase;">Citas confirmadas</span><span style="font-family:var(--font-head);font-size:1.1rem;font-weight:600;">24</span></div>
+            <div style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;"><span style="display:block;font-size:0.65rem;color:var(--muted);text-transform:uppercase;">Anticipos</span><span style="font-family:var(--font-head);font-size:1.1rem;font-weight:600;">$3,600 MXN</span></div>
+            <div style="flex:1;min-width:150px;background:var(--gold-ghost);border:1px solid var(--border);border-radius:10px;padding:8px 12px;"><span style="display:block;font-size:0.65rem;color:var(--gold-dark);text-transform:uppercase;">Total cobrado del mes <span class="tag">5</span></span><span style="font-family:var(--font-head);font-size:1.1rem;font-weight:600;color:var(--gold-dark);">$18,240 MXN</span></div>
+          </div>
         </div>
       </div>
 
@@ -428,18 +444,19 @@
         <li><span class="tag">2</span><div><strong>"Ver todo el mes"</strong><span class="d">Limpia el filtro de un día específico y pone el filtro de mes en el que estás viendo, para que la tabla muestre todas las citas del mes en vez de un solo día.</span></div></li>
         <li><span class="tag">3</span><div><strong>Puntitos e ingreso del día</strong><span class="d">Un puntito verde = cita confirmada, ámbar = pendiente. El número es la suma de lo cobrado ese día (solo citas confirmadas y con ingreso). Tocar el día filtra la tabla a esa fecha.</span></div></li>
         <li><span class="tag">4</span><div><strong>Días rayados</strong><span class="d">Son días cerrados según el horario del negocio (ej. lunes). Igual se pueden tocar para ver si hay algo agendado ahí por un horario especial.</span></div></li>
+        <li><span class="tag">5</span><div><strong>Los 3 chips debajo del calendario</strong><span class="d">Citas confirmadas, anticipos recibidos y total cobrado — siempre del <strong>mes completo que estás viendo arriba</strong>, sin importar qué filtros tenga puesta la tabla de abajo (parte 4). Las citas marcadas como "sin ingreso" (acción de la parte 6) no suman en el total cobrado.</span></div></li>
       </ol>
 
       <div class="callout tip">
         <span class="ic">💡</span>
-        <p>Tocar un día del calendario y usar el filtro de fecha de la parte 4 hacen exactamente lo mismo — son dos caminos al mismo resultado, así que no hace falta usar los dos.</p>
+        <p>Tocar un día del calendario y usar el filtro de fecha de la parte 4 hacen exactamente lo mismo — son dos caminos al mismo resultado, así que no hace falta usar los dos. Los 3 chips de totales no cambian al hacer eso — solo cambian si navegas a otro mes con ‹ ›.</p>
       </div>
     </section>
 
     <!-- 4 -->
     <section class="step" id="filtros">
       <div class="step-head"><span class="step-num">04</span><h2>Filtros de la tabla</h2></div>
-      <p class="step-intro">Debajo del calendario, independientes de él salvo cuando tocas un día.</p>
+      <p class="step-intro">Debajo del calendario, independientes de él salvo cuando tocas un día. <strong>Al entrar a Citas, el filtro de mes ya viene puesto en el mes actual</strong> — la tabla no abre mostrando "todos los estados, todas las fechas" como antes, sino ya filtrada al mes de hoy.</p>
 
       <div class="mk">
         <div class="mk-filters">
@@ -461,6 +478,11 @@
         <span class="ic">⚠️</span>
         <p><strong>Punto donde te puedes atorar:</strong> el filtro de fecha y el de mes se pisan entre sí. Si tenías un día elegido y luego escoges un mes, el día se borra solo (y al revés). No es un bug — es porque muestran cosas distintas y no tendría sentido combinarlos.</p>
       </div>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Si buscas una cita de un mes anterior y no la ves en la tabla, revisa primero el filtro de mes — lo más probable es que siga puesto en el mes actual (es el valor con el que abre la página) y simplemente haya que cambiarlo o borrarlo.</p>
+      </div>
     </section>
 
     <!-- 5 -->
@@ -473,19 +495,19 @@
           <thead><tr><th>Código</th><th>Cliente</th><th>Servicio</th><th>Fecha / horario</th><th>Precio lista</th><th>Anticipo</th><th>Cobrado</th><th>Desc.</th><th>Estado</th><th>Pagado</th></tr></thead>
           <tbody>
             <tr>
-              <td>ORB-2461</td>
+              <td>ORB-2461<br/><span class="pill purple" title="15% de descuento" style="margin-top:4px;">🏷️ VERANO15 <span class="tag">2</span></span><br/><span class="pill info" style="margin-top:4px;">🏦 Transferencia <span class="tag">3</span></span></td>
               <td>Fernanda Ríos<br><span class="muted-cell">55 1122 3344</span></td>
-              <td>Diseñando tu ORIGEN</td>
+              <td>Diseñando tu ORIGEN<br/><span class="muted-cell" style="font-size:0.78rem;">+ Retoque de henna <span class="tag">4</span></span></td>
               <td>Sáb 7 mar · 11:00–11:40</td>
               <td>$349 MXN</td>
               <td>$100 MXN</td>
-              <td>$349 MXN</td>
-              <td class="muted-cell">Sin descuento</td>
+              <td>$296.65 MXN</td>
+              <td>15%</td>
               <td><span class="pill ok">Confirmada</span></td>
               <td>✅</td>
             </tr>
             <tr>
-              <td>ORB-2465</td>
+              <td>ORB-2465<br/><span class="pill neutral" title="No cuenta como visita nueva para la tarjeta de lealtad" style="margin-top:4px;">🔁 No cuenta para lealtad <span class="tag">5</span></span></td>
               <td>Karla Domínguez<br><span class="muted-cell">55 9988 7766</span></td>
               <td>Luxury Brow Lamination</td>
               <td>Sáb 7 mar · 13:00–14:15</td>
@@ -503,6 +525,10 @@
 
       <ol class="legend">
         <li><span class="tag">1</span><div><strong>Columna "Pagado" (✅ / ☐)</strong><span class="d">Es independiente del "Estado" de la cita. Una cita puede estar <em>confirmada</em> (el anticipo llegó) pero no <em>pagada</em> del todo (falta liquidar el resto en el salón). Tocar el icono la marca/desmarca al instante, sin abrir ningún modal.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Etiqueta morada 🏷️</strong><span class="d">Aparece debajo del código cuando la cita usó un código de promoción (ver el tutorial de <a href="promos.html">Promos</a>). Al pasar el mouse muestra el porcentaje o monto de descuento; si el código era de un paquete de varias sesiones, también indica el número de sesión.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Etiqueta de forma de pago (💵/🏦/💳)</strong><span class="d">Efectivo, transferencia o tarjeta/terminal — lo que se haya elegido al agendar o editar la cita. También puede aparecer 🎁 "Canje de lealtad" si el servicio se cubrió con puntos de lealtad en vez de dinero.</span></div></li>
+        <li><span class="tag">4</span><div><strong>Líneas "+ Servicio" debajo del servicio principal</strong><span class="d">Son los "servicios adicionales" que se le agregaron a la cita desde el modal de edición (parte 11) — por ejemplo, un retoque que se hizo en el mismo turno. No tienen su propia fila ni horario; solo suman al monto total de esa misma cita.</span></div></li>
+        <li><span class="tag">5</span><div><strong>Etiqueta gris 🔁 "No cuenta para lealtad"</strong><span class="d">Marca que esa visita, aunque sí generó ingreso, no suma como visita nueva en la tarjeta de lealtad de la clienta (útil para retoques de cortesía, por ejemplo). También puede aparecer 🎟️ "Sin ingreso" si además se marcó así desde las acciones de la parte 6.</span></div></li>
       </ol>
 
       <div class="callout warn">
@@ -559,8 +585,8 @@
           <ul class="cmp-list">
             <li>Solo deja elegir horarios <strong>realmente disponibles</strong> — igual que en la web pública.</li>
             <li>Fecha siempre <strong>hoy en adelante</strong> (respeta el máximo de meses a futuro configurado).</li>
-            <li>Si el pago es por <strong>transferencia</strong>, la cita queda "Pendiente" hasta que confirmes el depósito.</li>
-            <li>Si el pago es en <strong>efectivo</strong>, se confirma de una vez.</li>
+            <li>Forma de pago: <strong>efectivo, transferencia o tarjeta/terminal</strong> <span class="tag">1</span>. Con transferencia, la cita queda "Pendiente" hasta que confirmes el depósito; con efectivo o tarjeta se confirma de una vez.</li>
+            <li>Tiene un campo opcional de <strong>código de promoción</strong> <span class="tag">2</span> — si la clienta trae uno, se escribe ahí y el descuento se aplica solo.</li>
             <li>No permite tocar el monto ni la duración a mano.</li>
           </ul>
         </div>
@@ -570,12 +596,18 @@
           <ul class="cmp-list">
             <li>La fecha <strong>puede ser pasada</strong> — no valida disponibilidad real.</li>
             <li>Hora, duración y monto son <strong>libres</strong>, editables a mano (útiles para el "Servicio Especial").</li>
+            <li>Forma de pago: también <strong>efectivo, transferencia o tarjeta/terminal</strong> <span class="tag">1</span>, pero aquí es solo para tu registro — no cambia el estado de la cita.</li>
             <li><strong>Nunca le manda WhatsApp a la clienta</strong> — ni confirmación, ni recordatorio.</li>
             <li>Trae una casilla aparte para avisarle por WhatsApp su lealtad actualizada, si quieres.</li>
-            <li>Queda "Confirmada" de inmediato.</li>
+            <li>Queda "Confirmada" de inmediato. <strong>No tiene campo de código de promoción</strong> — eso solo existe en "Agendar manualmente".</li>
           </ul>
         </div>
       </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Nueva opción "Tarjeta/Terminal"</strong><span class="d">Se agregó junto a efectivo y transferencia en los dos formularios — para cuando se cobra con la terminal del salón en vez de efectivo o transferencia bancaria.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Código de promoción, solo en "Agendar manualmente"</strong><span class="d">Si necesitas aplicarle un código de promoción a una cita que vas a registrar con "Registrar cita directa", no hay campo para eso ahí — tendrías que crearla con "Agendar manualmente" o aplicar el descuento a mano desde "Editar cita" (parte 11).</span></div></li>
+      </ol>
 
       <div class="callout tip">
         <span class="ic">💡</span>
@@ -597,7 +629,7 @@
             <div><label>Hasta (opcional)</label><span class="mk-field">—</span></div>
           </div>
           <div class="mk-check" style="margin-bottom:10px;"><span class="box"></span> Bloquear el/los día(s) completo(s) <span class="tag">2</span></div>
-          <div class="mk-form-row"><label>Motivo (opcional)</label><span class="mk-field">Cita médica</span></div>
+          <div class="mk-form-row"><label>Motivo (opcional, solo para ti — no lo ve la clienta) <span class="tag">4</span></label><span class="mk-field">Cita médica</span></div>
           <span class="mk-btn primary">Agregar bloqueo <span class="tag">3</span></span>
         </div>
       </div>
@@ -606,6 +638,7 @@
         <li><span class="tag">1</span><div><strong>"Desde" y "Hasta" (fecha)</strong><span class="d">"Hasta" es opcional y solo se llena si el bloqueo cubre varios días seguidos (ej. vacaciones de una semana).</span></div></li>
         <li><span class="tag">2</span><div><strong>Casilla "día completo"</strong><span class="d">Viene marcada por default. Al desmarcarla aparecen dos campos de hora (Desde / Hasta) para bloquear solo un rango, como "cerrado de 2 a 4pm".</span></div></li>
         <li><span class="tag">3</span><div><strong>Calendario de arriba del formulario</strong><span class="d">Los días con bloqueo se ven resaltados: relleno sólido si está bloqueado todo el día, rayado si es solo una parte. Tocar un día lo selecciona y muestra abajo sus bloqueos existentes con un botón para eliminarlos.</span></div></li>
+        <li><span class="tag">4</span><div><strong>Motivo, siempre privado</strong><span class="d">La etiqueta ahora lo aclara directo en el formulario: lo que escribas aquí es solo para tu propia referencia interna (o la de tu equipo) — la clienta nunca lo ve, aunque su intento de agendar caiga justo en ese bloqueo.</span></div></li>
       </ol>
 
       <div class="callout warn">
@@ -683,44 +716,67 @@
     <!-- 11 -->
     <section class="step" id="editar">
       <div class="step-head"><span class="step-num">11</span><h2>Editar una cita</h2></div>
-      <p class="step-intro">Corrige servicio, fecha, hora, datos de la clienta o el monto de una cita ya existente. No manda ningún WhatsApp por estos cambios.</p>
+      <p class="step-intro">Corrige servicio, fecha, hora, datos de la clienta, forma de pago o el monto de una cita ya existente — incluyendo agregarle o quitarle servicios extra. No manda ningún WhatsApp por estos cambios.</p>
 
       <div class="mk">
-        <div class="mk-modal" style="max-width:420px;">
+        <div class="mk-modal" style="max-width:460px;">
           <h3>Editar cita</h3>
-          <div class="mk-form-row pair">
-            <div><label>Duración (min)</label><span class="mk-field">75</span></div>
-            <div><label>Monto cobrado</label><span class="mk-field">$649</span></div>
+          <div class="mk-form-row" style="margin-bottom:10px;"><label>Servicio</label><span class="mk-field">Luxury Brow Lamination</span></div>
+          <div class="mk-form-row" style="margin-bottom:10px;">
+            <label>Servicios adicionales (opcional) <span class="tag">1</span></label>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+              <span class="mk-field" style="flex:2;">Retoque de henna</span>
+              <span class="mk-field" style="flex:1;">$150</span>
+              <span class="mk-field" style="flex:1;">15 %</span>
+              <span style="color:var(--muted);">✕</span>
+            </div>
+            <span class="mk-btn" style="margin-top:8px;padding:5px 10px;font-size:0.72rem;">+ Agregar servicio</span>
           </div>
-          <div class="mk-form-row"><label>% de descuento (opcional) <span class="tag">1</span></label><span class="mk-field">15</span></div>
-          <span class="mk-btn primary">Guardar cambios</span>
+          <div class="mk-form-row pair">
+            <div><label>Duración (min) <span class="tag">2</span></label><span class="mk-field">105</span></div>
+            <div><label>Monto cobrado — total de la cita <span class="tag">3</span></label><span class="mk-field">$777</span></div>
+          </div>
+          <div class="mk-form-row"><label>% de descuento del servicio principal (opcional) <span class="tag">4</span></label><span class="mk-field">15</span></div>
+          <div class="mk-form-row"><label>Cómo se pagó <span class="tag">5</span></label><span class="mk-field">Transferencia</span></div>
+          <span class="mk-btn primary" style="margin-top:4px;">Guardar cambios</span>
         </div>
       </div>
 
       <ol class="legend">
-        <li><span class="tag">1</span><div><strong>Campo de % de descuento</strong><span class="d">Es un atajo: al escribir un porcentaje, recalcula el monto solo. El monto también se puede escribir directo a mano — en cuanto lo tocas, el campo de descuento deja de pisártelo.</span></div></li>
+        <li><span class="tag">1</span><div><strong>Servicios adicionales, uno por fila</strong><span class="d">Cada fila trae su propio servicio, monto y <strong>% de descuento independiente</strong> — no comparten el descuento del servicio principal. Al agregar una fila nueva, su precio de lista y duración se suman solos al total y a la duración de abajo (ambos siguen editables a mano); al quitar una fila (✕) se restan de vuelta.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Duración</strong><span class="d">Es la suma del servicio principal más todos los adicionales — se puede ajustar a mano si el tiempo real fue distinto.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Monto cobrado = total de la cita</strong><span class="d">Incluye el servicio principal <em>y</em> todos los adicionales juntos, no solo el principal.</span></div></li>
+        <li><span class="tag">4</span><div><strong>% de descuento, solo del servicio principal</strong><span class="d">Al escribir un porcentaje aquí, recalcula <strong>únicamente la parte del monto que corresponde al servicio principal</strong> y ajusta el total — no toca lo que ya tengan capturado los servicios adicionales, porque cada uno trae su propio % junto a su monto (punto 1).</span></div></li>
+        <li><span class="tag">5</span><div><strong>Cómo se pagó</strong><span class="d">Efectivo, transferencia o tarjeta/terminal — el mismo selector que aparece al crear la cita (parte 7). Cambiarlo aquí no reabre ni reconfirma nada, solo corrige el registro.</span></div></li>
       </ol>
 
       <div class="callout warn">
         <span class="ic">⚠️</span>
-        <p><strong>Punto donde te puedes atorar:</strong> el % de descuento se calcula sobre el monto <strong>que la cita ya tenía guardado</strong> (o el precio de lista del servicio si no tenía monto capturado), no sobre el precio de hoy del servicio. Si los precios de la lista cambiaron desde que se agendó esta cita, el descuento sigue siendo correcto respecto a lo que se le cobró originalmente.</p>
+        <p><strong>Punto donde te puedes atorar:</strong> el % de descuento del servicio principal se calcula sobre el monto <strong>que ese servicio ya tenía guardado dentro de esta cita</strong> (o su precio de lista si no tenía monto propio capturado todavía), no sobre el precio de lista de hoy ni sobre el total con los adicionales incluidos. Si los precios de la lista cambiaron desde que se agendó esta cita, el descuento sigue siendo correcto respecto a lo que se le cobró originalmente — y nunca se mete con el monto de los servicios adicionales.</p>
+      </div>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Para ver de un vistazo, sin abrir este modal, qué citas ya tienen servicios adicionales o forma de pago capturada, revisa las etiquetas debajo del código en la tabla (parte 5) — ahí se resume todo esto sin tener que entrar a editar.</p>
       </div>
     </section>
 
     <!-- 12 -->
     <section class="step" id="resumen">
-      <div class="step-head"><span class="step-num">12</span><h2>Resumen: los 8 lugares donde te puedes atorar</h2></div>
+      <div class="step-head"><span class="step-num">12</span><h2>Resumen: los 10 lugares donde te puedes atorar</h2></div>
       <p class="step-intro">Todo lo anterior, junto, para consultar rápido sin releer el recorrido completo.</p>
 
       <ol class="recap-list">
-        <li><div class="recap-row"><div class="body"><strong>El menú lateral no muestra texto de entrada</strong><span>Es un riel angosto que se expande solo al pasar el mouse, o fijándolo con el pin 📌.</span></div><a href="#llegar">Parte 1 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>En celular/tablet el menú lateral no muestra texto de entrada</strong><span>Es un riel angosto que se expande al tocarlo, o fijándolo con el pin 📌. En computadora ya se queda abierto con texto por default.</span></div><a href="#llegar">Parte 1 ↑</a></div></li>
         <li><div class="recap-row"><div class="body"><strong>El CSV exporta según los filtros activos</strong><span>Ajusta fecha/mes/estado antes de exportar, o vas a llevarte menos (o más) clientas de las que esperabas.</span></div><a href="#encabezado">Parte 2 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Los 3 chips de totales del mes no dependen de los filtros de la tabla</strong><span>Siempre reflejan el mes completo del calendario de arriba, y no suman las citas marcadas como "sin ingreso".</span></div><a href="#calendario">Parte 3 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>La tabla abre ya filtrada al mes actual</strong><span>Si buscas una cita de otro mes y no aparece, revisa primero el filtro de mes antes de pensar que se perdió.</span></div><a href="#filtros">Parte 4 ↑</a></div></li>
         <li><div class="recap-row"><div class="body"><strong>Filtro de día y filtro de mes se excluyen entre sí</strong><span>Elegir uno borra el otro automáticamente — no es un error.</span></div><a href="#filtros">Parte 4 ↑</a></div></li>
         <li><div class="recap-row"><div class="body"><strong>"Estado" y "Pagado" son cosas distintas</strong><span>Confirmada/pendiente es el estado de la cita; el ✅/☐ de "Pagado" es aparte, y se cambia tocando directo su icono.</span></div><a href="#tabla">Parte 5 ↑</a></div></li>
         <li><div class="recap-row"><div class="body"><strong>Cancelar y Eliminar piden un PIN de seguridad</strong><span>No es la contraseña de inicio de sesión — ten el PIN a la mano antes de intentarlo.</span></div><a href="#acciones">Parte 6 ↑</a></div></li>
-        <li><div class="recap-row"><div class="body"><strong>"Agendar manualmente" ≠ "Registrar cita directa"</strong><span>La primera es para una cita futura real (valida horarios, puede avisar por WhatsApp); la segunda es para anotar algo ya pasado, con datos libres, sin avisar nunca a la clienta.</span></div><a href="#comparacion">Parte 7 ↑</a></div></li>
-        <li><div class="recap-row"><div class="body"><strong>"Día completo" viene marcado por default al bloquear horario</strong><span>Desmárcalo si tu intención era bloquear solo unas horas.</span></div><a href="#bloqueos">Parte 8 ↑</a></div></li>
-        <li><div class="recap-row"><div class="body"><strong>El % de descuento al editar usa el monto original de la cita</strong><span>No el precio de lista actual del servicio, para que el cálculo siga siendo correcto aunque los precios hayan cambiado después.</span></div><a href="#editar">Parte 11 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>El código de promoción solo existe en "Agendar manualmente"</strong><span>"Registrar cita directa" no tiene ese campo — si hace falta, aplica el descuento a mano desde "Editar cita".</span></div><a href="#comparacion">Parte 7 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Día completo" viene marcado por default al bloquear horario</strong><span>Desmárcalo si tu intención era bloquear solo unas horas. El motivo del bloqueo, de cualquier forma, nunca lo ve la clienta.</span></div><a href="#bloqueos">Parte 8 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>El % de descuento al editar solo afecta al servicio principal</strong><span>Usa el monto original de ese servicio dentro de la cita (no el precio de lista de hoy) y nunca toca el monto de los servicios adicionales, que llevan su propio % cada uno.</span></div><a href="#editar">Parte 11 ↑</a></div></li>
       </ol>
     </section>
 
