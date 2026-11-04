@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex" />
+<title>Tutorial: Panel de Promos</title>
+<meta name="description" content="Recorrido guiado por la sección Promos del panel de administración de Origen Brows: campañas con código, las modalidades en pareja y paquete, y los referidos." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap"></noscript>
+<style>
+  :root{
+    --bg:#f7f1e6;
+    --surface:#ffffff;
+    --surface-2:#fbf6ec;
+    --ink:#211b15;
+    --ink-soft:#453c30;
+    --muted:#766b5c;
+    --border:rgba(33,29,25,0.13);
+    --border-strong:rgba(33,29,25,0.22);
+    --gold:#b9a37f;
+    --gold-dark:#8a7350;
+    --gold-ghost:rgba(185,163,127,0.16);
+    --ok:#1f6b34; --ok-bg:#d9ecdd;
+    --warn:#86611a; --warn-bg:#f4e3c1;
+    --alert:#a13a2f; --alert-bg:#f3d9d3;
+    --info:#1a4a73; --info-bg:#d6e4f0;
+    --shadow:0 10px 30px rgba(33,29,25,0.10);
+    --radius:16px;
+    --font-head:'Fraunces', Georgia, serif;
+    --font-body:'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  /* Siempre en tema claro — el resto del panel de Origen no tiene modo
+     oscuro, así que este tutorial tampoco cambia con el sistema. */
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; overflow-x:hidden; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:var(--font-head); text-wrap:balance; color:var(--ink); margin:0; }
+  p{ margin:0; }
+  img{ max-width:100%; }
+  a{ color:inherit; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 clamp(16px,4vw,40px); }
+
+  .hero{ padding:56px 0 34px; border-bottom:1px solid var(--border);
+    background:radial-gradient(620px 260px at 88% -60px, var(--gold-ghost), transparent 70%); }
+  .eyebrow{ font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dark); font-weight:700; margin-bottom:12px; display:block; }
+  .hero h1{ font-size:clamp(2rem,3.4vw + 1rem,2.9rem); font-weight:600; max-width:16ch; }
+  .hero .lede{ margin-top:14px; max-width:60ch; color:var(--ink-soft); font-size:1.05rem; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .hero-chip{ font-size:0.8rem; padding:7px 13px; border-radius:100px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .hero-chip b{ color:var(--ink); }
+
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; padding:40px 0 100px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; gap:0; padding-top:0; } }
+
+  .toc{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-size:0.85rem; max-height:calc(100vh - 48px); overflow-y:auto; }
+  .toc-label{ font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .toc a{ text-decoration:none; color:var(--muted); padding:7px 10px; border-radius:9px; border-left:2px solid transparent; transition:background 140ms ease,color 140ms ease; }
+  .toc a:hover{ background:var(--gold-ghost); color:var(--ink); }
+  .toc a.is-active{ color:var(--ink); font-weight:600; border-left-color:var(--gold-dark); background:var(--gold-ghost); }
+
+  @media (max-width:900px){
+    .toc{ position:sticky; top:0; z-index:20; flex-direction:row; gap:6px; max-height:none; overflow-x:auto; overflow-y:hidden;
+      background:var(--bg); padding:12px clamp(16px,4vw,40px); border-bottom:1px solid var(--border); margin:0 calc(-1 * clamp(16px,4vw,40px));
+      -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .toc::-webkit-scrollbar{ display:none; }
+    .toc-label{ display:none; }
+    .toc a{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; border-radius:100px; background:var(--surface); border:1px solid var(--border); }
+    .toc a.is-active{ border-color:var(--gold-dark); }
+  }
+
+  .content{ display:flex; flex-direction:column; gap:64px; min-width:0; }
+
+  section.step{ scroll-margin-top:88px; }
+  .step-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+  .step-num{ font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--gold-dark); flex-shrink:0; }
+  .step h2{ font-size:clamp(1.35rem,1.6vw + 0.9rem,1.7rem); font-weight:600; }
+  .step-intro{ color:var(--ink-soft); max-width:66ch; margin:10px 0 26px; }
+
+  .mk{ background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:clamp(14px,2.4vw,26px); box-shadow:var(--shadow); margin-bottom:22px; overflow-x:auto; }
+  .mk-caption{ font-size:0.74rem; color:var(--muted); margin-top:12px; text-align:center; }
+
+  .tag{ display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%;
+    background:var(--gold-dark); color:#fff; font-size:0.66rem; font-weight:700; font-family:var(--font-body); flex-shrink:0; box-shadow:0 0 0 2px var(--surface-2); }
+
+  .legend{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .legend li{ display:flex; gap:12px; align-items:flex-start; }
+  .legend .tag{ margin-top:3px; }
+  .legend strong{ color:var(--ink); }
+  .legend span.d{ display:block; color:var(--ink-soft); font-size:0.92rem; margin-top:2px; }
+
+  .callout{ border-radius:14px; padding:14px 16px; font-size:0.92rem; display:flex; gap:10px; margin-top:18px; border:1px solid transparent; }
+  .callout .ic{ flex-shrink:0; font-size:1.05rem; line-height:1.3; }
+  .callout.tip{ background:var(--gold-ghost); border-color:var(--border); color:var(--ink-soft); }
+  .callout.warn{ background:var(--warn-bg); color:var(--warn); border-color:transparent; }
+  .callout.warn strong{ color:inherit; }
+
+  .rep-dark{ --rd-bg:#211b15; --rd-bg2:#2a231b; --rd-white:#fff; --rd-accent:#b9a37f; }
+  .mk-btnrow{ display:flex; flex-wrap:wrap; gap:9px; }
+  .mk-btn{ font-family:var(--font-body); font-size:0.78rem; font-weight:600; border-radius:10px; padding:9px 14px;
+    border:1.5px solid var(--rd-bg); color:var(--rd-bg); background:transparent; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .mk-btn.primary{ background:var(--rd-bg); color:#fff; }
+
+  .mk-form{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 22px; }
+  .mk-form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .mk-form-row{ display:flex; flex-direction:column; gap:4px; }
+  .mk-form-row.full{ grid-column:1/-1; }
+  .mk-form-row label{ font-size:0.75rem; font-weight:700; color:var(--ink-soft); }
+  .mk-field{ font-size:0.8rem; padding:8px 11px; border-radius:9px; border:1.5px solid var(--border-strong); background:var(--surface-2); color:var(--ink-soft); }
+  .mk-form-row .mk-field{ width:100%; }
+  .mk-check-row{ display:flex; flex-wrap:wrap; gap:10px 18px; }
+  .mk-check{ font-size:0.78rem; display:flex; align-items:center; gap:6px; color:var(--ink-soft); }
+  .mk-check .box{ width:14px; height:14px; border-radius:4px; border:1.5px solid var(--border-strong); flex-shrink:0; }
+  .mk-check .box.on{ background:var(--gold-dark); border-color:var(--gold-dark); }
+  .mk-toggle-row{ display:flex; align-items:flex-start; gap:10px; font-size:0.85rem; color:var(--ink-soft); }
+  .mk-toggle-row .box{ width:17px; height:17px; border-radius:5px; border:1.5px solid var(--border-strong); flex-shrink:0; margin-top:1px; }
+  .mk-toggle-row .box.on{ background:var(--gold-dark); border-color:var(--gold-dark); }
+
+  .mk-table{ width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; font-size:0.76rem; min-width:640px; }
+  .mk-table th,.mk-table td{ padding:9px 10px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; }
+  .mk-table th{ background:var(--surface-2); font-weight:700; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); }
+  .pill{ display:inline-block; padding:3px 10px; border-radius:100px; font-size:0.68rem; font-weight:700; }
+  .pill.info{ background:var(--info-bg); color:var(--info); }
+  .pill.neutral{ background:var(--gold-ghost); color:var(--gold-dark); }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok); }
+  .pill.purple{ background:#e8dcef; color:#5a2d7a; }
+  .pill.amber{ background:#f0dcc0; color:#7a4a12; }
+  .muted-cell{ color:var(--muted); }
+  code.code-chip{ background:var(--surface-2); border:1px solid var(--border); padding:2px 8px; border-radius:6px; font-size:0.78rem; }
+
+  .cmp{ display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:720px){ .cmp{ grid-template-columns:1fr 1fr; } }
+  .cmp-card{ border:1.5px solid var(--border-strong); border-radius:16px; padding:20px 22px; background:var(--surface); }
+  .cmp-card h3{ font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .cmp-card .for{ font-size:0.82rem; color:var(--muted); margin-bottom:14px; }
+  .cmp-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; font-size:0.88rem; }
+  .cmp-list li{ display:flex; gap:8px; }
+  .cmp-list li::before{ content:"—"; color:var(--gold-dark); flex-shrink:0; }
+
+  .recap-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; counter-reset:recap; }
+  .recap-list li{ counter-increment:recap; display:flex; gap:14px; align-items:flex-start; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+  .recap-list li::before{ content:counter(recap); font-family:var(--font-head); font-weight:700; color:var(--gold-dark); background:var(--gold-ghost); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem; }
+  .recap-list a{ font-size:0.78rem; color:var(--gold-dark); text-decoration:none; font-weight:600; white-space:nowrap; }
+  .recap-list .body{ flex:1; }
+  .recap-list strong{ display:block; margin-bottom:2px; }
+  .recap-list span{ color:var(--ink-soft); font-size:0.9rem; }
+  .recap-row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+
+  footer{ border-top:1px solid var(--border); padding:26px clamp(16px,4vw,40px) 40px; color:var(--muted); font-size:0.82rem; max-width:1180px; margin:0 auto; }
+
+  .tutorial-topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: #211b15; color: #fff;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 12px clamp(16px,4vw,40px);
+  }
+  .tutorial-topbar .back-link {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600;
+    color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .tutorial-topbar .back-link:hover { border-color: #fff; }
+  .tutorial-switch { display: flex; gap: 6px; flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tutorial-switch a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 6px 12px;
+    border-radius: 100px; white-space: nowrap; transition: background 140ms ease, color 140ms ease;
+  }
+  .tutorial-switch a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tutorial-switch a.is-current { background: #b9a37f; color: #2a2113; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="tutorial-topbar">
+    <a class="back-link" href="../promos.html">← Volver al panel</a>
+    <nav class="tutorial-switch">
+    <a href="citas.html">📅 Citas</a>
+    <a href="clientas.html">👥 Clientas</a>
+    <a href="lealtad.html">🎁 Lealtad</a>
+    <a href="promos.html" class="is-current">🏷️ Promos</a>
+    <a href="sorteos.html">🎉 Sorteos</a>
+    <a href="reportes.html">📊 Reportes</a>
+    <a href="finanzas.html">💰 Finanzas</a>
+    <a href="configuracion.html">⚙️ Configuración</a>
+    </nav>
+  </div>
+<div class="hero">
+  <div class="container">
+    <span class="eyebrow">Guía interna · Panel de administración</span>
+    <h1>Recorrido por la sección Promos</h1>
+    <p class="lede">Todo lo que hay en <strong>Panel → Promos</strong>: cómo armar una campaña con código, las modalidades "en pareja" y "paquete", y la tabla de referidos.</p>
+    <div class="hero-meta">
+      <span class="hero-chip">📍 <b>admin/promos.html</b></span>
+      <span class="hero-chip">🧭 7 partes</span>
+      <span class="hero-chip">⚠️ 4 puntos donde te puedes atorar</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="layout">
+  <nav class="toc" id="toc">
+    <span class="toc-label">En este recorrido</span>
+    <a href="#formulario">1. Datos de la campaña</a>
+    <a href="#servicios">2. A qué servicios aplica</a>
+    <a href="#pareja">3. Modalidad "en pareja"</a>
+    <a href="#paquete">4. Modalidad "paquete"</a>
+    <a href="#tabla">5. La tabla de campañas</a>
+    <a href="#referidos">6. Referidos</a>
+    <a href="#resumen">7. Dónde te atoras</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 1 -->
+    <section class="step" id="formulario">
+      <div class="step-head"><span class="step-num">01</span><h2>Datos de la campaña</h2></div>
+      <p class="step-intro">Toda campaña nueva empieza en el formulario de arriba de la página — nombre, código y las reglas básicas del descuento.</p>
+
+      <div class="mk">
+        <div class="mk-form">
+          <div class="mk-form-grid">
+            <div class="mk-form-row full"><label>Nombre de la campaña *</label><span class="mk-field">Verano Origen</span></div>
+            <div class="mk-form-row full"><label>Descripción (se muestra en la landing) <span class="tag">1</span></label><span class="mk-field">15% de descuento en Luxury Brow Lamination durante agosto.</span></div>
+            <div class="mk-form-row"><label>Código (opcional) <span class="tag">2</span></label><span class="mk-field">VERANO15</span></div>
+            <div class="mk-form-row"><label>Slug de la landing (opcional)</label><span class="mk-field">verano</span></div>
+            <div class="mk-form-row"><label>Tipo de descuento *</label><span class="mk-field">Porcentaje (%)</span></div>
+            <div class="mk-form-row"><label>Valor del descuento *</label><span class="mk-field">15</span></div>
+            <div class="mk-form-row"><label>Fecha de inicio (opcional)</label><span class="mk-field">—</span></div>
+            <div class="mk-form-row"><label>Fecha de fin (opcional)</label><span class="mk-field">31/08/2026</span></div>
+            <div class="mk-form-row"><label>Límite de usos (opcional) <span class="tag">3</span></label><span class="mk-field">Sin límite</span></div>
+            <div class="mk-form-row"><label>Estado</label><span class="mk-field">Activa</span></div>
+          </div>
+          <div style="margin-top:14px;"><span class="mk-btn primary rep-dark">Crear campaña</span></div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Descripción</strong><span class="d">Solo aparece si alguien visita la landing pública de la campaña (<code class="code-chip">/promo-&lt;slug&gt;</code>). Si la clienta ya conoce el código y lo escribe directo al agendar, nunca ve esta página ni su descripción.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Código y slug, ambos opcionales</strong><span class="d">Si dejas el código vacío, se genera uno solo a partir del nombre de la campaña. Mismo caso con el slug de la landing.</span></div></li>
+        <li><span class="tag">3</span><div><strong>Límite de usos</strong><span class="d">Déjalo vacío para que no tenga tope. Una vez alcanzado el límite, el código deja de funcionar aunque la campaña siga "Activa".</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>No necesitas compartir el enlace de la landing para nada — basta con decirle a la clienta el código de viva voz y que lo escriba al agendar. La landing es un extra para cuando sí quieres mandar un link (por ejemplo, en redes).</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step" id="servicios">
+      <div class="step-head"><span class="step-num">02</span><h2>A qué servicios aplica</h2></div>
+      <p class="step-intro">Debajo de los datos básicos, una lista de casillas para limitar la campaña a ciertos servicios.</p>
+
+      <div class="mk">
+        <div class="mk-form">
+          <div class="mk-form-row full"><label>Servicios a los que aplica (opcional)</label></div>
+          <div class="mk-check-row" style="margin-top:8px;">
+            <span class="mk-check"><span class="box on"></span> Luxury Brow Lamination <span class="tag">1</span></span>
+            <span class="mk-check"><span class="box on"></span> Luxury Lamination + Tint</span>
+            <span class="mk-check"><span class="box"></span> Diseñando tu ORIGEN</span>
+            <span class="mk-check"><span class="box"></span> Korean Lash Lifting</span>
+            <span class="mk-check"><span class="box"></span> Combo Full Look Origen</span>
+          </div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Marcar uno o varios</strong><span class="d">El código solo aplicará descuento si la cita es de alguno de los servicios marcados. Los demás servicios no reconocen el código (si la clienta lo escribe, no pasa nada).</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> si no marcas <em>ninguna</em> casilla, la campaña aplica a <strong>todos</strong> los servicios del estudio — no a ninguno. Es fácil dejarla así sin querer si tu intención era limitarla a uno solo.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" id="pareja">
+      <div class="step-head"><span class="step-num">03</span><h2>Modalidad "en pareja"</h2></div>
+      <p class="step-intro">Para campañas tipo "trae a tu amiga" — el código solo sirve si las dos citas se reservan juntas.</p>
+
+      <div class="mk">
+        <div class="mk-form">
+          <div class="mk-toggle-row"><span class="box on"></span><span>Requiere agendar en pareja (ej. "trae a tu amiga") — solo se puede usar si las dos citas se reservan juntas, en un mismo envío <span class="tag">1</span></span></div>
+          <div class="mk-form-row" style="margin-top:14px;"><label>Anticipo total para las dos citas (opcional) <span class="tag">2</span></label><span class="mk-field">300 — se reparte entre las dos</span></div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Activa un campo nuevo</strong><span class="d">Al marcar esta casilla aparece el campo de anticipo de pareja debajo. Si la desmarcas, ese campo se oculta y se vacía.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Anticipo total, no por persona</strong><span class="d">Si lo dejas vacío, cada cita cobra su anticipo normal por separado. Si escribes un monto aquí, ese es el total a repartir entre las dos citas de la pareja — no se duplica.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>La clienta que agenda y su amiga deben reservar <strong>en el mismo envío</strong> del formulario de citas públicas — no sirve si cada una agenda por separado en momentos distintos, aunque sea el mismo día.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" id="paquete">
+      <div class="step-head"><span class="step-num">04</span><h2>Modalidad "paquete"</h2></div>
+      <p class="step-intro">Para campañas tipo "6 sesiones por $999" — el cupo se cuenta por clienta, no se agota para todas.</p>
+
+      <div class="mk">
+        <div class="mk-form">
+          <div class="mk-toggle-row"><span class="box on"></span><span>Es un paquete de varias sesiones (ej. "6 sesiones por $999") — el cupo es por clienta, no global <span class="tag">1</span></span></div>
+          <div class="mk-form-grid" style="margin-top:14px;">
+            <div class="mk-form-row"><label>Número de sesiones incluidas</label><span class="mk-field">6</span></div>
+            <div class="mk-form-row"><label>Precio total del paquete</label><span class="mk-field">999</span></div>
+            <div class="mk-form-row full"><label>Anticipo de la primera sesión (opcional) <span class="tag">2</span></label><span class="mk-field">Si lo dejas vacío, cobra el anticipo normal del servicio</span></div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>"Por clienta, no global"</strong><span class="d">El "Límite de usos" general de la parte 1 sigue aplicando al número de clientas distintas que pueden comprar el paquete — no se confunde con las 6 sesiones que cada una de ellas puede usar.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Anticipo solo de la primera sesión</strong><span class="d">Las sesiones 2 en adelante del mismo paquete no vuelven a pedir anticipo — ya quedó cubierto con el pago del paquete completo.</span></div></li>
+      </ol>
+    </section>
+
+    <!-- 5 -->
+    <section class="step" id="tabla">
+      <div class="step-head"><span class="step-num">05</span><h2>La tabla de campañas</h2></div>
+      <p class="step-intro">Debajo del formulario, todas las campañas que ya existen.</p>
+
+      <div class="mk">
+        <table class="mk-table">
+          <thead><tr><th>Campaña</th><th>Código</th><th>Landing</th><th>Descuento</th><th>Vigencia</th><th>Usos</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Verano Origen</strong><br/><span style="color:var(--muted);font-size:0.76rem;">15% de descuento en Luxury Brow Lamination durante agosto.</span></td>
+              <td><code class="code-chip">VERANO15</code></td>
+              <td>/promo-verano</td>
+              <td>15%<br/><span style="color:var(--muted);font-size:0.72rem;">Luxury Brow Lamination</span></td>
+              <td>… → 31/08/2026</td>
+              <td>12</td>
+              <td><span class="pill ok">Activa</span></td>
+              <td><span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Editar</span> <span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Desactivar</span></td>
+            </tr>
+            <tr>
+              <td><strong>Trae a tu amiga</strong><br/><span class="pill purple" style="margin-top:4px;" title="Solo se puede usar si las dos citas se reservan juntas">👯 En pareja <span class="tag">1</span></span></td>
+              <td><code class="code-chip">AMIGAS20</code></td>
+              <td>/promo-amigas</td>
+              <td>20%</td>
+              <td>Sin fecha límite</td>
+              <td>3</td>
+              <td><span class="pill ok">Activa</span></td>
+              <td><span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Editar</span> <span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Desactivar</span></td>
+            </tr>
+            <tr>
+              <td><strong>Reto 6 sesiones</strong><br/><span class="pill amber" style="margin-top:4px;" title="Cupo de 6 sesiones por clienta">🎟️ Paquete de 6 sesiones <span class="tag">2</span></span></td>
+              <td><code class="code-chip">RETO6</code></td>
+              <td>/promo-reto6</td>
+              <td>$999 MXN</td>
+              <td>Sin fecha límite</td>
+              <td>5</td>
+              <td><span class="pill ok">Activa</span></td>
+              <td><span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Editar</span> <span class="mk-btn" style="padding:4px 9px;font-size:0.7rem;">Desactivar</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Etiquetas 👯 y 🎟️</strong><span class="d">Avisan de un vistazo si una campaña es de las modalidades especiales de las partes 3 y 4, sin tener que abrirla para revisar.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Editar</strong><span class="d">Abre el mismo formulario de arriba ya lleno con los datos de esa campaña.</span></div></li>
+      </ol>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> al editar una campaña ya creada, el <strong>código y el slug quedan bloqueados</strong> (no se pueden tocar) — solo se ven grises. Si necesitas cambiar el código de una campaña, tienes que desactivarla y crear una nueva con el código correcto.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="step" id="referidos">
+      <div class="step-head"><span class="step-num">06</span><h2>Referidos</h2></div>
+      <p class="step-intro">Una segunda tabla, debajo de las campañas — aquí no se crea nada, solo se consulta.</p>
+
+      <div class="mk">
+        <table class="mk-table">
+          <thead><tr><th>Clienta</th><th>Código</th><th>Citas generadas</th><th>Confirmadas</th><th>Recompensas ganadas</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Fernanda Ríos<br/><span style="color:var(--muted);font-size:0.76rem;">55 1122 3344</span></td>
+              <td><code class="code-chip">FER-REF</code></td>
+              <td>3</td>
+              <td>2</td>
+              <td>2 <span class="tag">1</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Cómo se gana una recompensa</strong><span class="d">Cada clienta obtiene su propio código desde <code class="code-chip">/referidos.html</code> — eso pasa fuera del panel, tú no lo creas aquí. En cuanto la persona que refirió confirma su primera cita usando ese código, se genera sola una campaña de un solo uso (aparece arriba, en la tabla de la parte 5, con el nombre "Recompensa de referido — …").</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Esta tabla sirve para ver quién está refiriendo más gente y seguirle la pista a las recompensas ganadas — no hay ningún botón de "crear referido" porque esa parte la generan solas las clientas.</p>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="step" id="resumen">
+      <div class="step-head"><span class="step-num">07</span><h2>Resumen: los 4 lugares donde te puedes atorar</h2></div>
+      <p class="step-intro">Para consultar rápido.</p>
+
+      <ol class="recap-list">
+        <li><div class="recap-row"><div class="body"><strong>Código y slug se bloquean después de crear la campaña</strong><span>Si te equivocaste, hay que desactivarla y crear una nueva — no hay forma de editarlos.</span></div><a href="#tabla">Parte 5 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Sin servicios marcados = aplica a todos</strong><span>Lo contrario de lo que parece — revisa siempre la lista antes de guardar si tu intención era limitarla.</span></div><a href="#servicios">Parte 2 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"En pareja" y "paquete" se pueden marcar las dos a la vez</strong><span>El formulario no te detiene aunque combinarlas no tenga mucho sentido en la práctica — evita marcar ambas en la misma campaña.</span></div><a href="#pareja">Partes 3 y 4 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Los referidos no se crean en Promos</strong><span>Cada clienta saca su propio código en /referidos.html — aquí solo se consulta quién ha referido y qué recompensas ha ganado.</span></div><a href="#referidos">Parte 6 ↑</a></div></li>
+      </ol>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<footer>Guía de referencia interna sobre <strong>admin/promos.html</strong> — no requiere iniciar sesión para consultarla; los datos de ejemplo no son reales.</footer>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if (!sections.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  function setActive(id){
+    if (id === current) return;
+    current = id;
+    links.forEach(function(a){ a.classList.remove('is-active'); });
+    var a = byId[id];
+    if (a) { a.classList.add('is-active'); if (a.scrollIntoView) a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){ if (entry.isIntersecting) setActive(entry.target.id); });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+  setActive(sections[0].id);
+})();
+</script>
+<script src="../../js/ayuda-embed.js"></script>
+</body>
+</html>

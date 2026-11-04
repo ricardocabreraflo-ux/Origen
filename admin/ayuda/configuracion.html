@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex" />
+<title>Tutorial: Panel de Configuración</title>
+<meta name="description" content="Recorrido guiado por la sección Configuración del panel de administración de Origen Brows: galería, antes y después, posts de Instagram, usuarios y permisos, e historial de inicio de sesión." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap"></noscript>
+<style>
+  :root{
+    --bg:#f7f1e6;
+    --surface:#ffffff;
+    --surface-2:#fbf6ec;
+    --ink:#211b15;
+    --ink-soft:#453c30;
+    --muted:#766b5c;
+    --border:rgba(33,29,25,0.13);
+    --border-strong:rgba(33,29,25,0.22);
+    --gold:#b9a37f;
+    --gold-dark:#8a7350;
+    --gold-ghost:rgba(185,163,127,0.16);
+    --ok:#1f6b34; --ok-bg:#d9ecdd;
+    --warn:#86611a; --warn-bg:#f4e3c1;
+    --alert:#a13a2f; --alert-bg:#f3d9d3;
+    --info:#1a4a73; --info-bg:#d6e4f0;
+    --shadow:0 10px 30px rgba(33,29,25,0.10);
+    --radius:16px;
+    --font-head:'Fraunces', Georgia, serif;
+    --font-body:'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; overflow-x:hidden; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:var(--font-head); text-wrap:balance; color:var(--ink); margin:0; }
+  p{ margin:0; }
+  img{ max-width:100%; }
+  a{ color:inherit; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 clamp(16px,4vw,40px); }
+
+  .hero{ padding:56px 0 34px; border-bottom:1px solid var(--border);
+    background:radial-gradient(620px 260px at 88% -60px, var(--gold-ghost), transparent 70%); }
+  .eyebrow{ font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dark); font-weight:700; margin-bottom:12px; display:block; }
+  .hero h1{ font-size:clamp(2rem,3.4vw + 1rem,2.9rem); font-weight:600; max-width:18ch; }
+  .hero .lede{ margin-top:14px; max-width:60ch; color:var(--ink-soft); font-size:1.05rem; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .hero-chip{ font-size:0.8rem; padding:7px 13px; border-radius:100px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .hero-chip b{ color:var(--ink); }
+
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; padding:40px 0 100px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; gap:0; padding-top:0; } }
+
+  .toc{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-size:0.85rem; max-height:calc(100vh - 48px); overflow-y:auto; }
+  .toc-label{ font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .toc a{ text-decoration:none; color:var(--muted); padding:7px 10px; border-radius:9px; border-left:2px solid transparent; transition:background 140ms ease,color 140ms ease; }
+  .toc a:hover{ background:var(--gold-ghost); color:var(--ink); }
+  .toc a.is-active{ color:var(--ink); font-weight:600; border-left-color:var(--gold-dark); background:var(--gold-ghost); }
+
+  @media (max-width:900px){
+    .toc{ position:sticky; top:0; z-index:20; flex-direction:row; gap:6px; max-height:none; overflow-x:auto; overflow-y:hidden;
+      background:var(--bg); padding:12px clamp(16px,4vw,40px); border-bottom:1px solid var(--border); margin:0 calc(-1 * clamp(16px,4vw,40px));
+      -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .toc::-webkit-scrollbar{ display:none; }
+    .toc-label{ display:none; }
+    .toc a{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; border-radius:100px; background:var(--surface); border:1px solid var(--border); }
+    .toc a.is-active{ border-color:var(--gold-dark); }
+  }
+
+  .content{ display:flex; flex-direction:column; gap:64px; min-width:0; }
+
+  section.step{ scroll-margin-top:88px; }
+  .step-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+  .step-num{ font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--gold-dark); flex-shrink:0; }
+  .step h2{ font-size:clamp(1.35rem,1.6vw + 0.9rem,1.7rem); font-weight:600; }
+  .step-intro{ color:var(--ink-soft); max-width:66ch; margin:10px 0 26px; }
+
+  .mk{ background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:clamp(14px,2.4vw,26px); box-shadow:var(--shadow); margin-bottom:22px; overflow-x:auto; }
+
+  .tag{ display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%;
+    background:var(--gold-dark); color:#fff; font-size:0.66rem; font-weight:700; font-family:var(--font-body); flex-shrink:0; box-shadow:0 0 0 2px var(--surface-2); }
+
+  .legend{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .legend li{ display:flex; gap:12px; align-items:flex-start; }
+  .legend .tag{ margin-top:3px; }
+  .legend strong{ color:var(--ink); }
+  .legend span.d{ display:block; color:var(--ink-soft); font-size:0.92rem; margin-top:2px; }
+
+  .callout{ border-radius:14px; padding:14px 16px; font-size:0.92rem; display:flex; gap:10px; margin-top:18px; border:1px solid transparent; }
+  .callout .ic{ flex-shrink:0; font-size:1.05rem; line-height:1.3; }
+  .callout.tip{ background:var(--gold-ghost); border-color:var(--border); color:var(--ink-soft); }
+  .callout.warn{ background:var(--warn-bg); color:var(--warn); border-color:transparent; }
+  .callout.alert{ background:var(--alert-bg); color:var(--alert); border-color:transparent; }
+  .callout.warn strong, .callout.alert strong{ color:inherit; }
+
+  .rep-dark{ --rd-bg:#211b15; --rd-bg2:#2a231b; --rd-white:#fff; --rd-accent:#b9a37f; }
+  .mk-btn{ font-family:var(--font-body); font-size:0.78rem; font-weight:600; border-radius:10px; padding:9px 14px;
+    border:1.5px solid var(--rd-bg); color:var(--rd-bg); background:transparent; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .mk-btn.primary{ background:var(--rd-bg); color:#fff; }
+  .mk-btn.sm{ padding:4px 9px; font-size:0.7rem; }
+
+  .mk-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; }
+  .mk-card + .mk-card{ margin-top:14px; }
+  .mk-card h4{ font-family:var(--font-body); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted); margin-bottom:12px; }
+
+  .mk-grid-items{ display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
+  .mk-grid-item{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:8px; display:flex; flex-direction:column; gap:6px; }
+  .mk-grid-item .thumb{ height:64px; border-radius:7px; background:linear-gradient(135deg,var(--gold-ghost),var(--border)); display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:var(--gold-dark); position:relative; }
+  .mk-grid-item .thumb .play{ position:absolute; font-size:0.9rem; }
+  .mk-grid-item .desc{ font-size:0.68rem; color:var(--ink-soft); background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:3px 5px; }
+  .mk-grid-item .actions{ display:flex; gap:4px; justify-content:space-between; font-size:0.65rem; }
+  .mk-grid-item .actions span{ background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:2px 5px; }
+
+  .mk-form-row{ display:flex; flex-direction:column; gap:4px; }
+  .mk-form-row label{ font-size:0.75rem; font-weight:700; color:var(--ink-soft); }
+  .mk-field{ font-size:0.8rem; padding:8px 11px; border-radius:9px; border:1.5px solid var(--border-strong); background:var(--surface-2); color:var(--ink-soft); }
+
+  .mk-ba-pair{ display:flex; gap:8px; align-items:center; }
+  .mk-ba-pair .half{ flex:1; height:56px; border-radius:8px; background:var(--gold-ghost); display:flex; align-items:center; justify-content:center; font-size:0.68rem; color:var(--gold-dark); font-weight:700; }
+  .mk-ba-pair .arrow{ color:var(--muted); }
+
+  .mk-table{ width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; font-size:0.78rem; min-width:560px; }
+  .mk-table th,.mk-table td{ padding:9px 10px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; }
+  .mk-table th{ background:var(--surface-2); font-weight:700; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); }
+  .pill{ display:inline-block; padding:3px 10px; border-radius:100px; font-size:0.68rem; font-weight:700; }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok); }
+  .pill.info{ background:var(--info-bg); color:var(--info); }
+  .pill.neutral{ background:var(--gold-ghost); color:var(--gold-dark); }
+
+  .mk-perm-table{ width:100%; border-collapse:collapse; font-size:0.72rem; min-width:460px; }
+  .mk-perm-table th,.mk-perm-table td{ padding:5px 7px; text-align:center; border-bottom:1px solid var(--border); }
+  .mk-perm-table th:first-child,.mk-perm-table td:first-child{ text-align:left; }
+  .mk-check-box{ width:13px; height:13px; border-radius:3px; border:1.5px solid var(--border-strong); display:inline-block; }
+  .mk-check-box.on{ background:var(--gold-dark); border-color:var(--gold-dark); }
+  .mk-check-box.off{ background:transparent; }
+
+  .cmp{ display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:720px){ .cmp{ grid-template-columns:1fr 1fr; } }
+  .cmp-card{ border:1.5px solid var(--border-strong); border-radius:16px; padding:20px 22px; background:var(--surface); }
+  .cmp-card h3{ font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .cmp-card .for{ font-size:0.82rem; color:var(--muted); margin-bottom:14px; }
+  .cmp-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; font-size:0.88rem; }
+  .cmp-list li{ display:flex; gap:8px; }
+  .cmp-list li::before{ content:"—"; color:var(--gold-dark); flex-shrink:0; }
+
+  .recap-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; counter-reset:recap; }
+  .recap-list li{ counter-increment:recap; display:flex; gap:14px; align-items:flex-start; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+  .recap-list li::before{ content:counter(recap); font-family:var(--font-head); font-weight:700; color:var(--gold-dark); background:var(--gold-ghost); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem; }
+  .recap-list a{ font-size:0.78rem; color:var(--gold-dark); text-decoration:none; font-weight:600; white-space:nowrap; }
+  .recap-list .body{ flex:1; }
+  .recap-list strong{ display:block; margin-bottom:2px; }
+  .recap-list span{ color:var(--ink-soft); font-size:0.9rem; }
+  .recap-row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+
+  footer{ border-top:1px solid var(--border); padding:26px clamp(16px,4vw,40px) 40px; color:var(--muted); font-size:0.82rem; max-width:1180px; margin:0 auto; }
+
+  .tutorial-topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: #211b15; color: #fff;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 12px clamp(16px,4vw,40px);
+  }
+  .tutorial-topbar .back-link {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600;
+    color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .tutorial-topbar .back-link:hover { border-color: #fff; }
+  .tutorial-switch { display: flex; gap: 6px; flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tutorial-switch a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 6px 12px;
+    border-radius: 100px; white-space: nowrap; transition: background 140ms ease, color 140ms ease;
+  }
+  .tutorial-switch a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tutorial-switch a.is-current { background: #b9a37f; color: #2a2113; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="tutorial-topbar">
+    <a class="back-link" href="../configuracion.html">← Volver al panel</a>
+    <nav class="tutorial-switch">
+    <a href="citas.html">📅 Citas</a>
+    <a href="clientas.html">👥 Clientas</a>
+    <a href="lealtad.html">🎁 Lealtad</a>
+    <a href="promos.html">🏷️ Promos</a>
+    <a href="sorteos.html">🎉 Sorteos</a>
+    <a href="reportes.html">📊 Reportes</a>
+    <a href="finanzas.html">💰 Finanzas</a>
+    <a href="configuracion.html" class="is-current">⚙️ Configuración</a>
+    </nav>
+  </div>
+<div class="hero">
+  <div class="container">
+    <span class="eyebrow">Guía interna · Panel de administración</span>
+    <h1>Recorrido por la sección Configuración</h1>
+    <p class="lede">Todo lo que hay en <strong>Panel → Configuración</strong>: galería de fotos, antes y después, posts de Instagram, usuarios y permisos, e historial de inicio de sesión.</p>
+    <div class="hero-meta">
+      <span class="hero-chip">📍 <b>admin/configuracion.html</b></span>
+      <span class="hero-chip">🧭 6 partes</span>
+      <span class="hero-chip">⚠️ 5 puntos donde te puedes atorar</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="layout">
+  <nav class="toc" id="toc">
+    <span class="toc-label">En este recorrido</span>
+    <a href="#galeria">1. Galería de fotos</a>
+    <a href="#antes-despues">2. Antes y después</a>
+    <a href="#instagram">3. Posts de Instagram</a>
+    <a href="#usuarios">4. Usuarios y permisos</a>
+    <a href="#historial">5. Historial de inicio de sesión</a>
+    <a href="#resumen">6. Dónde te atoras</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 1 -->
+    <section class="step" id="galeria">
+      <div class="step-head"><span class="step-num">01</span><h2>Galería de fotos</h2></div>
+      <p class="step-intro">La primera tarjeta de la página. Aquí se sube todo lo que aparece en la galería del sitio público.</p>
+
+      <div class="mk">
+        <div class="mk-card">
+          <h4>Subir fotos o videos</h4>
+          <div class="mk-field" style="margin-bottom:14px;">Elegir archivos… (puedes seleccionar varios a la vez) <span class="tag">1</span></div>
+          <div class="mk-grid-items">
+            <div class="mk-grid-item"><div class="thumb">🖼️</div><div class="desc">Laminado de cejas</div><div class="actions"><span>◀</span><span>▶</span><span>🗑️</span></div></div>
+            <div class="mk-grid-item"><div class="thumb">▶<span class="play"></span></div><div class="desc">Antes/después video</div><div class="actions"><span>◀</span><span>▶</span><span>🗑️</span></div></div>
+            <div class="mk-grid-item"><div class="thumb">🖼️</div><div class="desc">(sin descripción)</div><div class="actions"><span>◀</span><span>▶</span><span>🗑️</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Formatos y tamaño</strong><span class="d">Acepta JPG, PNG, WEBP, y video MP4/MOV/WEBM. Cada archivo tiene un límite de <strong>4.5 MB</strong> — si pesa más, no se sube y hay que comprimirlo antes.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>La descripción de cada foto se guarda sola al salir del campo de texto (no hay botón "Guardar" aparte) — solo escribe y haz clic afuera. Las flechas ◀ ▶ cambian el orden en que aparecen en la galería pública.</p>
+      </div>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> si seleccionas varios archivos a la vez, se suben <strong>uno por uno</strong>, no todos juntos. Con fotos pesadas o varios videos puede tardar un rato — espera a que termine antes de cerrar la pestaña.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step" id="antes-despues">
+      <div class="step-head"><span class="step-num">02</span><h2>Antes y después</h2></div>
+      <p class="step-intro">Segunda tarjeta — comparativas de "antes" y "después" que se muestran en pareja.</p>
+
+      <div class="mk">
+        <div class="mk-card">
+          <h4>Agregar comparativa</h4>
+          <div class="mk-ba-pair" style="margin-bottom:12px;">
+            <div class="half">ANTES <span class="tag">1</span></div>
+            <span class="arrow">→</span>
+            <div class="half">DESPUÉS <span class="tag">1</span></div>
+          </div>
+          <div class="mk-form-row" style="margin-bottom:10px;"><label>Etiqueta (opcional)</label><span class="mk-field">Laminado de cejas — 1 sesión</span></div>
+          <span class="mk-btn primary rep-dark">+ Agregar</span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Las dos fotos son obligatorias</strong><span class="d">El botón "+ Agregar" no se activa hasta que elijas tanto la foto de "antes" como la de "después" — no se puede guardar solo una.</span></div></li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Igual que en la galería, hay flechas para reordenar y un botón de eliminar en cada comparativa ya guardada.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" id="instagram">
+      <div class="step-head"><span class="step-num">03</span><h2>Posts de Instagram</h2></div>
+      <p class="step-intro">Tercera tarjeta — enlaces a publicaciones de Instagram que se incrustan en el sitio.</p>
+
+      <div class="mk">
+        <div class="mk-card">
+          <h4>Agregar post</h4>
+          <div class="mk-form-row" style="margin-bottom:10px;"><label>Enlace del post (permalink) <span class="tag">1</span></label><span class="mk-field">https://www.instagram.com/p/ABC123xyz/</span></div>
+          <span class="mk-btn primary rep-dark">+ Agregar</span>
+        </div>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Tiene que ser el permalink</strong><span class="d">Pega el enlace directo de la publicación (el que te da el botón "Compartir → Copiar enlace" de Instagram), no el de tu perfil general.</span></div></li>
+      </ol>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" id="usuarios">
+      <div class="step-head"><span class="step-num">04</span><h2>Usuarios y permisos</h2></div>
+      <p class="step-intro">Solo visible para cuentas administradoras. Aquí se decide qué puede ver cada persona que entra al panel.</p>
+
+      <div class="mk">
+        <table class="mk-table">
+          <thead><tr><th>Usuario</th><th>Rol</th><th>Secciones</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>maría@origenbrows.com</td>
+              <td><span class="mk-field">Vendedora <span class="tag">1</span></span></td>
+              <td>
+                <table class="mk-perm-table">
+                  <thead><tr><th></th><th>Citas</th><th>Clientas</th><th>Lealtad</th><th>Reportes</th><th>Finanzas</th><th>Contenido</th><th>Config.</th></tr></thead>
+                  <tr><td>Ver</td><td><span class="mk-check-box on"></span></td><td><span class="mk-check-box on"></span></td><td><span class="mk-check-box off"></span></td><td><span class="mk-check-box off"></span></td><td><span class="mk-check-box off"></span></td><td><span class="mk-check-box off"></span></td><td><span class="mk-check-box off"></span></td></tr>
+                  <tr><td>Solo lectura <span class="tag">2</span></td><td><span class="mk-check-box off"></span></td><td><span class="mk-check-box on"></span></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ol class="legend">
+        <li><span class="tag">1</span><div><strong>Rol de cada usuario</strong><span class="d">Administradora, Manager, Vendedora o Personalizado. Una cuenta <strong>Administradora</strong> siempre ve todas las secciones con "Ver" activado y bloqueado — no se le puede quitar acceso a nada desde aquí.</span></div></li>
+        <li><span class="tag">2</span><div><strong>Casilla "Solo lectura"</strong><span class="d">Existe en esta pantalla y se guarda al marcarla, pero hoy día <strong>no cambia nada</strong> en ninguna otra página del panel — una persona marcada como "solo lectura" puede seguir editando todo igual que si no lo estuviera. Es un control pensado para más adelante, todavía no está conectado.</span></div></li>
+      </ol>
+
+      <div class="callout alert">
+        <span class="ic">🚫</span>
+        <p><strong>Importante:</strong> <strong>Promos</strong> y <strong>Sorteos</strong> no aparecen en esta lista de secciones — hoy día cualquier persona con sesión iniciada puede entrar a esas dos páginas sin que el permiso de "Secciones" la bloquee, sin importar lo que tenga marcado aquí.</p>
+      </div>
+
+      <div class="callout warn">
+        <span class="ic">⚠️</span>
+        <p><strong>Punto donde te puedes atorar:</strong> cada fila de la tabla se guarda <strong>por su cuenta</strong> al marcar o desmarcar una casilla — no hay un botón general de "Guardar cambios" al final. Si una persona te dice que no ve una sección, revisa aquí su casilla de "Ver" correspondiente.</p>
+      </div>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Cuando a alguien le falta acceso a una sección, al intentar entrar le aparece una pantalla de "Sin acceso" con el mensaje: <em>"Tu cuenta no tiene permiso para ver esta sección. Pide a una administradora que te lo active desde Configuración → Usuarios y permisos."</em> — y el enlace de esa sección se le oculta de su propia barra lateral.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="step" id="historial">
+      <div class="step-head"><span class="step-num">05</span><h2>Historial de inicio de sesión</h2></div>
+      <p class="step-intro">También solo para administradoras — un registro de quién ha entrado al panel y cuándo.</p>
+
+      <div class="mk">
+        <table class="mk-table">
+          <thead><tr><th>Usuario</th><th>Fecha y hora</th></tr></thead>
+          <tbody>
+            <tr><td>maría@origenbrows.com</td><td>04/11/2026, 09:12</td></tr>
+            <tr><td>admin@origenbrows.com</td><td>03/11/2026, 18:40</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="ic">💡</span>
+        <p>Sirve para revisar que solo las personas correctas estén entrando al panel — útil si sospechas que alguien más tiene las credenciales de una cuenta.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="step" id="resumen">
+      <div class="step-head"><span class="step-num">06</span><h2>Resumen: los 5 lugares donde te puedes atorar</h2></div>
+      <p class="step-intro">Para consultar rápido.</p>
+
+      <ol class="recap-list">
+        <li><div class="recap-row"><div class="body"><strong>4.5 MB por archivo en la galería</strong><span>Si una foto o video no se sube, lo más probable es que pese de más — compŕimelo antes de intentar de nuevo.</span></div><a href="#galeria">Parte 1 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Las subidas de galería van una por una</strong><span>Con varios archivos pesados a la vez, espera a que termine en lugar de cerrar la pestaña.</span></div><a href="#galeria">Parte 1 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Antes y después" exige ambas fotos</strong><span>El botón "+ Agregar" no se activa hasta tener las dos imágenes seleccionadas.</span></div><a href="#antes-despues">Parte 2 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>"Solo lectura" todavía no hace nada</strong><span>Se guarda, pero ninguna página del panel la respeta hoy — no la uses como si fuera un bloqueo real.</span></div><a href="#usuarios">Parte 4 ↑</a></div></li>
+        <li><div class="recap-row"><div class="body"><strong>Promos y Sorteos no tienen permiso de sección</strong><span>Cualquier persona con sesión iniciada entra a esas dos páginas, sin importar lo que tenga marcado en "Secciones".</span></div><a href="#usuarios">Parte 4 ↑</a></div></li>
+      </ol>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<footer>Guía de referencia interna sobre <strong>admin/configuracion.html</strong> — no requiere iniciar sesión para consultarla; los datos de ejemplo no son reales.</footer>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if (!sections.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  function setActive(id){
+    if (id === current) return;
+    current = id;
+    links.forEach(function(a){ a.classList.remove('is-active'); });
+    var a = byId[id];
+    if (a) { a.classList.add('is-active'); if (a.scrollIntoView) a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){ if (entry.isIntersecting) setActive(entry.target.id); });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+  setActive(sections[0].id);
+})();
+</script>
+<script src="../../js/ayuda-embed.js"></script>
+</body>
+</html>
