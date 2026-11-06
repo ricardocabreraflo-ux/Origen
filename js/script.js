@@ -1423,8 +1423,16 @@
       const promoFromUrl = new URLSearchParams(window.location.search).get("promo");
       if (promoFromUrl) {
         els.promoCodeInput.value = promoFromUrl.trim().toUpperCase();
-        checkPromoCode();
       }
+
+      // Si llegó desde "Mi paquete" (?service=ID), salta directo a elegir
+      // fecha y hora en vez de hacerla escoger el servicio otra vez.
+      const serviceFromUrl = new URLSearchParams(window.location.search).get("service");
+      if (serviceFromUrl) {
+        const preselected = serviceById(serviceFromUrl);
+        if (preselected) selectService(preselected);
+      }
+      if (promoFromUrl) checkPromoCode();
       let promoCheckTimer;
       els.promoCodeInput.addEventListener("input", () => {
         clearTimeout(promoCheckTimer);

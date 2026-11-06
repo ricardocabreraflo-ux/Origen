@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mi paquete · Origen Brows &amp; Hair Studio</title>
+<meta name="description" content="Consulta cuántas sesiones de tu paquete llevas en Origen Brows & Hair Studio y agenda la siguiente." />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  body { background: var(--color-cream-soft); }
+  .pkg-wrap { max-width: 480px; margin: 0 auto; padding: 60px 24px 100px; text-align: center; }
+  .pkg-card { background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px 32px; margin-top: 32px; }
+  .pkg-form { display: flex; flex-direction: column; gap: 16px; }
+  .pkg-form label { text-align: left; font-size: 0.88rem; font-weight: 600; color: var(--color-dark); }
+  .pkg-form input {
+    font-family: var(--font-body);
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(33, 29, 25, 0.15);
+    font-size: 0.95rem;
+    background: var(--color-cream-soft);
+    color: var(--color-dark);
+  }
+  .pkg-form input:focus { outline: none; border-color: var(--color-accent-dark); background: var(--color-white); }
+  .pkg-hint { font-size: 0.85rem; color: var(--color-muted); min-height: 1.2em; margin-top: 12px; }
+  .pkg-hint.is-error { color: #a13a2f; }
+  .pkg-result { margin-top: 28px; text-align: left; }
+  .pkg-result[hidden] { display: none; }
+  .pkg-item { border-top: 1px solid rgba(33,29,25,0.12); padding-top: 22px; margin-top: 22px; }
+  .pkg-item:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+  .pkg-name { font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-primary); margin: 0 0 10px; text-align: center; }
+  .pkg-stamps { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .pkg-stamp {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent-dark);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .pkg-stamp.is-filled { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
+  .pkg-message { color: var(--color-dark); font-size: 0.98rem; text-align: center; margin: 0 0 4px; }
+  .pkg-submessage { color: var(--color-muted); font-size: 0.88rem; text-align: center; margin: 0 0 18px; }
+  .pkg-item .btn { width: 100%; }
+  .pkg-empty { color: var(--color-muted); font-size: 0.95rem; }
+</style>
+</head>
+<body>
+
+<div class="pkg-wrap">
+  <p class="section-eyebrow" id="pkg-eyebrow">Origen Brows &amp; Hair Studio</p>
+  <h1 class="section-title">Mi paquete</h1>
+  <p class="section-note">
+    Si compraste un paquete de varias sesiones, escribe el teléfono con el que lo agendaste para ver cuántas llevas y agendar la siguiente.
+  </p>
+
+  <div class="pkg-card">
+    <form class="pkg-form" id="pkg-form">
+      <label for="pkg-phone">Tu teléfono</label>
+      <input type="tel" id="pkg-phone" name="phone" required placeholder="Ej. 55 1234 5678" />
+      <button type="submit" class="btn btn-primary" id="pkg-submit">Ver mi paquete</button>
+      <p class="pkg-hint" id="pkg-hint"></p>
+    </form>
+
+    <div class="pkg-result" id="pkg-result" hidden></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  fetch("data/config.json")
+    .then((res) => res.json())
+    .then((cfg) => {
+      if (cfg.name) document.getElementById("pkg-eyebrow").textContent = cfg.name;
+    })
+    .catch(() => {});
+
+  const form = document.getElementById("pkg-form");
+  const phoneInput = document.getElementById("pkg-phone");
+  const submitBtn = document.getElementById("pkg-submit");
+  const hint = document.getElementById("pkg-hint");
+  const result = document.getElementById("pkg-result");
+
+  function renderStamps(used, total) {
+    let html = "";
+    for (let i = 1; i <= total; i++) {
+      html += `<span class="pkg-stamp${i <= used ? " is-filled" : ""}">${i <= used ? "✓" : i}</span>`;
+    }
+    return html;
+  }
+
+  function renderPackage(pkg) {
+    const bookLink = `index.html?promo=${encodeURIComponent(pkg.code)}${pkg.serviceId ? `&service=${encodeURIComponent(pkg.serviceId)}` : ""}`;
+    return `
+      <div class="pkg-item">
+        <p class="pkg-name">${pkg.campaignName}</p>
+        <div class="pkg-stamps">${renderStamps(pkg.sessionsUsed, pkg.totalSessions)}</div>
+        <p class="pkg-message">Llevas ${pkg.sessionsUsed} de ${pkg.totalSessions} sesiones.</p>
+        <p class="pkg-submessage">
+          ${pkg.remaining > 0 ? `Te ${pkg.remaining === 1 ? "falta" : "faltan"} ${pkg.remaining} sesión${pkg.remaining === 1 ? "" : "es"} más.` : "Ya usaste todas tus sesiones — ¡gracias por tu paquete!"}
+        </p>
+        ${pkg.canBookMore ? `<a class="btn btn-primary" href="${bookLink}">Agendar mi siguiente sesión</a>` : ""}
+      </div>`;
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    hint.textContent = "";
+    hint.classList.remove("is-error");
+    result.hidden = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Buscando…";
+
+    fetch(`/api/package-status?phone=${encodeURIComponent(phoneInput.value)}`)
+      .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+      .then(({ ok, body }) => {
+        if (!ok) throw new Error(body.message || "No se pudo consultar tu paquete.");
+        const packages = body.packages || [];
+        result.innerHTML = packages.length
+          ? packages.map(renderPackage).join("")
+          : '<p class="pkg-empty">No encontramos ningún paquete con este teléfono. Verifica que sea el mismo número con el que agendaste tu primera sesión.</p>';
+        result.hidden = false;
+      })
+      .catch((err) => {
+        hint.textContent = err.message || "No se pudo consultar tu paquete. Intenta de nuevo.";
+        hint.classList.add("is-error");
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Ver mi paquete";
+      });
+  });
+})();
+</script>
+</body>
+</html>
