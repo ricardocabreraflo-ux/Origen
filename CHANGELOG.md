@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.7.0 — 2026-11-06
+Nuevo: página "Mi paquete" — la clienta con un paquete de varias sesiones (ej. "6 sesiones por $999") pone su teléfono y ve cuántas sesiones lleva, cuántas le faltan, y un botón para agendar la siguiente ella misma (ya con el servicio y el código precargados, sin tener que volver a elegir servicio ni escribir el código). Antes la administradora tenía que crear a mano cada una de las siguientes citas del paquete desde Citas.
+
 ## 1.6.0 — 2026-10-28
 Nuevo: promociones "paquete" (ej. "6 sesiones por $999"). En Promos hay un nuevo checkbox "Es un paquete de varias sesiones" — el cupo es por clienta, no global: cada una que use el código tiene derecho a sus N sesiones. La primera paga el paquete completo; de la 2a en adelante ya están pagadas (sin pedir transferencia, sin contar como ingreso nuevo, y sin contar otra vez para la tarjeta de lealtad). Funciona tanto si la clienta agenda sola en la página como si tú agendas las siguientes sesiones a mano desde Citas.
 
