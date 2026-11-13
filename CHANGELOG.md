@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.7.1 — 2026-11-13
+Corrección: "Mi paquete" no estaba enlazada en ningún lado del sitio público (solo funcionaba si tenías el link exacto) — ya aparece en el pie de página junto a "Tarjeta de lealtad". También se actualizaron los manuales de ayuda de Promos y Citas para explicar que la clienta agenda sus siguientes sesiones sola ahí.
+
 ## 1.7.0 — 2026-11-06
 Nuevo: página "Mi paquete" — la clienta con un paquete de varias sesiones (ej. "6 sesiones por $999") pone su teléfono y ve cuántas sesiones lleva, cuántas le faltan, y un botón para agendar la siguiente ella misma (ya con el servicio y el código precargados, sin tener que volver a elegir servicio ni escribir el código). Antes la administradora tenía que crear a mano cada una de las siguientes citas del paquete desde Citas.
 
