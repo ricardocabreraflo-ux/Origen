@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.8.0 — 2026-11-13
+Nuevo: carrusel "Promos de la semana" en la página principal, justo después del mensaje de bienvenida — administrable desde Configuración → Promos de la semana (sube, ordena y borra las imágenes igual que en Galería de fotos). La sección aparece sola en cuanto subes la primera imagen y desaparece sola cuando las borras, así que cuando termine una promoción no hay que tocar nada más. También se extendió la ventana emergente de promoción para poder mostrar una imagen (antes solo texto) y una fecha de inicio además de la de vencimiento — y se corrigió que quedaba "vista" para siempre en el celular de la clienta sin importar qué tan distinta fuera la siguiente campaña. Activa del 13 al 17 de noviembre para Black Friday.
+
 ## 1.7.1 — 2026-11-13
 Corrección: "Mi paquete" no estaba enlazada en ningún lado del sitio público (solo funcionaba si tenías el link exacto) — ya aparece en el pie de página junto a "Tarjeta de lealtad". También se actualizaron los manuales de ayuda de Promos y Citas para explicar que la clienta agenda sus siguientes sesiones sola ahí.
 
