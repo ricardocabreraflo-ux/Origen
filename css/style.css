@@ -1109,7 +1109,30 @@ img { max-width: 100%; display: block; }
   scroll-snap-align: start;
 }
 .instagram-grid iframe { border-radius: var(--radius) !important; width: 100% !important; }
-.promo-banner-img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); display: block; }
+
+/* Promos de la semana — carrete horizontal que se desliza solo, igual
+   que la galería de fotos (misma animación "gallery-scroll"). */
+.promo-marquee { overflow: hidden; }
+.promo-marquee-grid {
+  display: flex;
+  width: max-content;
+  gap: 16px;
+  margin-top: 40px;
+  animation: gallery-scroll 50s linear infinite;
+}
+.promo-marquee:hover .promo-marquee-grid,
+.promo-marquee:focus-within .promo-marquee-grid { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .promo-marquee-grid { animation: none; }
+}
+.promo-marquee-item {
+  flex: 0 0 220px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-cream);
+}
+.promo-marquee-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* Floating WhatsApp button */
 .floating-whatsapp {

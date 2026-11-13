@@ -541,7 +541,11 @@
   // "Promos de la semana" (Configuración → Promos de la semana): la
   // sección empieza oculta — solo aparece si hay al menos una imagen
   // subida. Así, cuando termina la promoción y se borran las imágenes
-  // desde el panel, el carrusel desaparece solo de la página.
+  // desde el panel, el carrusel desaparece solo de la página. Se mueve
+  // sola en bucle infinito (mismo patrón que la galería de fotos):
+  // las imágenes se duplican una vez para que el "salto" de regreso al
+  // inicio sea invisible — la segunda copia queda oculta a lectores de
+  // pantalla para no anunciar cada imagen dos veces.
   function renderPromoBanners() {
     fetch("/api/list-promo-banners")
       .then((res) => (res.ok ? res.json() : null))
@@ -549,9 +553,9 @@
         if (!body || !Array.isArray(body.banners) || !body.banners.length) return;
         const section = document.getElementById("promos-semana");
         const grid = document.getElementById("promo-banners-grid");
-        grid.innerHTML = body.banners
-          .map((b) => `<img class="promo-banner-img" src="${b.url}" alt="${b.alt || "Promoción"}" loading="lazy" />`)
-          .join("");
+        const itemHtml = (b, hidden) =>
+          `<div class="promo-marquee-item"${hidden ? ' aria-hidden="true"' : ""}><img src="${b.url}" alt="${b.alt || "Promoción"}" /></div>`;
+        grid.innerHTML = body.banners.map((b) => itemHtml(b, false)).join("") + body.banners.map((b) => itemHtml(b, true)).join("");
         section.hidden = false;
       })
       .catch(() => {});
