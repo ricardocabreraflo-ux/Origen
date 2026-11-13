@@ -278,11 +278,13 @@
   "email": "origenbrowsmx@gmail.com",
   "promoPopup": {
     "show": true,
-    "eyebrow": "Oferta especial",
-    "title": "15% de descuento en tu primera cita",
-    "message": "Agenda tu primera cita y recibe 15% de descuento en cualquier servicio. Además, nuestras tarifas actuales están vigentes solo por tiempo limitado — asegura tu precio antes del cambio a tarifario regular.",
-    "ctaLabel": "Agenda tu cita",
-    "expiresOn": "2026-08-31"
+    "eyebrow": "Black Friday",
+    "title": "Promos de la semana, del 12 al 17 de noviembre",
+    "message": "Combo Full Look, Set de pestañas, Diseñando tu Origen, Luxury Brow Lamination y más — revisa todas las promos antes de agendar.",
+    "ctaLabel": "Ver promos y agendar",
+    "startsOn": "2026-11-13",
+    "expiresOn": "2026-11-17",
+    "image": "/assets/promo-blackfriday-2026.jpg"
   },
   "referral": {
     "rewardDiscountPercent": 15,

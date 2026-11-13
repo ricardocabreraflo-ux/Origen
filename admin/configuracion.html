@@ -170,6 +170,21 @@
     <div class="gallery-manager-grid" id="gallery-manager-grid" hidden></div>
   </div>
 
+  <div class="card" id="promo-banners-card">
+    <h2>Promos de la semana</h2>
+    <p class="section-note">Flyers de promoción (ej. Black Friday) que se muestran en un carrusel al inicio de la página principal. Cuando termine la promoción, borra las imágenes de aquí y el carrusel desaparece solo.</p>
+    <div class="row-actions" style="margin-bottom:16px;">
+      <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+        + Subir imagen
+        <input type="file" id="promo-banners-upload-input" accept="image/jpeg,image/png,image/webp" multiple hidden />
+      </label>
+      <span class="form-hint" id="promo-banners-upload-hint"></span>
+    </div>
+    <div id="promo-banners-loading">Cargando…</div>
+    <div id="promo-banners-empty" hidden>Todavía no hay imágenes.</div>
+    <div class="gallery-manager-grid" id="promo-banners-grid" hidden></div>
+  </div>
+
   <div class="card" id="before-after-card">
     <h2>Antes y después</h2>
     <p class="section-note">Fotos reales de resultados (con permiso de la clienta) que se muestran en la página principal. Sube las dos fotos de un mismo caso y agrégalo.</p>
@@ -362,6 +377,165 @@
     roCheckbox.disabled = isAdminRole || !viewCheckbox.checked;
     if (isAdminRole || !viewCheckbox.checked) roCheckbox.checked = false;
   }
+
+  /* ---------------------------------------------------------
+     Promos de la semana
+  --------------------------------------------------------- */
+  const promoBannersLoading = document.getElementById("promo-banners-loading");
+  const promoBannersEmpty = document.getElementById("promo-banners-empty");
+  const promoBannersGrid = document.getElementById("promo-banners-grid");
+  const promoBannersUploadInput = document.getElementById("promo-banners-upload-input");
+  const promoBannersUploadHint = document.getElementById("promo-banners-upload-hint");
+  let promoBanners = [];
+  let promoBannersReadOnly = false;
+
+  function promoBannerItemHtml(banner, index, total) {
+    if (promoBannersReadOnly) {
+      return `<div class="gallery-manager-item" data-banner-id="${banner.id}"><img class="thumb" src="${banner.url}" alt="${banner.alt || "Promoción"}" loading="lazy" /></div>`;
+    }
+    return `
+      <div class="gallery-manager-item" data-banner-id="${banner.id}">
+        <img class="thumb" src="${banner.url}" alt="${banner.alt || "Promoción"}" loading="lazy" />
+        <div class="item-body">
+          <div class="item-actions">
+            <button type="button" data-action="left" ${index === 0 ? "disabled" : ""} title="Mover a la izquierda">←</button>
+            <button type="button" data-action="right" ${index === total - 1 ? "disabled" : ""} title="Mover a la derecha">→</button>
+            <button type="button" class="del-btn" data-action="delete" title="Borrar">✕</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderPromoBannersGrid() {
+    promoBannersGrid.innerHTML = promoBanners.map((b, i) => promoBannerItemHtml(b, i, promoBanners.length)).join("");
+  }
+
+  async function loadPromoBanners() {
+    promoBannersLoading.hidden = false;
+    promoBannersEmpty.hidden = true;
+    promoBannersGrid.hidden = true;
+    try {
+      const res = await fetch("/api/list-promo-banners");
+      const body = await res.json();
+      promoBannersLoading.hidden = true;
+      if (!res.ok) {
+        promoBannersEmpty.textContent = "No se pudieron cargar las imágenes.";
+        promoBannersEmpty.hidden = false;
+        return;
+      }
+      promoBanners = body.banners || [];
+      if (!promoBanners.length) {
+        promoBannersEmpty.textContent = "Todavía no hay imágenes.";
+        promoBannersEmpty.hidden = false;
+        return;
+      }
+      renderPromoBannersGrid();
+      promoBannersGrid.hidden = false;
+    } catch {
+      promoBannersLoading.hidden = true;
+      promoBannersEmpty.textContent = "No se pudieron cargar las imágenes.";
+      promoBannersEmpty.hidden = false;
+    }
+  }
+
+  async function savePromoBannersOrder() {
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    await fetch("/api/reorder-promo-banners", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ orderedIds: promoBanners.map((b) => b.id) }),
+    });
+  }
+
+  const PROMO_BANNER_ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+  async function uploadOnePromoBannerFile(file) {
+    if (!PROMO_BANNER_ALLOWED_TYPES.includes(file.type)) {
+      throw new Error(`"${file.name}": formato no soportado (usa JPG, PNG o WEBP).`);
+    }
+    if (file.size > 4.5 * 1024 * 1024) {
+      throw new Error(`"${file.name}": pesa demasiado (máximo 4.5 MB).`);
+    }
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const dataBase64 = dataUrl.split(",")[1];
+
+    const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+    const res = await fetch("/api/upload-promo-banner", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ dataBase64, contentType: file.type, alt: "" }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(`"${file.name}": ${body.message || "no se pudo subir."}`);
+  }
+
+  promoBannersUploadInput.addEventListener("change", async () => {
+    const files = Array.from(promoBannersUploadInput.files);
+    promoBannersUploadInput.value = "";
+    if (!files.length) return;
+
+    promoBannersUploadHint.classList.remove("is-error");
+    const errors = [];
+    for (let i = 0; i < files.length; i++) {
+      promoBannersUploadHint.textContent = files.length > 1 ? `Subiendo ${i + 1} de ${files.length}…` : "Subiendo…";
+      try {
+        await uploadOnePromoBannerFile(files[i]);
+      } catch (err) {
+        errors.push(err.message || "No se pudo subir.");
+      }
+    }
+
+    await loadPromoBanners();
+    if (errors.length) {
+      promoBannersUploadHint.textContent = errors.join(" ");
+      promoBannersUploadHint.classList.add("is-error");
+    } else {
+      promoBannersUploadHint.textContent = files.length > 1 ? `${files.length} imágenes subidas.` : "Imagen subida.";
+    }
+  });
+
+  promoBannersGrid.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const item = btn.closest(".gallery-manager-item");
+    const bannerId = item.getAttribute("data-banner-id");
+    const index = promoBanners.findIndex((b) => b.id === bannerId);
+    if (index === -1) return;
+    const action = btn.getAttribute("data-action");
+
+    if (action === "left" && index > 0) {
+      [promoBanners[index - 1], promoBanners[index]] = [promoBanners[index], promoBanners[index - 1]];
+      renderPromoBannersGrid();
+      await savePromoBannersOrder();
+    } else if (action === "right" && index < promoBanners.length - 1) {
+      [promoBanners[index + 1], promoBanners[index]] = [promoBanners[index], promoBanners[index + 1]];
+      renderPromoBannersGrid();
+      await savePromoBannersOrder();
+    } else if (action === "delete") {
+      if (!window.confirm("¿Borrar esta imagen de Promos de la semana?")) return;
+      btn.disabled = true;
+      try {
+        const headers = { "Content-Type": "application/json", ...(await authHeaders()) };
+        const res = await fetch("/api/delete-promo-banner", { method: "POST", headers, body: JSON.stringify({ id: bannerId }) });
+        if (!res.ok) throw new Error();
+        promoBanners.splice(index, 1);
+        renderPromoBannersGrid();
+        if (!promoBanners.length) {
+          promoBannersEmpty.textContent = "Todavía no hay imágenes.";
+          promoBannersEmpty.hidden = false;
+          promoBannersGrid.hidden = true;
+        }
+      } catch {
+        alert("No se pudo borrar la imagen. Intenta de nuevo.");
+        btn.disabled = false;
+      }
+    }
+  });
 
   /* ---------------------------------------------------------
      Galería de fotos
@@ -1255,6 +1429,18 @@
     }
 
     const sections = getUserSections(user);
+    const promoBannersCard = document.getElementById("promo-banners-card");
+    if (!sections.includes("contenido")) {
+      promoBannersCard.hidden = true;
+    } else {
+      promoBannersReadOnly = getUserReadOnlySections(user).includes("contenido");
+      if (promoBannersReadOnly) {
+        const uploadLabel = promoBannersCard.querySelector(".row-actions label");
+        if (uploadLabel) uploadLabel.hidden = true;
+      }
+      loadPromoBanners();
+    }
+
     const galleryCard = document.getElementById("gallery-card");
     if (!sections.includes("contenido")) {
       galleryCard.hidden = true;

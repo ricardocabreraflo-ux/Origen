@@ -154,6 +154,8 @@ img { max-width: 100%; display: block; }
   opacity: 0;
   transform: scale(0.95);
   animation: promo-card-in 380ms var(--ease-out) 80ms forwards;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 @keyframes promo-card-in {
   to { opacity: 1; transform: scale(1); }
@@ -194,6 +196,15 @@ img { max-width: 100%; display: block; }
   margin-bottom: 24px;
 }
 .promo-popup .btn { width: 100%; justify-content: center; }
+.promo-popup-image {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+.promo-popup-image[hidden] { display: none; }
 @media (hover: hover) and (pointer: fine) {
   .promo-popup-close:hover { background: rgba(33, 29, 25, 0.08); color: var(--color-dark); }
 }
@@ -1098,6 +1109,7 @@ img { max-width: 100%; display: block; }
   scroll-snap-align: start;
 }
 .instagram-grid iframe { border-radius: var(--radius) !important; width: 100% !important; }
+.promo-banner-img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); display: block; }
 
 /* Floating WhatsApp button */
 .floating-whatsapp {

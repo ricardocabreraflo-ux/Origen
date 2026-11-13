@@ -569,6 +569,21 @@ create table if not exists before_after_photos (
 );
 alter table before_after_photos enable row level security;
 
+-- Promos de la semana (Configuración → Promos de la semana): carrusel de
+-- flyers de promoción en la página principal (ej. Black Friday). Mismo
+-- patrón que la galería de fotos — reusa el bucket "gallery" (prefijo
+-- "promo-banners/") + una tabla con las imágenes y su orden. Se borran
+-- cuando termina la promoción y el carrusel desaparece solo (la sección
+-- se oculta si no hay ninguna imagen).
+create table if not exists promo_banners (
+  id uuid primary key default gen_random_uuid(),
+  storage_path text not null,
+  alt text,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table promo_banners enable row level security;
+
 -- Posts de Instagram destacados (Configuración → Posts de Instagram):
 -- solo guarda el enlace del post — Instagram arma el embed solo, no hay
 -- archivos que subir ni bucket que usar.

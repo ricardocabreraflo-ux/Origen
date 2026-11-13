@@ -19,6 +19,7 @@
 <div class="promo-popup-overlay" id="promo-popup-overlay" hidden>
   <div class="promo-popup" role="dialog" aria-modal="true" aria-labelledby="promo-popup-title">
     <button type="button" class="promo-popup-close" id="promo-popup-close" aria-label="Cerrar">&times;</button>
+    <img class="promo-popup-image" id="promo-popup-image" alt="" hidden />
     <p class="promo-popup-eyebrow" id="promo-popup-eyebrow"></p>
     <h2 class="promo-popup-title" id="promo-popup-title"></h2>
     <p class="promo-popup-message" id="promo-popup-message"></p>
@@ -74,6 +75,15 @@
   <div class="hero-media">
     <img src="assets/founder-portrait.jpg" alt="Origen Brows & Hair Studio" />
   </div>
+</section>
+
+<!-- PROMOS DE LA SEMANA (se oculta sola si no hay imágenes activas) -->
+<section class="section" id="promos-semana" hidden>
+  <div class="container">
+    <p class="section-eyebrow">Promos</p>
+    <h2 class="section-title">Promos de la semana</h2>
+  </div>
+  <div class="instagram-grid" id="promo-banners-grid"></div>
 </section>
 
 <!-- SERVICIOS -->

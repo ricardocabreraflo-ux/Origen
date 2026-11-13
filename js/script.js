@@ -162,11 +162,26 @@
   function initPromoPopup() {
     const promo = cfg.promoPopup;
     if (!promo || !promo.show) return;
-    if (localStorage.getItem("promoPopupSeen")) return;
     const today = new Date().toISOString().split("T")[0];
+    if (promo.startsOn && today < promo.startsOn) return;
     if (promo.expiresOn && today > promo.expiresOn) return;
 
+    // La clave de "ya la vio" incluye las fechas y el título de ESTA
+    // promoción — así, cuando cambias de campaña (p. ej. de la de 15% a
+    // la de Black Friday), a quien ya cerró la anterior se le vuelve a
+    // mostrar la nueva, en vez de quedar bloqueada para siempre.
+    const dismissKey = `promoPopupSeen:${promo.startsOn || ""}:${promo.expiresOn || ""}:${promo.title || promo.eyebrow || ""}`;
+    if (localStorage.getItem(dismissKey)) return;
+
     const overlay = document.getElementById("promo-popup-overlay");
+    const image = document.getElementById("promo-popup-image");
+    if (promo.image) {
+      image.src = promo.image;
+      image.alt = promo.title || promo.eyebrow || "Promoción";
+      image.hidden = false;
+    } else {
+      image.hidden = true;
+    }
     document.getElementById("promo-popup-eyebrow").textContent = promo.eyebrow || "";
     document.getElementById("promo-popup-title").textContent = promo.title || "";
     document.getElementById("promo-popup-message").textContent = promo.message || "";
@@ -175,7 +190,7 @@
 
     function dismiss() {
       overlay.hidden = true;
-      localStorage.setItem("promoPopupSeen", "1");
+      localStorage.setItem(dismissKey, "1");
     }
 
     document.getElementById("promo-popup-close").addEventListener("click", dismiss);
@@ -519,6 +534,25 @@
       .then((body) => {
         if (!body || !Array.isArray(body.posts) || !body.posts.length) return;
         paintInstagram(body.posts);
+      })
+      .catch(() => {});
+  }
+
+  // "Promos de la semana" (Configuración → Promos de la semana): la
+  // sección empieza oculta — solo aparece si hay al menos una imagen
+  // subida. Así, cuando termina la promoción y se borran las imágenes
+  // desde el panel, el carrusel desaparece solo de la página.
+  function renderPromoBanners() {
+    fetch("/api/list-promo-banners")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (!body || !Array.isArray(body.banners) || !body.banners.length) return;
+        const section = document.getElementById("promos-semana");
+        const grid = document.getElementById("promo-banners-grid");
+        grid.innerHTML = body.banners
+          .map((b) => `<img class="promo-banner-img" src="${b.url}" alt="${b.alt || "Promoción"}" loading="lazy" />`)
+          .join("");
+        section.hidden = false;
       })
       .catch(() => {});
   }
@@ -1492,6 +1526,7 @@
     renderPolicies();
     renderTestimonials();
     renderSocialProof();
+    renderPromoBanners();
     renderFAQ();
     initMobileNav();
     BookingFlow.init();

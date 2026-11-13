@@ -49,7 +49,9 @@ collections:
               - { label: "Título grande", name: "title", widget: "string" }
               - { label: "Mensaje", name: "message", widget: "text" }
               - { label: "Texto del botón", name: "ctaLabel", widget: "string" }
+              - { label: "Empieza a mostrarse (opcional)", name: "startsOn", widget: "string", required: false, hint: "Formato AAAA-MM-DD, ejemplo 2026-11-13. Déjalo vacío para que empiece a mostrarse de inmediato." }
               - { label: "Fecha de vencimiento (deja de mostrarse después de esta fecha)", name: "expiresOn", widget: "string", required: false, hint: "Formato AAAA-MM-DD, ejemplo 2026-08-31. Déjalo vacío para que no venza nunca." }
+              - { label: "Imagen (opcional)", name: "image", widget: "image", required: false, hint: "Si subes una imagen (ej. un flyer de promoción), se muestra arriba del texto. Déjalo vacío para una ventana solo de texto." }
 
           - label: "Testimonios (déjalo vacío hasta tener reseñas reales)"
             name: "testimonials"
