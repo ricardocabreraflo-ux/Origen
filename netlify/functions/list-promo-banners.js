@@ -23,6 +23,6 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify({ banners }) };
   } catch (err) {
     console.error("list-promo-banners error", err);
-    return { statusCode: 500, body: JSON.stringify({ error: "server_error", debug: err.message, stack: err.stack }) };
+    return { statusCode: 500, body: JSON.stringify({ error: "server_error" }) };
   }
 };
