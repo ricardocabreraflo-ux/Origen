@@ -1,11 +1,12 @@
-// Panel (requiere sesión, sección "citas"): busca si una clienta ya
-// existe —por citas previas o por la agenda a mano— a partir de su
-// teléfono O de su nombre, para autocompletar el resto de sus datos en
-// cualquier formulario que lo use ("Agendar manualmente", "Registrar
-// cita directa") sin que la administradora tenga que volver a
-// escribirlos. Mismo criterio de coincidencia que Clientas (last10).
+// Panel (requiere sesión, sección "citas" o "clientas"): busca si una
+// clienta ya existe —por citas previas o por la agenda a mano— a
+// partir de su teléfono O de su nombre, para autocompletar el resto de
+// sus datos en cualquier formulario que lo use ("Agendar
+// manualmente", "Registrar cita directa", "Agregar clienta") sin que
+// la administradora tenga que volver a escribirlos. Mismo criterio de
+// coincidencia que Clientas (last10).
 const { getServiceClient } = require("./_lib/supabase");
-const { requireSection } = require("./_lib/requireAdmin");
+const { requireAdmin, getUserSections } = require("./_lib/requireAdmin");
 const { last10 } = require("./_lib/loyalty");
 
 exports.handler = async (event, context) => {
@@ -14,7 +15,11 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    requireSection(context, "citas");
+    const user = requireAdmin(context);
+    const sections = getUserSections(user);
+    if (!sections.includes("citas") && !sections.includes("clientas")) {
+      return { statusCode: 403, body: JSON.stringify({ error: "unauthorized" }) };
+    }
   } catch (err) {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }

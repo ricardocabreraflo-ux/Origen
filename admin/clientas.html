@@ -165,10 +165,12 @@
         <div>
           <label for="cl-name">Nombre</label>
           <input type="text" id="cl-name" required placeholder="Nombre de la clienta" />
+          <p class="form-hint" id="cl-name-hint"></p>
         </div>
         <div>
           <label for="cl-phone">Teléfono</label>
           <input type="tel" id="cl-phone" required placeholder="Ej. 55 1234 5678" />
+          <p class="form-hint" id="cl-phone-hint"></p>
         </div>
         <div>
           <label for="cl-email">Correo (opcional)</label>
@@ -256,6 +258,8 @@
   const clHint = document.getElementById("cl-hint");
   const clSubmit = document.getElementById("cl-submit");
   const editingBanner = document.getElementById("editing-banner");
+  const clNameHint = document.getElementById("cl-name-hint");
+  const clPhoneHint = document.getElementById("cl-phone-hint");
 
   let editingId = null;
   let clientsCache = [];
@@ -266,6 +270,42 @@
     const token = await user.jwt();
     return { Authorization: `Bearer ${token}` };
   }
+
+  // Reconocimiento de clienta por teléfono o por nombre — mismo
+  // endpoint que usan "Agendar manualmente" y "Registrar cita directa"
+  // en Citas. Solo corre al AGREGAR una clienta nueva (no mientras se
+  // está editando una ya existente, que ya trae sus datos cargados).
+  async function runClientLookup(params, hintEl, fillName, fillPhone) {
+    hintEl.textContent = "";
+    hintEl.classList.remove("is-error");
+    if (editingId) return;
+    try {
+      const headers = await authHeaders();
+      const query = new URLSearchParams(params).toString();
+      const res = await fetch(`/api/get-client-by-phone?${query}`, { headers });
+      if (!res.ok) return;
+      const body = await res.json();
+      if (!body.client) return;
+      if (fillName && !clName.value.trim()) clName.value = body.client.name;
+      if (fillPhone && !clPhone.value.trim() && body.client.phone) clPhone.value = body.client.phone;
+      if (!clEmail.value.trim() && body.client.email) clEmail.value = body.client.email;
+      hintEl.textContent = `✓ Clienta encontrada: ${body.client.name}`;
+    } catch {
+      // Silencioso — si falla la búsqueda, no bloquea el formulario.
+    }
+  }
+
+  clPhone.addEventListener("blur", () => {
+    const digits = clPhone.value.replace(/\D/g, "").slice(-10);
+    if (digits.length < 10) return;
+    runClientLookup({ phone: digits }, clPhoneHint, true, false);
+  });
+
+  clName.addEventListener("blur", () => {
+    const name = clName.value.trim();
+    if (name.length < 3) return;
+    runClientLookup({ name }, clNameHint, false, true);
+  });
 
   function resetEditingState() {
     editingId = null;
