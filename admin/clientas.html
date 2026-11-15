@@ -229,13 +229,32 @@
   "use strict";
 
   // Número de versión del panel, al fondo del menú (ver CHANGELOG.md).
-  fetch("../data/version.json")
-    .then((res) => (res.ok ? res.json() : null))
-    .then((v) => {
-      const el = document.getElementById("sidebar-version");
-      if (el && v && v.version) el.textContent = `v${v.version}`;
-    })
-    .catch(() => {});
+  // También revisa cada rato si ya se publicó una versión nueva — si
+  // hay, muestra un botón abajo para actualizar cuando ella quiera, en
+  // vez de recargar sola (para no sacarla de a mitad de una cita). Al
+  // tocarlo solo recarga ESTA página, así que se queda en la misma
+  // sección del panel donde ya estaba.
+  let panelVersionSeen = null;
+  function checkPanelVersion() {
+    fetch("../data/version.json", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((v) => {
+        if (!v || !v.version) return;
+        const el = document.getElementById("sidebar-version");
+        if (el) el.textContent = `v${v.version}`;
+        if (panelVersionSeen === null) {
+          panelVersionSeen = v.version;
+        } else if (v.version !== panelVersionSeen) {
+          const banner = document.getElementById("update-banner");
+          if (banner) banner.hidden = false;
+        }
+      })
+      .catch(() => {});
+  }
+  checkPanelVersion();
+  setInterval(checkPanelVersion, 3 * 60 * 1000);
+  const updateBannerBtn = document.getElementById("update-banner-btn");
+  if (updateBannerBtn) updateBannerBtn.addEventListener("click", () => window.location.reload());
 
   const SOURCE_LABEL = { agenda: "Reservó en el sitio", manual: "Agregada a mano", ambos: "Ambos" };
 
@@ -700,5 +719,17 @@
   window.netlifyIdentity.init();
 })();
 </script>
+<style>
+  .update-banner { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 300; }
+  .update-banner[hidden] { display: none; }
+  .update-banner button {
+    background: var(--color-dark); color: var(--color-cream); border: none; border-radius: 999px;
+    padding: 10px 18px; font-family: var(--font-body); font-size: 0.85rem; font-weight: 600;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25); cursor: pointer;
+  }
+</style>
+<div class="update-banner" id="update-banner" hidden>
+  <button type="button" id="update-banner-btn">🔄 Hay una actualización — Actualizar</button>
+</div>
 </body>
 </html>

@@ -75,6 +75,35 @@
   .user-save-hint.is-error { color: #a13a2f; }
   #users-empty, #users-loading { text-align: center; padding: 40px 20px; color: var(--color-muted); }
   #users-denied { text-align: center; padding: 40px 20px; color: var(--color-muted); }
+
+  /* Ventana emergente del historial de inicio de sesión */
+  .manual-overlay {
+    position: fixed; inset: 0; background: rgba(20, 17, 14, 0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; z-index: 50;
+  }
+  .manual-overlay[hidden] { display: none; }
+  .manual-modal {
+    position: relative;
+    background: var(--color-white); border-radius: var(--radius); box-shadow: var(--shadow);
+    max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 28px 28px 32px;
+  }
+  .manual-modal h2 { font-size: 1.3rem; margin: 0 0 4px; }
+  .actions-close {
+    position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
+    border-radius: 50%; border: none; background: var(--color-cream); color: var(--color-dark);
+    font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .login-history-week { border: 1px solid rgba(33,29,25,0.1); border-radius: 10px; margin-top: 10px; overflow: hidden; }
+  .login-history-week summary {
+    padding: 12px 14px; cursor: pointer; font-weight: 600; font-size: 0.88rem;
+    list-style: none; display: flex; justify-content: space-between; gap: 10px;
+    background: var(--color-cream-soft);
+  }
+  .login-history-week summary::-webkit-details-marker { display: none; }
+  .login-history-week summary .count { color: var(--color-muted); font-weight: 500; font-size: 0.78rem; }
+  .login-history-week table.users-table { margin: 0; }
+  .login-history-week .table-scroll { padding: 0 14px 10px; }
 </style>
 </head>
 <body>
@@ -245,19 +274,18 @@
   <div class="card" id="login-history-card">
     <h2>Historial de inicio de sesión</h2>
     <p class="section-note">Quién entró al panel y cuándo — se guarda un registro cada vez que alguien inicia sesión (solo lo ve una cuenta administradora).</p>
-    <div id="login-history-loading">Cargando…</div>
-    <div id="login-history-denied" hidden>Solo una cuenta administradora puede ver el historial de inicio de sesión.</div>
-    <div id="login-history-empty" hidden>Todavía no hay registros.</div>
-    <div class="table-scroll">
-      <table class="users-table" id="login-history-table" hidden>
-        <thead>
-          <tr>
-            <th>Cuenta</th>
-            <th>Fecha y hora</th>
-          </tr>
-        </thead>
-        <tbody id="login-history-tbody"></tbody>
-      </table>
+    <button type="button" class="btn btn-outline btn-sm" id="login-history-open-btn">Ver historial</button>
+  </div>
+
+  <div class="manual-overlay" id="login-history-overlay" hidden>
+    <div class="manual-modal">
+      <button type="button" class="actions-close" id="login-history-close-btn" aria-label="Cerrar">✕</button>
+      <h2>Historial de inicio de sesión</h2>
+      <p class="section-note">Agrupado por semana — toca una semana para ver sus registros.</p>
+      <div id="login-history-loading">Cargando…</div>
+      <div id="login-history-denied" hidden>Solo una cuenta administradora puede ver el historial de inicio de sesión.</div>
+      <div id="login-history-empty" hidden>Todavía no hay registros.</div>
+      <div id="login-history-weeks"></div>
     </div>
   </div>
   </div>
@@ -278,13 +306,32 @@
   "use strict";
 
   // Número de versión del panel, al fondo del menú (ver CHANGELOG.md).
-  fetch("../data/version.json")
-    .then((res) => (res.ok ? res.json() : null))
-    .then((v) => {
-      const el = document.getElementById("sidebar-version");
-      if (el && v && v.version) el.textContent = `v${v.version}`;
-    })
-    .catch(() => {});
+  // También revisa cada rato si ya se publicó una versión nueva — si
+  // hay, muestra un botón abajo para actualizar cuando ella quiera, en
+  // vez de recargar sola (para no sacarla de a mitad de una cita). Al
+  // tocarlo solo recarga ESTA página, así que se queda en la misma
+  // sección del panel donde ya estaba.
+  let panelVersionSeen = null;
+  function checkPanelVersion() {
+    fetch("../data/version.json", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((v) => {
+        if (!v || !v.version) return;
+        const el = document.getElementById("sidebar-version");
+        if (el) el.textContent = `v${v.version}`;
+        if (panelVersionSeen === null) {
+          panelVersionSeen = v.version;
+        } else if (v.version !== panelVersionSeen) {
+          const banner = document.getElementById("update-banner");
+          if (banner) banner.hidden = false;
+        }
+      })
+      .catch(() => {});
+  }
+  checkPanelVersion();
+  setInterval(checkPanelVersion, 3 * 60 * 1000);
+  const updateBannerBtn = document.getElementById("update-banner-btn");
+  if (updateBannerBtn) updateBannerBtn.addEventListener("click", () => window.location.reload());
 
   const SECTION_LABEL = {
     citas: "Citas",
@@ -1103,11 +1150,12 @@
   /* ---------------------------------------------------------
      Historial de inicio de sesión
   --------------------------------------------------------- */
+  const loginHistoryOverlay = document.getElementById("login-history-overlay");
   const loginHistoryLoading = document.getElementById("login-history-loading");
   const loginHistoryDenied = document.getElementById("login-history-denied");
   const loginHistoryEmpty = document.getElementById("login-history-empty");
-  const loginHistoryTable = document.getElementById("login-history-table");
-  const loginHistoryTbody = document.getElementById("login-history-tbody");
+  const loginHistoryWeeks = document.getElementById("login-history-weeks");
+  let loginHistoryLoaded = false;
 
   function formatLoginDate(iso) {
     return new Date(iso).toLocaleString("es-MX", {
@@ -1119,11 +1167,53 @@
     });
   }
 
+  // Agrupa en bloques de semana (lunes a domingo) para no mostrar de
+  // golpe cientos de filas — cada semana se abre y cierra por separado,
+  // con la más reciente ya abierta.
+  function weekLabel(monday) {
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    const fmt = (d) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+    return `Semana del ${fmt(monday)} al ${fmt(sunday)}`;
+  }
+
+  function mondayOf(date) {
+    const d = new Date(date);
+    const day = d.getDay(); // 0 = domingo
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function groupByWeek(logins) {
+    const groups = new Map();
+    logins.forEach((l) => {
+      const monday = mondayOf(new Date(l.logged_in_at));
+      const key = monday.toISOString().slice(0, 10);
+      if (!groups.has(key)) groups.set(key, { monday, items: [] });
+      groups.get(key).items.push(l);
+    });
+    return Array.from(groups.values()).sort((a, b) => b.monday - a.monday);
+  }
+
+  function loginRowsHtml(items) {
+    return items
+      .map(
+        (l) => `
+        <tr>
+          <td><strong>${l.full_name || l.email}</strong>${l.full_name ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${l.email}</span>` : ""}</td>
+          <td>${formatLoginDate(l.logged_in_at)}</td>
+        </tr>`
+      )
+      .join("");
+  }
+
   async function loadLoginHistory() {
     loginHistoryLoading.hidden = false;
     loginHistoryDenied.hidden = true;
     loginHistoryEmpty.hidden = true;
-    loginHistoryTable.hidden = true;
+    loginHistoryWeeks.innerHTML = "";
 
     try {
       const headers = await authHeaders();
@@ -1143,21 +1233,39 @@
         loginHistoryEmpty.hidden = false;
         return;
       }
-      loginHistoryTbody.innerHTML = logins
+      const weeks = groupByWeek(logins);
+      loginHistoryWeeks.innerHTML = weeks
         .map(
-          (l) => `
-        <tr>
-          <td><strong>${l.full_name || l.email}</strong>${l.full_name ? `<br/><span style="color:var(--color-muted);font-size:0.78rem;">${l.email}</span>` : ""}</td>
-          <td>${formatLoginDate(l.logged_in_at)}</td>
-        </tr>`
+          (w, i) => `
+        <details class="login-history-week"${i === 0 ? " open" : ""}>
+          <summary><span>${weekLabel(w.monday)}</span><span class="count">${w.items.length} inicio${w.items.length === 1 ? "" : "s"}</span></summary>
+          <div class="table-scroll">
+            <table class="users-table">
+              <thead><tr><th>Cuenta</th><th>Fecha y hora</th></tr></thead>
+              <tbody>${loginRowsHtml(w.items)}</tbody>
+            </table>
+          </div>
+        </details>`
         )
         .join("");
-      loginHistoryTable.hidden = false;
     } catch {
       loginHistoryLoading.hidden = true;
       loginHistoryEmpty.hidden = false;
     }
   }
+
+  function openLoginHistoryModal() {
+    loginHistoryOverlay.hidden = false;
+    if (!loginHistoryLoaded) {
+      loginHistoryLoaded = true;
+      loadLoginHistory();
+    }
+  }
+  function closeLoginHistoryModal() {
+    loginHistoryOverlay.hidden = true;
+  }
+  document.getElementById("login-history-open-btn").addEventListener("click", openLoginHistoryModal);
+  document.getElementById("login-history-close-btn").addEventListener("click", closeLoginHistoryModal);
 
   usersTbody.addEventListener("change", (e) => {
     // Ojo: el checkbox de una sección vive dentro de la mini-tabla
@@ -1425,7 +1533,6 @@
       document.getElementById("login-history-card").hidden = true;
     } else {
       loadUsers();
-      loadLoginHistory();
     }
 
     const sections = getUserSections(user);
@@ -1485,7 +1592,7 @@
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && !adminShell.hidden && !document.getElementById("users-card").hidden) {
       loadUsers();
-      loadLoginHistory();
+      if (!loginHistoryOverlay.hidden) loadLoginHistory();
     }
   });
 
@@ -1508,5 +1615,17 @@
   window.netlifyIdentity.init();
 })();
 </script>
+<style>
+  .update-banner { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 300; }
+  .update-banner[hidden] { display: none; }
+  .update-banner button {
+    background: var(--color-dark); color: var(--color-cream); border: none; border-radius: 999px;
+    padding: 10px 18px; font-family: var(--font-body); font-size: 0.85rem; font-weight: 600;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25); cursor: pointer;
+  }
+</style>
+<div class="update-banner" id="update-banner" hidden>
+  <button type="button" id="update-banner-btn">🔄 Hay una actualización — Actualizar</button>
+</div>
 </body>
 </html>
