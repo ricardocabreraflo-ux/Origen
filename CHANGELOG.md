@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.10.0 — 2026-11-15
+Nuevo en las 8 páginas del panel: un botón pequeño abajo ("Hay una actualización — Actualizar") que aparece cuando ya se publicó una versión nueva del sitio, sin recargar sola la página — así no se interrumpe nada a medio trabajo, y al tocarlo no saca de la sección donde se estaba. También, en Citas, las 6 ventanas emergentes (Agendar manualmente, Registrar cita directa, Bloqueos, Abrir horario, Lista de espera, Editar cita) ya tienen una X para cerrar en la esquina, para que el botón de regresar del celular no saque de toda la app por accidente. Y en Configuración, "Historial de inicio de sesión" ahora empieza colapsado y se abre en una ventana emergente agrupada por semana.
+
 ## 1.9.2 — 2026-11-15
 Ajuste: el reconocimiento de clienta por nombre o teléfono ahora también funciona en "Agregar clienta" (Clientas) — era el único formulario con datos de clienta que todavía no lo tenía. Se desactiva solo mientras se edita una clienta existente.
 
