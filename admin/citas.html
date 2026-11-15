@@ -386,6 +386,7 @@
       <div>
         <label for="mb-phone">Teléfono</label>
         <input type="tel" id="mb-phone" required placeholder="Ej. 55 1234 5678" />
+        <p class="form-hint" id="mb-phone-hint"></p>
       </div>
       <div>
         <label for="mb-email">Correo (opcional)</label>
@@ -446,6 +447,20 @@
         </div>
       </div>
       <p class="form-hint-note">Ambos vienen prellenados según el servicio — cámbialos si hubo descuento o si duró distinto (útil para el Servicio Especial).</p>
+      <div class="field-row">
+        <div>
+          <label for="db-discount-value">Descuento directo (opcional)</label>
+          <input type="number" id="db-discount-value" min="0" step="1" placeholder="0" />
+        </div>
+        <div>
+          <label for="db-discount-type">Tipo de descuento</label>
+          <select id="db-discount-type">
+            <option value="percent">% Porcentaje</option>
+            <option value="fixed">$ Monto fijo</option>
+          </select>
+        </div>
+      </div>
+      <p class="form-hint-note">Para cuando haces un descuento directo sin crear una promoción — se resta del precio de lista y actualiza "Monto cobrado" solo (puedes seguir ajustándolo a mano si hace falta).</p>
       <div>
         <label for="db-name">Nombre de la clienta</label>
         <input type="text" id="db-name" required />
@@ -1164,8 +1179,33 @@
   const mbEmail = document.getElementById("mb-email");
   const mbNotes = document.getElementById("mb-notes");
   const mbPromoCode = document.getElementById("mb-promo-code");
+  const mbPhoneHint = document.getElementById("mb-phone-hint");
   const mbSubmit = document.getElementById("mb-submit");
   const mbHint = document.getElementById("mb-hint");
+
+  // Al salir del campo de teléfono, busca si esa clienta ya existe (por
+  // citas previas o por la agenda a mano) y rellena su nombre y correo
+  // sola — sin pisar lo que ya se haya escrito a mano en esos campos.
+  async function lookupClientByPhone() {
+    mbPhoneHint.textContent = "";
+    mbPhoneHint.classList.remove("is-error");
+    const digits = mbPhone.value.replace(/\D/g, "").slice(-10);
+    if (digits.length < 10) return;
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`/api/get-client-by-phone?phone=${encodeURIComponent(digits)}`, { headers });
+      if (!res.ok) return;
+      const body = await res.json();
+      if (body.client) {
+        if (!mbName.value.trim()) mbName.value = body.client.name;
+        if (!mbEmail.value.trim() && body.client.email) mbEmail.value = body.client.email;
+        mbPhoneHint.textContent = `✓ Clienta encontrada: ${body.client.name}`;
+      }
+    } catch {
+      // Silencioso — si falla la búsqueda, no bloquea el formulario.
+    }
+  }
+  mbPhone.addEventListener("blur", lookupClientByPhone);
 
   let siteConfig = null;
   let mbSelectedSlot = null;
@@ -1303,6 +1343,8 @@
   const dbTime = document.getElementById("db-time");
   const dbDuration = document.getElementById("db-duration");
   const dbAmount = document.getElementById("db-amount");
+  const dbDiscountValue = document.getElementById("db-discount-value");
+  const dbDiscountType = document.getElementById("db-discount-type");
   const dbName = document.getElementById("db-name");
   const dbPhone = document.getElementById("db-phone");
   const dbEmail = document.getElementById("db-email");
@@ -1317,14 +1359,32 @@
     return match ? Number(match[1]) : 0;
   }
 
+  let directListPrice = 0;
+
+  // El descuento directo solo es una calculadora de ayuda: resta del
+  // precio de lista y escribe el resultado en "Monto cobrado" — ese
+  // campo se puede seguir editando a mano después, igual que siempre.
+  function recalcDirectAmount() {
+    const discount = Number(dbDiscountValue.value) || 0;
+    let amount = directListPrice;
+    if (discount > 0) {
+      amount = dbDiscountType.value === "fixed" ? directListPrice - discount : directListPrice * (1 - discount / 100);
+    }
+    dbAmount.value = Math.max(0, Math.round(amount));
+  }
+
   function fillDirectDefaultsFromService() {
     const cfg = siteConfig;
     if (!cfg) return;
     const service = (cfg.services || []).find((s) => s.id === dbService.value);
     if (!service) return;
     dbDuration.value = service.duration;
-    dbAmount.value = parsePriceLabel(service.price);
+    directListPrice = parsePriceLabel(service.price);
+    recalcDirectAmount();
   }
+
+  dbDiscountValue.addEventListener("input", recalcDirectAmount);
+  dbDiscountType.addEventListener("change", recalcDirectAmount);
 
   async function openDirectModal() {
     dbHint.textContent = "";
