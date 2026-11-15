@@ -382,6 +382,7 @@
       <div>
         <label for="mb-name">Nombre de la clienta</label>
         <input type="text" id="mb-name" required />
+        <p class="form-hint" id="mb-name-hint"></p>
       </div>
       <div>
         <label for="mb-phone">Teléfono</label>
@@ -464,10 +465,12 @@
       <div>
         <label for="db-name">Nombre de la clienta</label>
         <input type="text" id="db-name" required />
+        <p class="form-hint" id="db-name-hint"></p>
       </div>
       <div>
         <label for="db-phone">Teléfono</label>
         <input type="tel" id="db-phone" required placeholder="Ej. 55 1234 5678" />
+        <p class="form-hint" id="db-phone-hint"></p>
       </div>
       <div>
         <label for="db-email">Correo (opcional)</label>
@@ -1180,32 +1183,51 @@
   const mbNotes = document.getElementById("mb-notes");
   const mbPromoCode = document.getElementById("mb-promo-code");
   const mbPhoneHint = document.getElementById("mb-phone-hint");
+  const mbNameHint = document.getElementById("mb-name-hint");
   const mbSubmit = document.getElementById("mb-submit");
   const mbHint = document.getElementById("mb-hint");
 
-  // Al salir del campo de teléfono, busca si esa clienta ya existe (por
-  // citas previas o por la agenda a mano) y rellena su nombre y correo
-  // sola — sin pisar lo que ya se haya escrito a mano en esos campos.
-  async function lookupClientByPhone() {
-    mbPhoneHint.textContent = "";
-    mbPhoneHint.classList.remove("is-error");
-    const digits = mbPhone.value.replace(/\D/g, "").slice(-10);
-    if (digits.length < 10) return;
-    try {
-      const headers = await authHeaders();
-      const res = await fetch(`/api/get-client-by-phone?phone=${encodeURIComponent(digits)}`, { headers });
-      if (!res.ok) return;
-      const body = await res.json();
-      if (body.client) {
-        if (!mbName.value.trim()) mbName.value = body.client.name;
-        if (!mbEmail.value.trim() && body.client.email) mbEmail.value = body.client.email;
-        mbPhoneHint.textContent = `✓ Clienta encontrada: ${body.client.name}`;
+  // Reconocimiento de clienta por teléfono O por nombre — reutilizable
+  // en cualquier formulario que tenga esos tres campos ("Agendar
+  // manualmente", "Registrar cita directa"). Al salir del campo de
+  // teléfono busca por teléfono y rellena nombre/correo; al salir del
+  // campo de nombre busca por nombre y rellena teléfono/correo. Nunca
+  // pisa lo que ya se haya escrito a mano en el campo que disparó la
+  // búsqueda.
+  function wireClientLookup({ nameInput, phoneInput, emailInput, nameHint, phoneHint }) {
+    async function runLookup(params, hintEl, fillName, fillPhone) {
+      hintEl.textContent = "";
+      hintEl.classList.remove("is-error");
+      try {
+        const headers = await authHeaders();
+        const query = new URLSearchParams(params).toString();
+        const res = await fetch(`/api/get-client-by-phone?${query}`, { headers });
+        if (!res.ok) return;
+        const body = await res.json();
+        if (!body.client) return;
+        if (fillName && !nameInput.value.trim()) nameInput.value = body.client.name;
+        if (fillPhone && !phoneInput.value.trim() && body.client.phone) phoneInput.value = body.client.phone;
+        if (!emailInput.value.trim() && body.client.email) emailInput.value = body.client.email;
+        hintEl.textContent = `✓ Clienta encontrada: ${body.client.name}`;
+      } catch {
+        // Silencioso — si falla la búsqueda, no bloquea el formulario.
       }
-    } catch {
-      // Silencioso — si falla la búsqueda, no bloquea el formulario.
     }
+
+    phoneInput.addEventListener("blur", () => {
+      const digits = phoneInput.value.replace(/\D/g, "").slice(-10);
+      if (digits.length < 10) return;
+      runLookup({ phone: digits }, phoneHint, true, false);
+    });
+
+    nameInput.addEventListener("blur", () => {
+      const name = nameInput.value.trim();
+      if (name.length < 3) return;
+      runLookup({ name }, nameHint, false, true);
+    });
   }
-  mbPhone.addEventListener("blur", lookupClientByPhone);
+
+  wireClientLookup({ nameInput: mbName, phoneInput: mbPhone, emailInput: mbEmail, nameHint: mbNameHint, phoneHint: mbPhoneHint });
 
   let siteConfig = null;
   let mbSelectedSlot = null;
@@ -1348,7 +1370,11 @@
   const dbName = document.getElementById("db-name");
   const dbPhone = document.getElementById("db-phone");
   const dbEmail = document.getElementById("db-email");
+  const dbNameHint = document.getElementById("db-name-hint");
+  const dbPhoneHint = document.getElementById("db-phone-hint");
   const dbNotes = document.getElementById("db-notes");
+
+  wireClientLookup({ nameInput: dbName, phoneInput: dbPhone, emailInput: dbEmail, nameHint: dbNameHint, phoneHint: dbPhoneHint });
   const dbNotifyLoyalty = document.getElementById("db-notify-loyalty");
   const dbSubmit = document.getElementById("db-submit");
   const dbHint = document.getElementById("db-hint");

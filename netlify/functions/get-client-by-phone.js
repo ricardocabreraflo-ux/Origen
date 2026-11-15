@@ -1,7 +1,8 @@
 // Panel (requiere sesión, sección "citas"): busca si una clienta ya
 // existe —por citas previas o por la agenda a mano— a partir de su
-// teléfono, para autocompletar su nombre y correo en "Agendar
-// manualmente" sin que la administradora tenga que volver a
+// teléfono O de su nombre, para autocompletar el resto de sus datos en
+// cualquier formulario que lo use ("Agendar manualmente", "Registrar
+// cita directa") sin que la administradora tenga que volver a
 // escribirlos. Mismo criterio de coincidencia que Clientas (last10).
 const { getServiceClient } = require("./_lib/supabase");
 const { requireSection } = require("./_lib/requireAdmin");
@@ -18,8 +19,11 @@ exports.handler = async (event, context) => {
     return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: "unauthorized" }) };
   }
 
-  const digits = last10(event.queryStringParameters && event.queryStringParameters.phone);
-  if (digits.length < 10) {
+  const qs = event.queryStringParameters || {};
+  const phoneQuery = last10(qs.phone);
+  const nameQuery = (qs.name || "").trim().toLowerCase();
+
+  if (phoneQuery.length < 10 && !nameQuery) {
     return { statusCode: 200, body: JSON.stringify({ client: null }) };
   }
 
@@ -38,24 +42,47 @@ exports.handler = async (event, context) => {
       .order("created_at", { ascending: true });
     if (manualError) throw manualError;
 
-    let name = null;
-    let email = null;
+    // Une todo en una sola lista por teléfono (igual que Clientas), para
+    // poder buscar tanto por teléfono como por nombre sobre los mismos
+    // datos ya combinados.
+    const byPhone = new Map();
 
     (bookings || []).forEach((b) => {
-      if (last10(b.customer_phone) !== digits) return;
-      name = b.customer_name; // el más reciente, porque bookings viene ordenado ascendente
-      if (b.customer_email) email = b.customer_email;
+      const key = last10(b.customer_phone);
+      if (!key) return;
+      const existing = byPhone.get(key) || { name: null, phone: key, email: null };
+      existing.name = b.customer_name; // el más reciente, porque bookings viene ordenado ascendente
+      if (b.customer_email) existing.email = b.customer_email;
+      byPhone.set(key, existing);
     });
 
     (manualClients || []).forEach((m) => {
-      if (last10(m.phone) !== digits) return;
-      if (!name) name = m.name;
-      if (!email && m.email) email = m.email;
+      const key = last10(m.phone);
+      if (!key) return;
+      const existing = byPhone.get(key);
+      if (existing) {
+        if (!existing.name) existing.name = m.name;
+        if (!existing.email && m.email) existing.email = m.email;
+      } else {
+        byPhone.set(key, { name: m.name, phone: key, email: m.email || null });
+      }
     });
 
-    if (!name) return { statusCode: 200, body: JSON.stringify({ client: null }) };
+    let client = null;
 
-    return { statusCode: 200, body: JSON.stringify({ client: { name, email: email || "" } }) };
+    if (phoneQuery.length >= 10) {
+      const found = byPhone.get(phoneQuery);
+      if (found && found.name) client = found;
+    } else if (nameQuery) {
+      const matches = Array.from(byPhone.values()).filter((c) => c.name && c.name.trim().toLowerCase() === nameQuery);
+      // Si hay más de una clienta con el mismo nombre, no se adivina
+      // cuál es — mejor no autocompletar que autocompletar mal.
+      if (matches.length === 1) client = matches[0];
+    }
+
+    if (!client) return { statusCode: 200, body: JSON.stringify({ client: null }) };
+
+    return { statusCode: 200, body: JSON.stringify({ client: { name: client.name, phone: client.phone, email: client.email || "" } }) };
   } catch (err) {
     console.error("get-client-by-phone error", err);
     return { statusCode: 500, body: JSON.stringify({ error: "server_error" }) };
