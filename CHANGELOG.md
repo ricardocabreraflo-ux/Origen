@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.9.1 — 2026-11-15
+Ajuste: el reconocimiento de clienta ahora funciona también en "Registrar cita directa" (antes solo en "Agendar manualmente"), y en las dos direcciones — buscar por teléfono rellena nombre y correo, buscar por nombre rellena teléfono y correo. Si el nombre coincide con más de una clienta, no adivina cuál es.
+
 ## 1.9.0 — 2026-11-15
 Nuevo en Citas: en "Agendar manualmente", al salir del campo de teléfono, el sistema busca si esa clienta ya existe (por citas previas o por la agenda a mano) y rellena su nombre y correo sola, sin tener que volver a escribirlos. También, en "Registrar cita directa" hay un nuevo recuadro "Descuento directo" (en % o en $ fijo) para cuando se hace un descuento sin crear una promoción — resta del precio de lista y actualiza "Monto cobrado" solo, que se puede seguir ajustando a mano después.
 
