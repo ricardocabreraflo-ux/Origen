@@ -7,6 +7,9 @@ Cómo se numera (MAYOR.MENOR.CHICO):
 - **Mediano** (1.0.1 → 1.1.0): una función nueva o un cambio de comportamiento en una parte del sitio.
 - **Grande** (1.4.2 → 2.0.0): rediseños importantes o cambios que tocan varias partes del sistema a la vez.
 
+## 1.9.2 — 2026-11-15
+Ajuste: el reconocimiento de clienta por nombre o teléfono ahora también funciona en "Agregar clienta" (Clientas) — era el único formulario con datos de clienta que todavía no lo tenía. Se desactiva solo mientras se edita una clienta existente.
+
 ## 1.9.1 — 2026-11-15
 Ajuste: el reconocimiento de clienta ahora funciona también en "Registrar cita directa" (antes solo en "Agendar manualmente"), y en las dos direcciones — buscar por teléfono rellena nombre y correo, buscar por nombre rellena teléfono y correo. Si el nombre coincide con más de una clienta, no adivina cuál es.
 
